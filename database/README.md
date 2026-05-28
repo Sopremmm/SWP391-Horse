@@ -1,303 +1,259 @@
 -- =============================================
--- HORSE RACING TOURNAMENT MANAGEMENT SYSTEM
--- Database: horse_racing_db
--- Author: Danh (BA) | Version: 3.0 - Mentor Reviewed
--- Changes from v2.0:
---   1. Added jockey_invitation table (manage invite flow)
---   2. Renamed registration → race_entry (more precise)
---   3. Renamed rank → finish_rank (avoid SQL keyword conflict)
---   4. Changed bet.predicted_horse_id → predicted_registration_id
---   5. Added missing UNIQUE constraints
+-- HORSE RACING - SQL Server (Danh FIXED)
 -- =============================================
 
-CREATE DATABASE IF NOT EXISTS horse_racing_db
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE master;
+GO
+
+IF EXISTS (SELECT * FROM sys.databases WHERE name = 'horse_racing_db')
+    DROP DATABASE horse_racing_db;
+GO
+
+CREATE DATABASE horse_racing_db;
+GO
+
 USE horse_racing_db;
+GO
 
 -- ============================================================
--- LUỒNG 4: AUTH & USER
+-- USER
 -- ============================================================
-CREATE TABLE `user` (
-  id            BIGINT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
-  email         VARCHAR(100)     NOT NULL UNIQUE,
-  password_hash VARCHAR(255)     NOT NULL,
-  full_name     VARCHAR(100)     NOT NULL,
-  phone         VARCHAR(20),
-  role          ENUM('HORSE_OWNER','JOCKEY','REFEREE',
-                     'SPECTATOR','ADMIN')      NOT NULL,
-  status        ENUM('ACTIVE','INACTIVE','BANNED') DEFAULT 'ACTIVE',
-  avatar_url    VARCHAR(255),
-  created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP
-                         ON UPDATE CURRENT_TIMESTAMP,
+CREATE TABLE [user] (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name NVARCHAR(100) NOT NULL,
+    phone VARCHAR(20),
+    role VARCHAR(20) NOT NULL CHECK (role IN ('HORSE_OWNER','JOCKEY','REFEREE','SPECTATOR','ADMIN')),
+    status VARCHAR(10) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE','INACTIVE','BANNED')),
+    avatar_url VARCHAR(255),
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 DEFAULT GETDATE()
+);
+GO
 
-  INDEX idx_user_role   (role),
-  INDEX idx_user_status (status)
-) ENGINE=InnoDB;
+CREATE TRIGGER trg_user_updated_at
+ON [user] AFTER UPDATE AS
+BEGIN
+    UPDATE u SET updated_at = GETDATE()
+    FROM [user] u INNER JOIN inserted i ON u.id = i.id;
+END;
+GO
 
--- 1-1 profile for Jockey only
+-- ============================================================
+-- JOCKEY PROFILE
+-- ============================================================
 CREATE TABLE jockey_profile (
-  id               BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id          BIGINT UNSIGNED NOT NULL UNIQUE,   -- enforces 1-1
-  license_number   VARCHAR(50)     NOT NULL UNIQUE,
-  weight_kg        DECIMAL(5,2),
-  experience_years INT             DEFAULT 0,
-  total_races      INT             DEFAULT 0,
-  total_wins       INT             DEFAULT 0,
-  bio              TEXT,
-
-  FOREIGN KEY (user_id) REFERENCES `user`(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_id BIGINT NOT NULL UNIQUE,
+    license_number VARCHAR(50) NOT NULL UNIQUE,
+    weight_kg DECIMAL(5,2),
+    experience_years INT DEFAULT 0,
+    total_races INT DEFAULT 0,
+    total_wins INT DEFAULT 0,
+    bio NVARCHAR(MAX),
+    FOREIGN KEY (user_id) REFERENCES [user](id) ON DELETE CASCADE
+);
+GO
 
 -- ============================================================
--- LUỒNG 3: TOURNAMENT & RACE
+-- TOURNAMENT & RACE
 -- ============================================================
 CREATE TABLE tournament (
-  id          BIGINT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
-  created_by  BIGINT UNSIGNED  NOT NULL,              -- Admin who created
-  name        VARCHAR(200)     NOT NULL,
-  location    VARCHAR(200),
-  description TEXT,
-  start_date  DATE             NOT NULL,
-  end_date    DATE             NOT NULL,
-  prize_pool  DECIMAL(15,2)    DEFAULT 0.00,
-  max_horses  INT              DEFAULT 20,
-  status      ENUM('DRAFT','OPEN','ONGOING','CLOSED') DEFAULT 'DRAFT',
-  created_at  DATETIME         DEFAULT CURRENT_TIMESTAMP,
-
-  FOREIGN KEY (created_by) REFERENCES `user`(id),
-  INDEX idx_tournament_status (status),
-  INDEX idx_tournament_dates  (start_date, end_date)
-) ENGINE=InnoDB;
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    created_by BIGINT NOT NULL,
+    name NVARCHAR(200) NOT NULL,
+    location NVARCHAR(200),
+    description NVARCHAR(MAX),
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    prize_pool DECIMAL(15,2) DEFAULT 0.00,
+    max_horses INT DEFAULT 20,
+    status VARCHAR(20) DEFAULT 'DRAFT' CHECK (status IN ('DRAFT','OPEN','ONGOING','CLOSED')),
+    created_at DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (created_by) REFERENCES [user](id) ON DELETE NO ACTION
+);
+GO
 
 CREATE TABLE race (
-  id               BIGINT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
-  tournament_id    BIGINT UNSIGNED  NOT NULL,
-  referee_id       BIGINT UNSIGNED  NULL,
-  name             VARCHAR(200)     NOT NULL,
-  round_number     INT              DEFAULT 1,
-  race_date        DATETIME         NOT NULL,
-  distance_m       INT              NOT NULL,
-  max_participants INT              DEFAULT 12,
-  status           ENUM('SCHEDULED','ONGOING','FINISHED','COMPLETED')
-                                    DEFAULT 'SCHEDULED',
-  created_at       DATETIME         DEFAULT CURRENT_TIMESTAMP,
-
-  FOREIGN KEY (tournament_id) REFERENCES tournament(id) ON DELETE CASCADE,
-  FOREIGN KEY (referee_id)    REFERENCES `user`(id)    ON DELETE SET NULL,
-
-  -- UNIQUE: cùng 1 race không được đặt trùng round trong 1 tournament
-  UNIQUE KEY uq_tournament_round (tournament_id, round_number),
-
-  INDEX idx_race_tournament (tournament_id),
-  INDEX idx_race_date       (race_date),
-  INDEX idx_race_status     (status)
-) ENGINE=InnoDB;
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    tournament_id BIGINT NOT NULL,
+    referee_id BIGINT NULL,
+    name NVARCHAR(200) NOT NULL,
+    round_number INT DEFAULT 1,
+    race_date DATETIME2 NOT NULL,
+    distance_m INT NOT NULL,
+    max_participants INT DEFAULT 12,
+    status VARCHAR(20) DEFAULT 'SCHEDULED' CHECK (status IN ('SCHEDULED','ONGOING','FINISHED','COMPLETED')),
+    created_at DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (tournament_id) REFERENCES tournament(id) ON DELETE CASCADE,
+    FOREIGN KEY (referee_id) REFERENCES [user](id) ON DELETE SET NULL,
+    CONSTRAINT uq_tournament_round UNIQUE (tournament_id, round_number)
+);
+GO
 
 -- ============================================================
--- LUỒNG 1: HORSE
+-- HORSE
 -- ============================================================
 CREATE TABLE horse (
-  id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  owner_id    BIGINT UNSIGNED NOT NULL,
-  name        VARCHAR(100)    NOT NULL,
-  breed       VARCHAR(100),
-  age         INT,
-  weight_kg   DECIMAL(5,2),
-  color       VARCHAR(50),
-  image_url   VARCHAR(255),
-  total_races INT             DEFAULT 0,
-  total_wins  INT             DEFAULT 0,
-  status      ENUM('ACTIVE','RETIRED') DEFAULT 'ACTIVE',
-  created_at  DATETIME        DEFAULT CURRENT_TIMESTAMP,
-
-  FOREIGN KEY (owner_id) REFERENCES `user`(id) ON DELETE CASCADE,
-  INDEX idx_horse_owner (owner_id)
-) ENGINE=InnoDB;
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    owner_id BIGINT NOT NULL,
+    name NVARCHAR(100) NOT NULL,
+    breed NVARCHAR(100),
+    age INT,
+    weight_kg DECIMAL(5,2),
+    color NVARCHAR(50),
+    image_url VARCHAR(255),
+    total_races INT DEFAULT 0,
+    total_wins INT DEFAULT 0,
+    status VARCHAR(10) DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE','RETIRED')),
+    created_at DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (owner_id) REFERENCES [user](id) ON DELETE NO ACTION
+);
+GO
 
 -- ============================================================
--- FIX 1: NEW TABLE — jockey_invitation
--- Quản lý riêng luồng mời Jockey từ Horse Owner
--- Tách ra khỏi race_entry để mỗi entity có 1 trách nhiệm rõ ràng
+-- JOCKEY INVITATION
 -- ============================================================
 CREATE TABLE jockey_invitation (
-  id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  horse_id    BIGINT UNSIGNED NOT NULL,               -- ngựa cần jockey
-  owner_id    BIGINT UNSIGNED NOT NULL,               -- chủ ngựa gửi lời mời
-  jockey_id   BIGINT UNSIGNED NOT NULL,               -- jockey nhận lời mời
-  race_id     BIGINT UNSIGNED NOT NULL,               -- race cụ thể
-  status      ENUM('PENDING','ACCEPTED','DECLINED','EXPIRED')
-                              DEFAULT 'PENDING',
-  message     TEXT,                                   -- lời nhắn tùy chọn
-  invited_at  DATETIME        DEFAULT CURRENT_TIMESTAMP,
-  responded_at DATETIME       NULL,
-  expires_at  DATETIME        NULL,                   -- lời mời hết hạn sau X giờ
-
-  -- UNIQUE: 1 owner chỉ mời 1 jockey cho 1 ngựa trong 1 race tại 1 thời điểm
-  UNIQUE KEY uq_invite_horse_jockey_race (horse_id, jockey_id, race_id),
-
-  FOREIGN KEY (horse_id)  REFERENCES horse(id)      ON DELETE CASCADE,
-  FOREIGN KEY (owner_id)  REFERENCES `user`(id)     ON DELETE CASCADE,
-  FOREIGN KEY (jockey_id) REFERENCES `user`(id)     ON DELETE CASCADE,
-  FOREIGN KEY (race_id)   REFERENCES race(id)       ON DELETE CASCADE,
-
-  INDEX idx_invitation_jockey (jockey_id),        -- Jockey xem lời mời của mình
-  INDEX idx_invitation_horse  (horse_id),
-  INDEX idx_invitation_status (status)
-) ENGINE=InnoDB;
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    horse_id BIGINT NOT NULL,
+    owner_id BIGINT NOT NULL,
+    jockey_id BIGINT NOT NULL,
+    race_id BIGINT NOT NULL,
+    status VARCHAR(15) DEFAULT 'PENDING' CHECK (status IN ('PENDING','ACCEPTED','DECLINED','EXPIRED')),
+    message NVARCHAR(MAX),
+    invited_at DATETIME2 DEFAULT GETDATE(),
+    responded_at DATETIME2 NULL,
+    expires_at DATETIME2 NULL,
+    CONSTRAINT uq_invite_horse_jockey_race UNIQUE (horse_id, jockey_id, race_id),
+    FOREIGN KEY (horse_id) REFERENCES horse(id) ON DELETE CASCADE,
+    FOREIGN KEY (owner_id) REFERENCES [user](id) ON DELETE NO ACTION,
+    FOREIGN KEY (jockey_id) REFERENCES [user](id) ON DELETE NO ACTION,
+    FOREIGN KEY (race_id) REFERENCES race(id) ON DELETE CASCADE
+);
+GO
 
 -- ============================================================
--- FIX 2: RENAMED registration → race_entry
--- "race_entry" sát nghĩa hơn: một con ngựa + jockey 
---  chính thức tham gia vào 1 race cụ thể
+-- RACE ENTRY - ĐÃ SỬA CASCADE Ở ĐÂY
 -- ============================================================
 CREATE TABLE race_entry (
-  id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  horse_id      BIGINT UNSIGNED NOT NULL,
-  jockey_id     BIGINT UNSIGNED NULL,               -- confirmed sau khi invite ACCEPTED
-  tournament_id BIGINT UNSIGNED NOT NULL,
-  race_id       BIGINT UNSIGNED NULL,               -- gán sau khi Admin xếp lịch
-  status        ENUM('PENDING','APPROVED','REJECTED','CONFIRMED')
-                                DEFAULT 'PENDING',
-  registered_at DATETIME        DEFAULT CURRENT_TIMESTAMP,
-  approved_at   DATETIME        NULL,
-
-  -- 1 ngựa chỉ tham gia 1 lần trong 1 tournament
-  UNIQUE KEY uq_horse_tournament (horse_id, tournament_id),
-  -- FIX 5: thêm UNIQUE — 1 ngựa không được vào cùng 1 race 2 lần
-  -- (dùng partial index trick: chỉ enforce khi race_id NOT NULL → handle ở app layer)
-  -- Thay bằng: enforce ở application + check trước khi INSERT
-
-  FOREIGN KEY (horse_id)      REFERENCES horse(id)       ON DELETE CASCADE,
-  FOREIGN KEY (jockey_id)     REFERENCES `user`(id)      ON DELETE SET NULL,
-  FOREIGN KEY (tournament_id) REFERENCES tournament(id)  ON DELETE CASCADE,
-  FOREIGN KEY (race_id)       REFERENCES race(id)        ON DELETE SET NULL,
-
-  INDEX idx_entry_jockey     (jockey_id),
-  INDEX idx_entry_tournament (tournament_id),
-  INDEX idx_entry_race       (race_id)
-) ENGINE=InnoDB;
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    horse_id BIGINT NOT NULL,
+    jockey_id BIGINT NULL,
+    tournament_id BIGINT NOT NULL,
+    race_id BIGINT NULL,
+    status VARCHAR(15) DEFAULT 'PENDING' CHECK (status IN ('PENDING','APPROVED','REJECTED','CONFIRMED')),
+    registered_at DATETIME2 DEFAULT GETDATE(),
+    approved_at DATETIME2 NULL,
+    CONSTRAINT uq_horse_tournament UNIQUE (horse_id, tournament_id),
+    FOREIGN KEY (horse_id) REFERENCES horse(id) ON DELETE NO ACTION,
+    FOREIGN KEY (jockey_id) REFERENCES [user](id) ON DELETE SET NULL,
+    FOREIGN KEY (tournament_id) REFERENCES tournament(id) ON DELETE NO ACTION,   -- ← SỬA Ở ĐÂY
+    FOREIGN KEY (race_id) REFERENCES race(id) ON DELETE SET NULL
+);
+GO
 
 -- ============================================================
--- RESULT & PRIZE
--- FIX 3: Đổi cột `rank` → `finish_rank` (tránh từ khóa SQL)
+-- RACE RESULT, PRIZE, BET
 -- ============================================================
 CREATE TABLE race_result (
-  id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  race_id         BIGINT UNSIGNED NOT NULL,
-  entry_id        BIGINT UNSIGNED NOT NULL,           -- FK → race_entry (thay registration_id)
-  finish_rank     INT             NOT NULL,           -- FIX 3: đổi từ `rank`
-  finish_time_ms  BIGINT,
-  disqualified    BOOLEAN         DEFAULT FALSE,
-  violation_notes TEXT,
-  recorded_at     DATETIME        DEFAULT CURRENT_TIMESTAMP,
-
-  -- UNIQUE: trong 1 race, không có 2 entry cùng finish_rank
-  UNIQUE KEY uq_race_finish_rank (race_id, finish_rank),
-  -- FIX 5: UNIQUE — 1 entry chỉ có 1 kết quả trong 1 race
-  UNIQUE KEY uq_race_entry       (race_id, entry_id),
-
-  FOREIGN KEY (race_id)   REFERENCES race(id)       ON DELETE CASCADE,
-  FOREIGN KEY (entry_id)  REFERENCES race_entry(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    race_id BIGINT NOT NULL,
+    entry_id BIGINT NOT NULL,
+    finish_rank INT NOT NULL,
+    finish_time_ms BIGINT,
+    disqualified BIT DEFAULT 0,
+    violation_notes NVARCHAR(MAX),
+    recorded_at DATETIME2 DEFAULT GETDATE(),
+    CONSTRAINT uq_race_finish_rank UNIQUE (race_id, finish_rank),
+    CONSTRAINT uq_race_entry UNIQUE (race_id, entry_id),
+    FOREIGN KEY (race_id) REFERENCES race(id) ON DELETE CASCADE,
+    FOREIGN KEY (entry_id) REFERENCES race_entry(id) ON DELETE CASCADE
+);
+GO
 
 CREATE TABLE prize (
-  id       BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  race_id  BIGINT UNSIGNED NOT NULL,
-  entry_id BIGINT UNSIGNED NOT NULL,                 -- FK → race_entry
-  finish_rank INT          NOT NULL,                 -- FIX 3: đổi từ `rank`
-  amount   DECIMAL(15,2)   NOT NULL,
-  paid_at  DATETIME        NULL,
-  created_at DATETIME      DEFAULT CURRENT_TIMESTAMP,
-
-  -- FIX 5: UNIQUE — 1 entry chỉ nhận 1 prize trong 1 race
-  UNIQUE KEY uq_prize_race_entry (race_id, entry_id),
-
-  FOREIGN KEY (race_id)  REFERENCES race(id)       ON DELETE CASCADE,
-  FOREIGN KEY (entry_id) REFERENCES race_entry(id) ON DELETE CASCADE,
-  INDEX idx_prize_entry  (entry_id)
-) ENGINE=InnoDB;
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    race_id BIGINT NOT NULL,
+    entry_id BIGINT NOT NULL,
+    finish_rank INT NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    paid_at DATETIME2 NULL,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    CONSTRAINT uq_prize_race_entry UNIQUE (race_id, entry_id),
+    FOREIGN KEY (race_id) REFERENCES race(id) ON DELETE CASCADE,
+    FOREIGN KEY (entry_id) REFERENCES race_entry(id) ON DELETE CASCADE
+);
+GO
 
 CREATE TABLE referee_report (
-  id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  race_id      BIGINT UNSIGNED NOT NULL UNIQUE,      -- 1 race = 1 report
-  referee_id   BIGINT UNSIGNED NULL,
-  violations   JSON,
-  notes        TEXT,
-  confirmed    BOOLEAN         DEFAULT FALSE,
-  confirmed_at DATETIME        NULL,
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    race_id BIGINT NOT NULL UNIQUE,
+    referee_id BIGINT NULL,
+    violations NVARCHAR(MAX),
+    notes NVARCHAR(MAX),
+    confirmed BIT DEFAULT 0,
+    confirmed_at DATETIME2 NULL,
+    FOREIGN KEY (race_id) REFERENCES race(id) ON DELETE CASCADE,
+    FOREIGN KEY (referee_id) REFERENCES [user](id) ON DELETE SET NULL
+);
+GO
 
-  FOREIGN KEY (race_id)    REFERENCES race(id)   ON DELETE CASCADE,
-  FOREIGN KEY (referee_id) REFERENCES `user`(id) ON DELETE SET NULL
-) ENGINE=InnoDB;
-
--- ============================================================
--- LUỒNG 2: PREDICTION / BET  ⭐ DANH 
--- FIX 4: predicted_horse_id → predicted_registration_id
---         (tham chiếu race_entry để biết chính xác horse+jockey+race)
--- ============================================================
 CREATE TABLE bet (
-  id                       BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  spectator_id             BIGINT UNSIGNED NOT NULL,
-  race_id                  BIGINT UNSIGNED NOT NULL,
-  predicted_entry_id       BIGINT UNSIGNED NOT NULL,  -- FIX 4: → race_entry.id
-  result                   ENUM('PENDING','WIN','LOSE') DEFAULT 'PENDING',
-  placed_at                DATETIME DEFAULT CURRENT_TIMESTAMP,
-  resolved_at              DATETIME NULL,
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    spectator_id BIGINT NOT NULL,
+    race_id BIGINT NOT NULL,
+    predicted_entry_id BIGINT NOT NULL,
+    result VARCHAR(10) DEFAULT 'PENDING' CHECK (result IN ('PENDING','WIN','LOSE')),
+    placed_at DATETIME2 DEFAULT GETDATE(),
+    resolved_at DATETIME2 NULL,
+    CONSTRAINT uq_spectator_race UNIQUE (spectator_id, race_id),
+    FOREIGN KEY (spectator_id) REFERENCES [user](id) ON DELETE NO ACTION,
+    FOREIGN KEY (race_id) REFERENCES race(id) ON DELETE CASCADE,
+    FOREIGN KEY (predicted_entry_id) REFERENCES race_entry(id) ON DELETE CASCADE
+);
+GO
 
-  -- FIX 5: 1 spectator chỉ đặt 1 bet cho 1 race
-  UNIQUE KEY uq_spectator_race (spectator_id, race_id),
-  -- FIX 5: đảm bảo predicted_entry thuộc đúng race đang bet
-  -- (enforce ở application layer khi INSERT)
-
-  FOREIGN KEY (spectator_id)       REFERENCES `user`(id)      ON DELETE CASCADE,
-  FOREIGN KEY (race_id)            REFERENCES race(id)         ON DELETE CASCADE,
-  FOREIGN KEY (predicted_entry_id) REFERENCES race_entry(id)  ON DELETE CASCADE,
-
-  INDEX idx_bet_race (race_id)
-) ENGINE=InnoDB;
-
--- ============================================================
--- NOTIFICATION  ⭐ DANH 
--- ============================================================
 CREATE TABLE notification (
-  id         BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id    BIGINT UNSIGNED NOT NULL,
-  title      VARCHAR(200)    NOT NULL,
-  message    TEXT            NOT NULL,
-  type       ENUM('JOCKEY_INVITE','REG_APPROVED','REG_REJECTED',
-                  'RACE_RESULT','BET_WIN','BET_LOSE','SYSTEM') NOT NULL,
-  ref_id     BIGINT UNSIGNED NULL,
-  ref_type   VARCHAR(50)     NULL,       -- 'RACE','BET','RACE_ENTRY','INVITATION'
-  is_read    BOOLEAN         DEFAULT FALSE,
-  email_sent BOOLEAN         DEFAULT FALSE,
-  created_at DATETIME        DEFAULT CURRENT_TIMESTAMP,
-
-  FOREIGN KEY (user_id) REFERENCES `user`(id) ON DELETE CASCADE,
-  INDEX idx_notification_user      (user_id),
-  INDEX idx_notification_user_read (user_id, is_read)
-) ENGINE=InnoDB;
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    title NVARCHAR(200) NOT NULL,
+    message NVARCHAR(MAX) NOT NULL,
+    type VARCHAR(30) NOT NULL CHECK (type IN ('JOCKEY_INVITE','REG_APPROVED','REG_REJECTED',
+                                             'RACE_RESULT','BET_WIN','BET_LOSE','SYSTEM')),
+    ref_id BIGINT NULL,
+    ref_type VARCHAR(50) NULL,
+    is_read BIT DEFAULT 0,
+    email_sent BIT DEFAULT 0,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (user_id) REFERENCES [user](id) ON DELETE CASCADE
+);
+GO
 
 -- ============================================================
--- SEED DATA (minimal — for dev testing)
--- Password hash = BCrypt("password123")
+-- SEED DATA
 -- ============================================================
-INSERT INTO `user` (email, password_hash, full_name, phone, role) VALUES
-('admin@racing.vn',   '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyLZI9tji', 'System Admin',    '0901000001', 'ADMIN'),
-('owner1@racing.vn',  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyLZI9tji', 'Nguyễn Văn An',  '0901000002', 'HORSE_OWNER'),
-('jockey1@racing.vn', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyLZI9tji', 'Lê Văn Cường',   '0901000003', 'JOCKEY'),
-('referee@racing.vn', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyLZI9tji', 'Hoàng Văn Đức',  '0901000004', 'REFEREE'),
-('spec1@racing.vn',   '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyLZI9tji', 'Trần Thị Mai',   '0901000005', 'SPECTATOR');
+INSERT INTO [user] (email, password_hash, full_name, phone, role) VALUES
+('admin@racing.vn', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyLZI9tji', N'System Admin', '0901000001', 'ADMIN'),
+('owner1@racing.vn', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyLZI9tji', N'Nguyễn Văn An', '0901000002', 'HORSE_OWNER'),
+('jockey1@racing.vn', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyLZI9tji', N'Lê Văn Cường', '0901000003', 'JOCKEY'),
+('referee@racing.vn', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyLZI9tji', N'Hoàng Văn Đức', '0901000004', 'REFEREE'),
+('spec1@racing.vn', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyLZI9tji', N'Trần Thị Mai', '0901000005', 'SPECTATOR');
+GO
 
-INSERT INTO jockey_profile (user_id, license_number, weight_kg, experience_years) VALUES
-(3, 'JK-2024-001', 54.5, 5);
+INSERT INTO jockey_profile (user_id, license_number, weight_kg, experience_years) VALUES (3, 'JK-2024-001', 54.5, 5);
+GO
 
-INSERT INTO horse (owner_id, name, breed, age, weight_kg, color) VALUES
-(2, 'Thần Phong', 'Thoroughbred', 4, 480.0, 'Nâu đen');
+INSERT INTO horse (owner_id, name, breed, age, weight_kg, color) VALUES (2, N'Thần Phong', 'Thoroughbred', 4, 480.0, N'Nâu đen');
+GO
 
-INSERT INTO tournament (created_by, name, location, start_date, end_date, prize_pool, status) VALUES
-(1, 'Giải Đua Mùa Xuân 2025', 'Trường đua Phú Thọ', '2025-03-01', '2025-03-31', 500000000.00, 'OPEN');
+INSERT INTO tournament (created_by, name, location, start_date, end_date, prize_pool, status) 
+VALUES (1, N'Giải Đua Mùa Xuân 2025', N'Trường đua Phú Thọ', '2025-03-01', '2025-03-31', 500000000.00, 'OPEN');
+GO
 
-INSERT INTO race (tournament_id, referee_id, name, round_number, race_date, distance_m) VALUES
-(1, 4, 'Vòng loại 1 - 1200m', 1, '2025-03-10 09:00:00', 1200);
+INSERT INTO race (tournament_id, referee_id, name, round_number, race_date, distance_m)
+VALUES (1, 4, N'Vòng loại 1 - 1200m', 1, '2025-03-10 09:00:00', 1200);
+GO
 
+PRINT '✅ Database horse_racing_db da tao THANH CONG  (Full Fixed)!';
