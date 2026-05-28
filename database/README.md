@@ -256,4 +256,4 @@ INSERT INTO race (tournament_id, referee_id, name, round_number, race_date, dist
 VALUES (1, 4, N'Vòng loại 1 - 1200m', 1, '2025-03-10 09:00:00', 1200);
 GO
 
-PRINT '✅ Database horse_racing_db da tao THANH CONG  (Full Fixed)!';
+PRINT ' Database horse_racing_db da tao THANH CONG  (Full Fixed)!';
