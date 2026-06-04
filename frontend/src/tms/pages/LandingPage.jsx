@@ -340,17 +340,20 @@ export default function LandingPage() {
   const [regName, setRegName] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [regPhone, setRegPhone] = useState("");
+  const [regRole, setRegRole] = useState("");
   const [regError, setRegError] = useState("");
+  const [regSuccess, setRegSuccess] = useState(false);
   const [signInId, setSignInId] = useState("");
   const [signInPw, setSignInPw] = useState("");
   const [signInError, setSignInError] = useState("");
 
   const handleSignUp = (e) => {
     e.preventDefault(); setRegError("");
-    if (!regName.trim() || !regEmail.trim() || !regPhone.trim()) { setRegError("Please fill in all fields."); return; }
+    if (!regName.trim() || !regEmail.trim() || !regPhone.trim() || !regRole) { setRegError("Please fill in all fields and select a role."); return; }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(regEmail)) { setRegError("Please enter a valid email address."); return; }
-    setSignInOpen(false); setRegName(""); setRegEmail(""); setRegPhone("");
+    setRegSuccess(true);
+    setRegName(""); setRegEmail(""); setRegPhone(""); setRegRole("");
   };
 
   const handleSignIn = (e) => {
@@ -516,7 +519,7 @@ export default function LandingPage() {
                     className="px-4 py-2 rounded-xl font-sans text-sm font-semibold text-white cursor-pointer border-none transition-all" style={{ background: BRAND }}>Back to Sign In</button>
                 </div>
               )}
-              {authTab === "signup" && (
+              {authTab === "signup" && !regSuccess && (
                 <form onSubmit={handleSignUp}>
                   <div className="mb-3">
                     <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Full Name</label>
@@ -528,14 +531,35 @@ export default function LandingPage() {
                     <input type="email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} placeholder="you@example.com"
                       className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans text-slate-800 focus:outline-none focus:ring-2 transition-all" style={{ borderColor: BORDER }} />
                   </div>
-                  <div className="mb-4">
+                  <div className="mb-3">
                     <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Phone</label>
                     <input type="tel" value={regPhone} onChange={(e) => setRegPhone(e.target.value)} placeholder="+1 555 0000"
                       className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans text-slate-800 focus:outline-none focus:ring-2 transition-all" style={{ borderColor: BORDER }} />
                   </div>
+                  <div className="mb-4">
+                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Role</label>
+                    <select value={regRole} onChange={(e) => setRegRole(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans text-slate-800 focus:outline-none focus:ring-2 transition-all cursor-pointer" style={{ borderColor: BORDER }}>
+                      <option value="">Select your role</option>
+                      <option value="owner">Horse Owner</option>
+                      <option value="jockey">Jockey</option>
+                      <option value="spectator">Spectator</option>
+                    </select>
+                  </div>
                   {regError && <p className="text-xs text-red-500 mb-3">{regError}</p>}
                   <button type="submit" className="w-full py-2.5 rounded-xl font-sans text-sm font-semibold text-white cursor-pointer border-none transition-all" style={{ background: BRAND }}>Create Account</button>
                 </form>
+              )}
+              {authTab === "signup" && regSuccess && (
+                <div className="text-center py-6">
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: "#d1fae5" }}>
+                    <i className="ti ti-circle-check text-2xl" style={{ color: "#166534" }} />
+                  </div>
+                  <p className="text-base font-bold text-slate-800 mb-1">Registration Submitted!</p>
+                  <p className="text-xs text-slate-500 mb-4">Your request is pending approval. You will be notified once reviewed.</p>
+                  <button type="button" onClick={() => { setAuthTab("signin"); setRegSuccess(false); setRegError(""); }}
+                    className="px-4 py-2 rounded-xl font-sans text-sm font-semibold text-white cursor-pointer border-none transition-all" style={{ background: BRAND }}>Go to Sign In</button>
+                </div>
               )}
             </div>
           </div>

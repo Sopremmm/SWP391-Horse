@@ -1,17 +1,10 @@
 import { useState } from "react";
 import { useApp } from "../AppContext.jsx";
-import {
-  BRAND,
-  BRAND_BORDER,
-  BRAND_LIGHT,
-  BRAND_TEXT,
-  BORDER,
-  SURFACE,
-  TEXT_MUTED,
-} from "../constants.js";
+import { BRAND, BRAND_BORDER, BRAND_LIGHT, BRAND_TEXT, BORDER, SURFACE_MUTED } from "../constants.js";
 import { fmtDate, fmtMillions } from "../format.js";
 import AppShell from "../components/layout/AppShell.jsx";
 import StatusPill from "../components/common/StatusPill.jsx";
+import SlidePanel from "../components/common/SlidePanel.jsx";
 
 function StatCard({ label, value, icon, color, bg, border }) {
   return (
@@ -28,6 +21,12 @@ function StatCard({ label, value, icon, color, bg, border }) {
 export default function HostHome() {
   const { user, tournament, races } = useApp();
   const [tab, setTab] = useState("overview");
+  const [toast, setToast] = useState(null);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const venueRaces = races.filter((r) => r.venue === user?.venue);
   const allRegs = venueRaces.flatMap((r) =>
@@ -37,22 +36,30 @@ export default function HostHome() {
   const approved = allRegs.filter((r) => r.status === "Approved").length;
 
   const nav = [
-    { id: "overview", label: "Overview", icon: "layout-dashboard" },
-    { id: "races", label: "My Races", icon: "flag" },
+    { id: "overview",       label: "Overview",       icon: "layout-dashboard" },
+    { id: "schedule",      label: "Schedule",      icon: "calendar-time" },
+    { id: "races",         label: "My Races",      icon: "flag" },
     { id: "registrations", label: "Registrations", icon: "clipboard-list" },
   ];
 
   return (
-    <AppShell page={tab} setPage={setTab} nav={nav} subtitle={`Host — ${user?.venue}`}>
+    <AppShell page={tab} setPage={setTab} nav={nav} subtitle={"Host \u2014 " + (user?.venue || "")}>
+      {toast && (
+        <div className="fixed top-5 right-5 z-[9999] px-4 py-3 rounded-xl text-sm font-semibold shadow-lg"
+          style={{ background: "#d1fae5", color: "#166534", border: "1px solid #86efac" }}>
+          <i className="ti ti-circle-check mr-2" />{toast}
+        </div>
+      )}
+
       {tab === "overview" && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <StatCard label="Races at Venue" value={venueRaces.length} icon="flag" color={BRAND_TEXT} bg={BRAND_LIGHT} border={BRAND_BORDER} />
             <StatCard label="Total Entries" value={allRegs.length} icon="users" color="#1d4ed8" bg="#eff6ff" border="#93c5fd" />
             <StatCard label="Pending Review" value={pending} icon="clock" color="#92400e" bg="#fef3c7" border="#fde68a" />
-            <StatCard label="Approved" value={approved} icon="circle-check" color={BRAND_TEXT} bg={BRAND_LIGHT} border={BRAND_BORDER} />
+            <StatCard label="Approved" value={approved} icon="circle-check" color="#065f46" bg="#ecfdf5" border="#a7f3d0" />
           </div>
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-6 shadow-sm">
             <div className="flex justify-between items-start mb-3">
               <div>
                 <h2 className="text-base font-bold m-0 text-slate-800">{tournament.name}</h2>
@@ -74,6 +81,81 @@ export default function HostHome() {
               ))}
             </div>
           </div>
+          <h3 className="text-sm font-bold text-slate-700 mb-3">Venue Activity</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#fef3c7" }}>
+                  <i className="ti ti-clock text-base" style={{ color: "#92400e" }} />
+                </div>
+                <span className="text-sm font-bold text-slate-800">Pending Approvals</span>
+              </div>
+              <p className="text-2xl font-black text-slate-800">{pending}</p>
+              <p className="text-xs text-slate-400 mt-1">Registration requests awaiting review</p>
+            </div>
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#ecfdf5" }}>
+                  <i className="ti ti-circle-check text-base" style={{ color: "#065f46" }} />
+                </div>
+                <span className="text-sm font-bold text-slate-800">Approved Entries</span>
+              </div>
+              <p className="text-2xl font-black text-slate-800">{approved}</p>
+              <p className="text-xs text-slate-400 mt-1">Registrations confirmed for races</p>
+            </div>
+          </div>
+        </>
+      )}
+
+      {tab === "schedule" && (
+        <>
+          <h2 className="text-lg font-bold text-slate-800 mb-4">Race Schedule at {user?.venue}</h2>
+          <div className="flex flex-col gap-3">
+            {venueRaces.filter(r => r.status !== "Cancelled").map(race => (
+              <div key={race.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-bold text-slate-800">{race.name}</span>
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: BRAND_LIGHT, color: BRAND_TEXT }}>{race.grade}</span>
+                    </div>
+                    <p className="text-xs text-slate-400 flex items-center gap-3">
+                      <span><i className="ti ti-calendar mr-1" />{fmtDate(race.date)}</span>
+                      <span><i className="ti ti-ruler-measure mr-1" />{race.distance}m</span>
+                    </p>
+                  </div>
+                  <StatusPill status={race.status} />
+                </div>
+                <div className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#fff7ed", border: "1px solid #fed7aa" }}>
+                      <i className="ti ti-clock text-sm" style={{ color: "#c2410c" }} />
+                      <span className="text-sm font-bold text-slate-800">{race.time}</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                      <i className="ti ti-weather-sunny text-sm" style={{ color: "#166534" }} />
+                      <span className="text-sm font-semibold text-slate-700">{race.condition}</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: BRAND_LIGHT, border: "1px solid " + BRAND_BORDER }}>
+                      <i className="ti ti-trophy text-sm" style={{ color: BRAND_TEXT }} />
+                      <span className="text-sm font-semibold" style={{ color: BRAND_TEXT }}>${race.prizePool.toLocaleString()}</span>
+                    </div>
+                    <div className="ml-auto flex items-center gap-2 text-xs text-slate-400">
+                      <i className="ti ti-users mr-1" />{race.registrations.length} entries
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {venueRaces.length === 0 && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: BRAND_LIGHT, border: "1px solid " + BRAND_BORDER }}>
+                  <i className="ti ti-calendar-time text-2xl" style={{ color: BRAND_TEXT }} />
+                </div>
+                <p className="text-slate-500 text-sm">No races scheduled at your venue yet.</p>
+              </div>
+            )}
+          </div>
         </>
       )}
 
@@ -87,19 +169,19 @@ export default function HostHome() {
               </div>
               <div className="text-sm text-slate-500 flex gap-4 flex-wrap mb-3">
                 <span><i className="ti ti-calendar mr-1" />{fmtDate(race.date)} {race.time}</span>
-                <span><i className="ti ti-ruler-measure mr-1" />{race.distance}m · {race.grade}</span>
+                <span><i className="ti ti-ruler-measure mr-1" />{race.distance}m &middot; {race.grade}</span>
                 <span><i className="ti ti-users mr-1" />{race.registrations.length} entries</span>
                 <span><i className="ti ti-trophy mr-1" />${race.prizePool.toLocaleString()}</span>
               </div>
               <div className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
                 <i className="ti ti-clock text-sm text-blue-600" />
-                <span className="text-xs font-medium text-blue-700">{race.time} — {race.condition}</span>
+                <span className="text-xs font-medium text-blue-700">{race.time} \u2014 {race.condition}</span>
               </div>
             </div>
           ))}
           {venueRaces.length === 0 && (
             <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: BRAND_LIGHT, border: `1px solid ${BRAND_BORDER}` }}>
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: BRAND_LIGHT, border: "1px solid " + BRAND_BORDER }}>
                 <i className="ti ti-flag text-2xl" style={{ color: BRAND_TEXT }} />
               </div>
               <p className="text-slate-500 text-sm">No races scheduled at your venue yet.</p>
