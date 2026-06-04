@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { useApp } from "../../AppContext.jsx";
+import { useApp } from "../AppContext.jsx";
 import AppShell from "../components/layout/AppShell.jsx";
 import TournamentModule from "../components/modules/TournamentModule.jsx";
 import RefereeModule from "../components/modules/RefereeModule.jsx";
 import RegistrationModule from "../components/modules/RegistrationModule.jsx";
+import StatusPill from "../components/common/StatusPill.jsx";
+import { BRAND, BRAND_BORDER, BRAND_LIGHT, BRAND_TEXT } from "../constants.js";
+import { fmtDate } from "../format.js";
 
 const NAV = [
   { id: "overview", label: "Overview", icon: "layout-dashboard" },
+  { id: "schedule", label: "Schedule", icon: "calendar-time" },
   { id: "tournament", label: "Tournament", icon: "tournament" },
   { id: "registration", label: "Registrations", icon: "clipboard-check" },
   { id: "referee", label: "Referee", icon: "shield-check" },
@@ -71,6 +75,51 @@ export default function AdminDashboard() {
       )}
       {page === "tournament" && (
         <TournamentModule tournament={tournament} setTournament={setTournament} races={races} setRaces={setRaces} />
+      )}
+      {page === "schedule" && (
+        <>
+          <h2 className="text-lg font-bold text-slate-800 mb-4">Race Schedule</h2>
+          <div className="flex flex-col gap-3 mb-6">
+            {races.filter(r => r.status !== "Cancelled").map(race => (
+              <div key={race.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-bold text-slate-800">{race.name}</span>
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: BRAND_LIGHT, color: BRAND_TEXT }}>{race.grade}</span>
+                    </div>
+                    <p className="text-xs text-slate-400 flex items-center gap-3">
+                      <span><i className="ti ti-map-pin mr-1" />{race.venue}</span>
+                      <span><i className="ti ti-ruler-measure mr-1" />{race.distance}m</span>
+                    </p>
+                  </div>
+                  <StatusPill status={race.status} />
+                </div>
+                <div className="p-4 flex items-center gap-4">
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#fff7ed", border: "1px solid #fed7aa" }}>
+                    <i className="ti ti-calendar text-sm" style={{ color: "#c2410c" }} />
+                    <span className="text-sm font-bold text-slate-800">{fmtDate(race.date)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#fef3c7", border: "1px solid #fde68a" }}>
+                    <i className="ti ti-clock text-sm" style={{ color: "#92400e" }} />
+                    <span className="text-sm font-bold text-slate-800">{race.time}</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                    <i className="ti ti-weather-sunny text-sm" style={{ color: "#166534" }} />
+                    <span className="text-sm font-semibold text-slate-700">{race.condition}</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: BRAND_LIGHT, border: "1px solid " + BRAND_BORDER }}>
+                    <i className="ti ti-trophy text-sm" style={{ color: BRAND_TEXT }} />
+                    <span className="text-sm font-semibold" style={{ color: BRAND_TEXT }}>${race.prizePool.toLocaleString()}</span>
+                  </div>
+                  <div className="ml-auto flex items-center gap-2 text-xs text-slate-400">
+                    <i className="ti ti-users mr-1" />{race.registrations.length} entries
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
       {page === "registration" && (
         <RegistrationModule races={races} setRaces={setRaces} />
