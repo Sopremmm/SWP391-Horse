@@ -1,36 +1,50 @@
 package com.swp391.horseracing.service;
 
 import com.swp391.horseracing.entity.Notification;
+import com.swp391.horseracing.entity.User;
 import com.swp391.horseracing.repository.NotificationRepository;
+import com.swp391.horseracing.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
 public class NotificationService {
-
     @Autowired
     private NotificationRepository notificationRepository;
 
-    // Hàm tạo nhanh thông báo hệ thống dùng chung cho toàn bộ dự án
-    public void sendSystemNotification(Integer receiverId, String title, String message) {
-        Notification notification = new Notification();
-        notification.setReceiverId(receiverId);
-        notification.setTitle(title);
-        notification.setMessage(message);
+    @Autowired
+    private UserRepository userRepository;
+
+    public void sendNotification(Long userId, String title, String message, String type, Long refId, String refType) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Error: User not found!"));
+
+        Notification notification = Notification.builder()
+                .user(user)
+                .title(title)
+                .message(message)
+                .type(type)
+                .refId(refId)
+                .refType(refType)
+                .isRead(false)
+                .build();
+
         notificationRepository.save(notification);
     }
 
-    // Xem danh sách thông báo của User
-    public List<Notification> getNotificationsForUser(Integer userId) {
-        return notificationRepository.findByReceiverIdOrderByCreatedAtDesc(userId);
+    public List<Notification> getMyNotifications(Long userId) {
+        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
-    // Đánh dấu đã đọc thông báo công việc
-    public void markAsRead(Integer notificationId) {
-        Notification noti = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông báo ID: " + notificationId));
-        noti.setIsRead(true);
-        notificationRepository.save(noti);
+    public void markAsRead(Long id, Long userId) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Error: Notification not found!"));
+        if (notification.getUser() == null || notification.getUser().getId() == null || !notification.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Error: Notification does not belong to current user!");
+        }
+        notification.setIsRead(true);
+        notificationRepository.save(notification);
     }
 }
