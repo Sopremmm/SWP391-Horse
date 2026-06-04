@@ -4,6 +4,8 @@ import LandingPage from './tms/pages/LandingPage.jsx';
 import HostHome from './tms/pages/HostHome.jsx';
 import OwnerDashboard from './tms/pages/OwnerDashboard.jsx';
 import JockeyDashboard from './tms/pages/JockeyDashboard.jsx';
+import RefereeDashboard from './tms/pages/RefereeDashboard.jsx';
+import SpectatorDashboard from './tms/pages/SpectatorDashboard.jsx';
 import ProfilePage from './tms/pages/ProfilePage.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import AdminLayout from './admin/Layout.jsx';
@@ -13,9 +15,11 @@ import RacesPage from './pages/RacesPage.jsx';
 import JockeysPage from './pages/JockeysPage.jsx';
 import RefereePage from './pages/RefereePage.jsx';
 import RegistrationsPage from './pages/RegistrationsPage.jsx';
+import RaceResultPage from './pages/RaceResultPage.jsx';
+import PredictionsPage from './pages/PredictionsPage.jsx';
+import UsersPage from './pages/UsersPage.jsx';
 
 function RequireAuth({ children }) {
-  // All routes are accessible for demo purposes
   return children;
 }
 
@@ -33,15 +37,20 @@ function AppRoutes() {
         <Route path="jockeys" element={<JockeysPage />} />
         <Route path="referees" element={<RefereePage />} />
         <Route path="registrations" element={<RegistrationsPage />} />
+        <Route path="users" element={<UsersPage />} />
+        <Route path="results" element={<RaceResultPage />} />
+        <Route path="predictions" element={<PredictionsPage />} />
       </Route>
 
       {/* ── TMS role pages (AppShell layout) ── */}
       <Route path="/host" element={<RequireAuth><HostHome /></RequireAuth>} />
       <Route path="/owner" element={<RequireAuth><OwnerDashboard /></RequireAuth>} />
       <Route path="/jockey" element={<RequireAuth><JockeyDashboard /></RequireAuth>} />
+      <Route path="/referee" element={<RequireAuth><RefereeDashboard /></RequireAuth>} />
+      <Route path="/spectator" element={<RequireAuth><SpectatorDashboard /></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
 
-      {/* ── TMS Dashboard (old /app route from Horse owner) ── */}
+      {/* ── Legacy TMS Dashboard ── */}
       <Route path="/app" element={<Dashboard />} />
 
       {/* ── Catch-all ── */}

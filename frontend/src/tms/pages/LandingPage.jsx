@@ -372,6 +372,14 @@ export default function LandingPage() {
       login("U006");
       setSignInOpen(false);
       navigate("/owner");
+    } else if (signInId === "U008" && signInPw === "referee123") {
+      login("U008");
+      setSignInOpen(false);
+      navigate("/referee");
+    } else if (signInId === "U009" && signInPw === "spectator123") {
+      login("U009");
+      setSignInOpen(false);
+      navigate("/spectator");
     } else {
       setSignInError("Invalid ID or password.");
     }

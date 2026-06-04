@@ -3,12 +3,15 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { EMERALD } from '../utils/constants';
 
 const navItems = [
-  { path: '/admin',             label: 'Dashboard',       icon: 'dashboard' },
-  { path: '/admin/tournament', label: 'Tournament',    icon: 'trophy' },
-  { path: '/admin/races',       label: 'Races',          icon: 'run' },
-  { path: '/admin/jockeys',     label: 'Jockey Invite',  icon: 'user' },
-  { path: '/admin/referees',     label: 'Referee',        icon: 'shield-check' },
-  { path: '/admin/registrations',label: 'Registrations',   icon: 'clipboard-check' },
+  { path: '/admin',              label: 'Dashboard',       icon: 'dashboard' },
+  { path: '/admin/tournament',  label: 'Tournament',     icon: 'trophy' },
+  { path: '/admin/races',        label: 'Races',         icon: 'run' },
+  { path: '/admin/jockeys',      label: 'Jockey Invite', icon: 'user' },
+  { path: '/admin/referees',      label: 'Referee',       icon: 'shield-check' },
+  { path: '/admin/registrations', label: 'Registrations',  icon: 'clipboard-check' },
+  { path: '/admin/users',         label: 'Users',          icon: 'users' },
+  { path: '/admin/results',       label: 'Race Results',   icon: 'certificate' },
+  { path: '/admin/predictions',   label: 'Predictions',    icon: 'chart-line' },
 ];
 
 export default function Sidebar({ collapsed, onToggle }) {
