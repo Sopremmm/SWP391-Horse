@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { uid } from "../../../constants.js";
-import { BRAND_HOVER, BRAND_TEXT } from "../../../constants.js";
-import { GRADES, CONDITIONS, RACE_STATUSES, TOURNAMENT_STATUSES } from "../../../constants.js";
-import { fmtDate, fmtMillions } from "../../../format.js";
-import { REFEREES_POOL } from "../../../referees.js";
+import { uid } from "../../constants.js";
+import { BRAND_HOVER, BRAND_TEXT } from "../../constants.js";
+import { GRADES, CONDITIONS, RACE_STATUSES, TOURNAMENT_STATUSES } from "../../constants.js";
+import { fmtDate, fmtMillions } from "../../format.js";
+import { REFEREES_POOL } from "../../referees.js";
 import SectionTitle from "../common/SectionTitle.jsx";
 import Card from "../common/Card.jsx";
 import Field from "../common/Field.jsx";

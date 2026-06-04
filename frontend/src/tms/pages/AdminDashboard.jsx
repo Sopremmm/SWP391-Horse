@@ -12,8 +12,9 @@ const NAV = [
   { id: "overview", label: "Overview", icon: "layout-dashboard" },
   { id: "schedule", label: "Schedule", icon: "calendar-time" },
   { id: "tournament", label: "Tournament", icon: "tournament" },
-  { id: "registration", label: "Registrations", icon: "clipboard-check" },
+  { id: "registration", label: "Registrations", icon: "clipboard-check", pendingCount },
   { id: "referee", label: "Referee", icon: "shield-check" },
+  { id: "results", label: "Results", icon: "trophy" },
 ];
 
 export default function AdminDashboard() {
@@ -126,6 +127,76 @@ export default function AdminDashboard() {
       )}
       {page === "referee" && (
         <RefereeModule races={races} setRaces={setRaces} />
+      )}
+      {page === "results" && (
+        <>
+          <h2 className="text-lg font-bold text-slate-800 mb-4">Race Results</h2>
+          <div className="flex flex-col gap-4">
+            {races.filter(r => r.status === "Finished").length === 0 && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "#fff8e7", border: "1px solid #d4a820" }}>
+                  <i className="ti ti-trophy text-2xl" style={{ color: "#b8860b" }} />
+                </div>
+                <p className="text-slate-500 text-sm">No race results published yet. Mark races as Finished to publish results.</p>
+              </div>
+            )}
+            {races.filter(r => r.status === "Finished").map(race => {
+              const rankedRegs = race.registrations.filter(r => r.result).sort((a, b) => a.result - b.result);
+              const winner = rankedRegs.find(r => r.result === 1);
+              return (
+                <div key={race.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                  <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-slate-800">{race.name}</h3>
+                      <p className="text-xs text-slate-400">{race.venue} · {fmtDate(race.date)} · {race.distance}m · {race.grade}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-base font-black" style={{ color: BRAND_TEXT }}>${race.prizePool.toLocaleString()}</p>
+                      <StatusPill status="Finished" />
+                    </div>
+                  </div>
+                  {winner && (
+                    <div className="p-4 bg-yellow-50 border-b border-yellow-100 flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-sm bg-white border border-yellow-200">🏆</div>
+                      <div>
+                        <p className="text-xs font-bold text-yellow-700 uppercase tracking-wide">Winner</p>
+                        <p className="text-lg font-black text-slate-800">{winner.horseName}</p>
+                        <p className="text-sm text-slate-500">{winner.jockeyName} · {winner.ownerName}</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Full Results</p>
+                    {rankedRegs.length === 0 ? (
+                      <p className="text-sm text-slate-400">Results not yet submitted by referee.</p>
+                    ) : (
+                      <div className="flex flex-col gap-1.5">
+                        {rankedRegs.map((reg, i) => {
+                          const medalClass = { 1: "bg-yellow-400 text-yellow-900", 2: "bg-slate-300 text-slate-700", 3: "bg-orange-300 text-orange-900" }[reg.result] || "bg-slate-100 text-slate-500";
+                          return (
+                            <div key={reg.id} className="flex items-center gap-3 p-2.5 rounded-xl border" style={{ borderColor: "#f1f5f9" }}>
+                              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${medalClass}`}>
+                                {reg.result}
+                              </div>
+                              <div className="flex-1">
+                                <span className="text-sm font-semibold text-slate-800">{reg.horseName}</span>
+                              </div>
+                              <span className="text-xs text-slate-400">{reg.jockeyName}</span>
+                              <span className="text-xs text-slate-400">{reg.ownerName}</span>
+                              {reg.status === "Approved" && (
+                                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "#ecfdf5", color: "#166534" }}>Approved</span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
     </AppShell>
   );

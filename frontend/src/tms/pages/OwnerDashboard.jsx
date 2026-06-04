@@ -33,7 +33,7 @@ function StatCard({ label, value, icon, color, bg, border }) {
 }
 
 export default function OwnerDashboard() {
-  const { user, tournament, races } = useApp();
+  const { user, tournament, races, setRaces } = useApp();
   const [tab, setTab] = useState("overview");
   const [horses, setHorses] = useState(INITIAL_HORSES);
   const [invitations, setInvitations] = useState([]);
@@ -41,8 +41,10 @@ export default function OwnerDashboard() {
   const [addHorseOpen, setAddHorseOpen] = useState(false);
   const [editHorse, setEditHorse] = useState(null);
   const [inviteOpen, setInviteOpen] = useState(null);
+  const [registerOpen, setRegisterOpen] = useState(null);
   const [horseForm, setHorseForm] = useState({ name: "", breed: "Thoroughbred", age: "", weight: "", color: "" });
   const [inviteForm, setInviteForm] = useState({ jockeyId: "", message: "" });
+  const [regForm, setRegForm] = useState({ horseId: "", raceId: "", jockeyId: "", trainerName: "" });
 
   const showToast = (msg) => {
     setToast(msg);
@@ -89,6 +91,34 @@ export default function OwnerDashboard() {
     setInviteOpen(null);
     setInviteForm({ jockeyId: "", message: "" });
     showToast("Invitation sent to " + jockey.name + ".");
+  };
+
+  const registerHorseForRace = (e) => {
+    e.preventDefault();
+    if (!regForm.horseId || !regForm.raceId || !regForm.jockeyId || !regForm.trainerName.trim()) return;
+    const horse = horses.find(h => h.id === regForm.horseId);
+    const race = races.find(r => r.id === regForm.raceId);
+    const jockey = JOCKEYS_POOL.find(j => j.id === regForm.jockeyId);
+    if (!horse || !race || !jockey) return;
+    const newReg = {
+      id: Date.now(),
+      submittedAt: new Date().toISOString(),
+      ownerName: user?.org,
+      horseName: horse.name,
+      horseAge: horse.age,
+      horseColor: horse.color,
+      jockeyName: jockey.name,
+      licenseNo: jockey.license,
+      trainerName: regForm.trainerName,
+      raceName: race.name,
+      grade: race.grade,
+      status: "Pending",
+      note: "",
+    };
+    setRaces(prev => prev.map(r => r.id === regForm.raceId ? { ...r, registrations: [...r.registrations, newReg] } : r));
+    setRegForm({ horseId: "", raceId: "", jockeyId: "", trainerName: "" });
+    setRegisterOpen(null);
+    showToast(horse.name + " registered for " + race.name + ".");
   };
 
   const nav = [
@@ -160,12 +190,18 @@ export default function OwnerDashboard() {
 
       {tab === "horses" && (
         <>
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-4 gap-3">
             <h2 className="text-lg font-bold text-slate-800 m-0">My Horses ({myHorses.length})</h2>
-            <button onClick={() => setAddHorseOpen(true)}
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: BRAND }}>
-              <i className="ti ti-plus mr-1.5" />Add Horse
-            </button>
+            <div className="flex gap-2">
+              <button onClick={() => setRegisterOpen(true)}
+                className="px-4 py-2 rounded-xl text-sm font-semibold" style={{ background: "#eff6ff", color: "#1d4ed8", border: "1px solid #93c5fd" }}>
+                <i className="ti ti-flag mr-1.5" />Register
+              </button>
+              <button onClick={() => setAddHorseOpen(true)}
+                className="px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: BRAND }}>
+                <i className="ti ti-plus mr-1.5" />Add Horse
+              </button>
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {myHorses.map(h => (
@@ -442,7 +478,7 @@ export default function OwnerDashboard() {
               className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }}>
               <option value="">— Choose a jockey —</option>
               {JOCKEYS_POOL.map(j => (
-                <option key={j.id} value={j.id}>{j.name} &middot; {j.license} &middot; {j.nationality}</option>
+                <option key={j.id} value={j.id}>{j.name} · {j.license} · {j.nationality}</option>
               ))}
             </select>
           </div>
@@ -458,6 +494,59 @@ export default function OwnerDashboard() {
             <i className="ti ti-send mr-1.5" />Send Invitation
           </button>
         </div>
+      </SlidePanel>
+
+      <SlidePanel open={!!registerOpen} onClose={() => { setRegisterOpen(null); setRegForm({ horseId: "", raceId: "", jockeyId: "", trainerName: "" }); }}
+        title="Register Horse for Race">
+        <form onSubmit={registerHorseForRace} className="flex flex-col gap-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700">
+            <i className="ti ti-flag mr-1.5" />
+            Submit a registration request for a race. It will be reviewed by the host.
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Select Horse *</label>
+            <select required value={regForm.horseId}
+              onChange={e => setRegForm(f => ({ ...f, horseId: e.target.value }))}
+              className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }}>
+              <option value="">— Choose a horse —</option>
+              {myHorses.map(h => (
+                <option key={h.id} value={h.id}>{h.name} · {h.breed} · {h.color} · {h.age}yo</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Select Race *</label>
+            <select required value={regForm.raceId}
+              onChange={e => setRegForm(f => ({ ...f, raceId: e.target.value }))}
+              className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }}>
+              <option value="">— Choose a race —</option>
+              {races.filter(r => r.status !== "Cancelled").map(r => (
+                <option key={r.id} value={r.id}>{r.name} · {r.venue} · {r.date} · {r.grade}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Assign Jockey *</label>
+            <select required value={regForm.jockeyId}
+              onChange={e => setRegForm(f => ({ ...f, jockeyId: e.target.value }))}
+              className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }}>
+              <option value="">— Choose a jockey —</option>
+              {JOCKEYS_POOL.map(j => (
+                <option key={j.id} value={j.id}>{j.name} · {j.license} · {j.nationality}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Trainer Name *</label>
+            <input required value={regForm.trainerName}
+              onChange={e => setRegForm(f => ({ ...f, trainerName: e.target.value }))}
+              placeholder="e.g. Williams"
+              className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }} />
+          </div>
+          <button type="submit" className="py-2.5 rounded-xl font-semibold text-white mt-2" style={{ background: BRAND }}>
+            <i className="ti ti-flag mr-1.5" />Submit Registration
+          </button>
+        </form>
       </SlidePanel>
     </AppShell>
   );

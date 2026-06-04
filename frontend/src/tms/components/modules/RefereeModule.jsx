@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { BRAND, BRAND_BORDER, BRAND_HOVER, BRAND_LIGHT, BRAND_TEXT } from "../../../constants.js";
-import { fmtDate, initials } from "../../../format.js";
-import { REFEREES_POOL } from "../../../referees.js";
+import { BRAND, BRAND_BORDER, BRAND_HOVER, BRAND_LIGHT, BRAND_TEXT } from "../../constants.js";
+import { fmtDate, initials } from "../../format.js";
+import { REFEREES_POOL } from "../../referees.js";
 import SectionTitle from "../common/SectionTitle.jsx";
 import Button from "../common/Button.jsx";
 import Modal from "../common/Modal.jsx";

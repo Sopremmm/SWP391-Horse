@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { BRAND, BRAND_BORDER, BRAND_LIGHT, BRAND_TEXT } from "../../../constants.js";
-import { fmtDate, fmtDateTime } from "../../../format.js";
+import { BRAND, BRAND_BORDER, BRAND_LIGHT, BRAND_TEXT } from "../../constants.js";
+import { fmtDate, fmtDateTime } from "../../format.js";
 import SectionTitle from "../common/SectionTitle.jsx";
 import Card from "../common/Card.jsx";
 import Field from "../common/Field.jsx";

@@ -139,12 +139,12 @@ export default function AppShell({
                       {unread}
                     </span>
                   )}
-                  {n.id === "registration" && pendingCount > 0 && (
+                  {n.pendingCount != null && n.pendingCount > 0 && (
                     <span
                       className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
                       style={{ background: "#ef4444", border: `2px solid ${SURFACE}` }}
                     >
-                      {pendingCount}
+                      {n.pendingCount}
                     </span>
                   )}
                 </button>
