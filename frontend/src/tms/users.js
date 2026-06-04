@@ -1,0 +1,80 @@
+export const USERS = [
+  {
+    id: "U001",
+    role: "admin",
+    name: "Alex Morgan",
+    email: "admin@grandprix2025.com",
+    phone: "+1 555 0100",
+    org: "International Racing Federation",
+    bio: "Tournament administrator overseeing all races and registrations.",
+  },
+  {
+    id: "U002",
+    role: "host",
+    name: "Sarah Whitfield",
+    email: "host@churchilldowns.com",
+    phone: "+1 555 0200",
+    org: "Churchill Downs",
+    venue: "Churchill Downs",
+    bio: "Venue host coordinating on-site race operations.",
+  },
+  {
+    id: "U003",
+    role: "jockey",
+    name: "Miguel Torres",
+    email: "miguel.torres@racing.com",
+    phone: "+1 555 0301",
+    licenseNo: "JLN-4821",
+    bio: "Professional jockey — 8 years experience.",
+  },
+  {
+    id: "U004",
+    role: "jockey",
+    name: "Carlos Ruiz",
+    email: "carlos.ruiz@racing.com",
+    phone: "+1 555 0302",
+    licenseNo: "JLN-7156",
+    bio: "G1 specialist with multiple championship wins.",
+  },
+  {
+    id: "U005",
+    role: "jockey",
+    name: "Emma Sinclair",
+    email: "emma.sinclair@racing.com",
+    phone: "+1 555 0303",
+    licenseNo: "JLN-3390",
+    bio: "Rising star in international flat racing.",
+  },
+  {
+    id: "U006",
+    role: "owner",
+    name: "Robert Blackwell",
+    email: "robert@sunrisestables.com",
+    phone: "+1 555 0401",
+    org: "Sunrise Stables",
+    bio: "Owner of Sunrise Stables, competing in the Grand Prix Championship.",
+  },
+  {
+    id: "U007",
+    role: "owner",
+    name: "Diana Chen",
+    email: "diana@blueriverfarm.com",
+    phone: "+1 555 0402",
+    org: "Blue River Farm",
+    bio: "Proud owner of Blue River Farm racing team.",
+  },
+];
+
+export const ROLE_LABELS = {
+  admin:  "Administrator",
+  host:   "Venue Host",
+  jockey: "Jockey",
+  owner:  "Horse Owner",
+};
+
+export const ROLE_HOME = {
+  admin:  "Admin Panel",
+  host:   "Host Dashboard",
+  jockey: "My Races",
+  owner:  "My Stables",
+};
