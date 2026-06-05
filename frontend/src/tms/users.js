@@ -63,18 +63,38 @@ export const USERS = [
     org: "Blue River Farm",
     bio: "Proud owner of Blue River Farm racing team.",
   },
+  {
+    id: "U008",
+    role: "referee",
+    name: "James O'Brien",
+    email: "james.ref@racing.com",
+    phone: "+1 555 0501",
+    bio: "Certified referee with 12 years of experience in international flat racing.",
+  },
+  {
+    id: "U009",
+    role: "spectator",
+    name: "Lisa Spectator",
+    email: "lisa@email.com",
+    phone: "+1 555 0601",
+    bio: "Racing enthusiast and regular spectator at Grand Prix events.",
+  },
 ];
 
 export const ROLE_LABELS = {
-  admin:  "Administrator",
-  host:   "Venue Host",
-  jockey: "Jockey",
-  owner:  "Horse Owner",
+  admin:     "Administrator",
+  host:      "Venue Host",
+  jockey:    "Jockey",
+  owner:     "Horse Owner",
+  referee:   "Referee",
+  spectator:  "Spectator",
 };
 
 export const ROLE_HOME = {
-  admin:  "Admin Panel",
-  host:   "Host Dashboard",
-  jockey: "My Races",
-  owner:  "My Stables",
+  admin:     "Admin Panel",
+  host:      "Host Dashboard",
+  jockey:    "My Races",
+  owner:     "My Stables",
+  referee:   "Referee Dashboard",
+  spectator:  "Spectator Dashboard",
 };
