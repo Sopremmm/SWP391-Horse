@@ -1,0 +1,30 @@
+.horse-owner-home {
+  min-height: 100vh;
+  background: var(--figma-stone, #f7f6f1);
+  color: var(--figma-green, #002a15);
+}
+
+.horse-owner-home__main {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  /* Header ở dạng fixed (80px giống Homepage) */
+  padding: 104px 40px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+
+@media (max-width: 980px) {
+  .horse-owner-home__main {
+    padding: 104px 24px 40px;
+  }
+}
+
+@media (max-width: 720px) {
+  .horse-owner-home__main {
+    /* Homepage header giảm còn 72px */
+    padding: 92px 20px 32px;
+  }
+}
+

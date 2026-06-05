@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import bgImage from "./horse_race_cartoon.png"; 
+import { useNavigate } from "react-router-dom"; // hook điều hướng
+import bgImage from "./horse_race_cartoon.png";
 
 function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate(); // khởi tạo hook
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -11,7 +13,7 @@ function LoginPage() {
   };
 
   const handleRegisterRedirect = () => {
-    console.log("Redirect to Register page");
+    navigate("/register"); 
   };
 
   const inputStyle = {
