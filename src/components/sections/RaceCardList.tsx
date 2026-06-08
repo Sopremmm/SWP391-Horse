@@ -18,7 +18,7 @@ export const RaceCardList: React.FC = () => {
           <h2 className="race-card-list-title">Subsequent Entries</h2>
           <p className="race-card-list-copy">Your registered schedule for the next 30 days.</p>
         </div>
-        <Link to="/tournament" className="race-card-list-button" aria-label="View full calendar">
+        <Link to="/HorseOwner/Tournaments" className="race-card-list-button" aria-label="View full calendar">
           <span>View Full Calendar</span>
           <ArrowIcon />
         </Link>

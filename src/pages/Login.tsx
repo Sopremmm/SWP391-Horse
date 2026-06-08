@@ -92,7 +92,7 @@ const Login: React.FC = () => {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
-                    placeholder="••••••••"
+                    placeholder="********"
                     autoComplete="current-password"
                     required
                   />
@@ -124,16 +124,16 @@ const Login: React.FC = () => {
 
           <nav className="login-page__meta" aria-label="Login support links">
             <a href="#privacy">Privacy Policy</a>
-            <span>•</span>
+            <span>-</span>
             <a href="#terms">Terms of Service</a>
-            <span>•</span>
+            <span>-</span>
             <a href="#concierge">Contact Concierge</a>
           </nav>
         </section>
       </main>
 
       <footer className="login-page__footer">
-        <p>© 2024 Heritage Racing. Precision in Pedigree.</p>
+        <p>(c) 2024 Heritage Racing. Precision in Pedigree.</p>
       </footer>
     </div>
   );

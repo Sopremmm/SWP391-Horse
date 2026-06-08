@@ -23,7 +23,7 @@ export const HorseOwnerHome: React.FC = () => {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <a
-            href="/myhorses"
+            href="/HorseOwner/MyHorses"
 
             style={{
               fontFamily: "Manrope, sans-serif",
@@ -49,4 +49,3 @@ export const HorseOwnerHome: React.FC = () => {
 };
 
 export default HorseOwnerHome;
-

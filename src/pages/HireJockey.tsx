@@ -1,92 +1,11 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Footer } from '../components/common/Footer.tsx';
 import { Header } from '../components/common/Header.tsx';
+import { getPageData, Jockey } from '../data/pageData.ts';
 import './HireJockey.css';
 
-type Jockey = {
-  name: string;
-  level: string;
-  gender: string;
-  ageText: string;
-  experienceText: string;
-  priceText: string;
-  hired: boolean;
-  imageSrc?: string;
-  variant: 'hire' | 'hired';
-};
-
-
-
 const PLACEHOLDER_IMG = 'https://placehold.co/361x451';
-
-const JOCKEYS: Jockey[] = [
-  {
-    name: 'Liam Hamilton',
-    hired: false,
-    level: 'LEVEL 3',
-    gender: 'Male',
-    ageText: '28 years old',
-    experienceText: '10 years experience',
-    priceText: 'Hiring Price: $5,000 / race',
-    variant: 'hire',
-    imageSrc: PLACEHOLDER_IMG,
-  },
-  {
-    name: 'Sophie Whitmore',
-    hired: true,
-    level: 'MASTER',
-    gender: 'Female',
-    ageText: '26 years old',
-    experienceText: '8 years experience',
-    priceText: 'Hiring Price: $8,500 / race',
-    variant: 'hired',
-    imageSrc: PLACEHOLDER_IMG,
-  },
-  {
-    name: 'Arthur Thorne',
-    hired: false,
-    level: 'ELITE',
-    gender: 'Male',
-    ageText: '42 years old',
-    experienceText: '22 years experience',
-    priceText: 'Hiring Price: $12,000 / race',
-    variant: 'hire',
-    imageSrc: PLACEHOLDER_IMG,
-  },
-  {
-    name: 'Elena Vance',
-    hired: false,
-    level: 'RISING STAR',
-    gender: 'Female',
-    ageText: '24 years old',
-    experienceText: '4 years experience',
-    priceText: 'Hiring Price: $3,500 / race',
-    variant: 'hire',
-    imageSrc: PLACEHOLDER_IMG,
-  },
-  {
-    name: 'Marcus Reed',
-    hired: true,
-    level: 'VETERAN',
-    gender: 'Male',
-    ageText: '35 years old',
-    experienceText: '15 years experience',
-    priceText: 'Hiring Price: $7,200 / race',
-    variant: 'hired',
-    imageSrc: PLACEHOLDER_IMG,
-  },
-  {
-    name: 'Diana Prince',
-    hired: false,
-    level: 'ELITE',
-    gender: 'Female',
-    ageText: '31 years old',
-    experienceText: '12 years experience',
-    priceText: 'Hiring Price: $11,500 / race',
-    variant: 'hire',
-    imageSrc: PLACEHOLDER_IMG,
-  },
-];
 
 
 function AgeIcon() {
@@ -134,10 +53,18 @@ function PriceIcon() {
 }
 
 function JockeyCard({ jockey }: { jockey: Jockey }) {
+  const profileHref = `/horseowner/hirejockey/${encodeURIComponent(jockey.name)}`;
+
   return (
     <div className="hire-jockey__card" aria-label={`Jockey ${jockey.name}`}>
       <div className="hire-jockey__card-media">
-        <img className="hire-jockey__card-img" src={jockey.imageSrc || PLACEHOLDER_IMG} alt={jockey.name} />
+        <Link
+          to={profileHref}
+          aria-label={`View profile of ${jockey.name}`}
+          style={{ display: 'block', width: '100%', textDecoration: 'none' }}
+        >
+          <img className="hire-jockey__card-img" src={jockey.imageSrc || PLACEHOLDER_IMG} alt={jockey.name} />
+        </Link>
       </div>
 
       <div className="hire-jockey__card-body">
@@ -172,35 +99,33 @@ function JockeyCard({ jockey }: { jockey: Jockey }) {
           </div>
         </div>
 
-        {jockey.variant === 'hired' ? (
-          <>
-            <div className="hire-jockey__profile-link">VIEW PROFILE</div>
+        <>
+          <Link to={profileHref} className="hire-jockey__profile-link" aria-label={`View profile of ${jockey.name}`}>
+            VIEW PROFILE
+          </Link>
+          {jockey.variant === 'hired' ? (
             <div className="hire-jockey__already-hired">ALREADY HIRED</div>
-          </>
-        ) : (
-          <>
-            <div className="hire-jockey__profile-link">VIEW PROFILE</div>
+          ) : (
             <div className="hire-jockey__hire-btn">Hire Jockey</div>
-          </>
-        )}
+          )}
+        </>
       </div>
     </div>
   );
 }
 
+
 export default function HireJockey() {
+  const { hireJockey } = getPageData();
+
   return (
     <div className="hire-jockey">
       <Header />
 
       <div className="hire-jockey__wrap">
         <div className="hire-jockey__header">
-          <div className="hire-jockey__hero-title">Professional Jockeys</div>
-          <div className="hire-jockey__hero-sub">
-            Secure the industry&apos;s most disciplined riders for your stable. Our curated selection of elite racing
-            <br />
-            partners brings precision, heritage, and a track record of excellence to every finish line.
-          </div>
+          <div className="hire-jockey__hero-title">{hireJockey.title}</div>
+          <div className="hire-jockey__hero-sub">{hireJockey.subtitle}</div>
         </div>
 
         <div className="hire-jockey__controls" aria-label="Search and filter actions">
@@ -240,7 +165,7 @@ export default function HireJockey() {
         </div>
 
         <div className="hire-jockey__grid" aria-label="Jockey grid">
-          {JOCKEYS.map((j) => (
+          {hireJockey.jockeys.map((j) => (
             <JockeyCard key={j.name} jockey={j} />
           ))}
         </div>

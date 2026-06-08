@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-
 import { Link, useNavigate } from 'react-router-dom';
 import HorseRaceCartoon from '../assets/images/RunningHorse.jpg';
 import './Register.css';
@@ -23,13 +22,11 @@ const Register: React.FC = () => {
     return password === confirmPassword;
   }, [password, confirmPassword]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-    if (!agreeToTerms) return;
-    if (!isPasswordMatched) return;
+    if (!agreeToTerms || !isPasswordMatched) return;
 
-    // TODO: call register API here
     navigate('/HorseOwnerHome');
   };
 
@@ -49,7 +46,7 @@ const Register: React.FC = () => {
           <div className="register-page__card">
             <div className="register-page__intro">
               <h2>Create Your Pedigree</h2>
-              <p>Join the world&apos;s most prestigious equine management circle.</p>
+              <p>Join the world's most prestigious equine management circle.</p>
             </div>
 
             <form className="register-page__form" onSubmit={handleSubmit}>
@@ -59,7 +56,7 @@ const Register: React.FC = () => {
                   <input
                     type="text"
                     value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    onChange={(event) => setFullName(event.target.value)}
                     placeholder="e.g. Alistair Sterling"
                     autoComplete="name"
                     required
@@ -71,7 +68,7 @@ const Register: React.FC = () => {
                   <input
                     type="text"
                     value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    onChange={(event) => setUsername(event.target.value)}
                     placeholder="e.g. alistair_racing"
                     autoComplete="username"
                     required
@@ -84,7 +81,7 @@ const Register: React.FC = () => {
                     type="number"
                     inputMode="numeric"
                     value={age}
-                    onChange={(e) => setAge(e.target.value)}
+                    onChange={(event) => setAge(event.target.value)}
                     placeholder="21"
                     min={0}
                     required
@@ -96,7 +93,7 @@ const Register: React.FC = () => {
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(event) => setEmail(event.target.value)}
                     placeholder="e.g. alistair@sterling-estates.com"
                     autoComplete="email"
                     required
@@ -106,7 +103,7 @@ const Register: React.FC = () => {
 
               <div className="role-section">
                 <div className="role-section__label">SELECT ROLE</div>
-                <div className="role-section__toggle">
+                <div className="role-section__toggle" role="group" aria-label="Select role">
                   <button
                     type="button"
                     className={`role-pill ${role === 'horse owner' ? 'is-active' : ''}`}
@@ -133,28 +130,28 @@ const Register: React.FC = () => {
 
               <div className="password-grid">
                 <label className="field">
-                  <span>CONFIRM PASSWORD</span>
+                  <span>PASSWORD</span>
                   <input
-                    type={'password'}
-                    value={confirmPassword}
-
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="********"
                     autoComplete="new-password"
                     required
-                    aria-invalid={!isPasswordMatched}
                   />
                 </label>
 
                 <label className="field">
-                  <span>PASSWORD</span>
+                  <span>CONFIRM PASSWORD</span>
                   <input
-                    type={'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    placeholder="********"
                     autoComplete="new-password"
                     required
+                    aria-invalid={!isPasswordMatched}
+                    aria-describedby={!isPasswordMatched ? 'password-error' : undefined}
                   />
                 </label>
               </div>
@@ -163,23 +160,18 @@ const Register: React.FC = () => {
                 <input
                   type="checkbox"
                   checked={agreeToTerms}
-                  onChange={(e) => setAgreeToTerms(e.target.checked)}
+                  onChange={(event) => setAgreeToTerms(event.target.checked)}
                 />
                 <span>
-                  I agree to the{' '}
-                  <a href="#terms" onClick={(e) => e.preventDefault()}>
-                    Terms of Service
-                  </a>{' '}
-                  and{' '}
-                  <a href="#privacy" onClick={(e) => e.preventDefault()}>
-                    Privacy Policy
-                  </a>
-                  .
+                  I agree to the <a href="#terms">Terms of Service</a> and{' '}
+                  <a href="#privacy">Privacy Policy</a>.
                 </span>
               </label>
 
               {!isPasswordMatched ? (
-                <div className="form-error">Passwords do not match.</div>
+                <div className="form-error" id="password-error">
+                  Passwords do not match.
+                </div>
               ) : null}
 
               <button className="cta" type="submit" disabled={!agreeToTerms || !isPasswordMatched}>
@@ -193,18 +185,15 @@ const Register: React.FC = () => {
                 </Link>
               </div>
             </form>
-
-            <div className="register-page__divider" aria-hidden="true" />
           </div>
         </section>
       </main>
 
       <footer className="register-page__footer">
-        <div>© 2024 Heritage Racing. Precision in Pedigree.</div>
+        <div>(c) 2024 Heritage Racing. Precision in Pedigree.</div>
       </footer>
     </div>
   );
 };
 
 export default Register;
-

@@ -1,64 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import HomeBanner from '../assets/images/HomeBanner.png';
-import HorseRaceCartoon from '../Main UI/horse_race_cartoon.png';
+import { getPageData } from '../data/pageData.ts';
 import './Homepage.css';
-
-type TournamentState = 'registering' | 'in-progress' | 'opening-soon';
-
-interface TournamentCard {
-  title: string;
-  location: string;
-  state: TournamentState;
-  stateText: string;
-  dateLabel: string;
-  dateValue: string;
-  prizePool: string;
-  action: string;
-  image: string;
-}
-
-const stats = [
-  { value: '150+', label: 'Total tournaments hosted' },
-  { value: '42', label: 'Elite class jockeys' },
-  { value: '12', label: 'Global racing hubs' },
-];
-
-const tournaments: TournamentCard[] = [
-  {
-    title: 'Autumn Classic Series',
-    location: 'Ascot Park • Group 1 Stakes',
-    state: 'registering',
-    stateText: 'Registering',
-    dateLabel: 'Starts',
-    dateValue: 'Nov 12, 2024',
-    prizePool: '$750,000',
-    action: 'View Stakes',
-    image: HorseRaceCartoon,
-  },
-  {
-    title: 'The Emerald Invitational',
-    location: 'Dubai Meadows • Invitations Only',
-    state: 'in-progress',
-    stateText: 'In Progress',
-    dateLabel: 'Phase',
-    dateValue: 'Quarter Finals',
-    prizePool: '$1,200,000',
-    action: 'Live Leaderboard',
-    image: HomeBanner,
-  },
-  {
-    title: 'Heritage Breeders Cup',
-    location: 'Kentucky Downs • Grade II',
-    state: 'opening-soon',
-    stateText: 'Opening Soon',
-    dateLabel: 'Opens',
-    dateValue: 'Dec 05, 2024',
-    prizePool: '$500,000',
-    action: 'Notify Me',
-    image: HorseRaceCartoon,
-  },
-];
 
 const SearchIcon = () => (
   <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
@@ -71,14 +14,14 @@ const SearchIcon = () => (
 
 const ArrowIcon = () => (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-    <path
-      d="M9.13 6.75H0v-1.5h9.13l-4.2-4.2L6 0l6 6-6 6-1.07-1.05 4.2-4.2Z"
-      fill="currentColor"
-    />
+    <path d="M9.13 6.75H0v-1.5h9.13l-4.2-4.2L6 0l6 6-6 6-1.07-1.05 4.2-4.2Z" fill="currentColor" />
   </svg>
 );
 
 const Homepage: React.FC = () => {
+  const { homepage } = getPageData();
+  const { hero, stats, tournaments } = homepage;
+
   return (
     <div className="homepage">
       <header className="homepage__header">
@@ -116,37 +59,34 @@ const Homepage: React.FC = () => {
 
       <main id="top">
         <section className="homepage__hero" aria-labelledby="homepage-title">
-          <img className="homepage__hero-image" src={HomeBanner} alt="Royal heritage horse racing event" />
+          <img className="homepage__hero-image" src={hero.image} alt={hero.title} />
           <div className="homepage__hero-gradient" />
           <div className="homepage__shell homepage__hero-inner">
             <div className="homepage__hero-copy">
               <p className="homepage__eyebrow">
                 <span />
-                Premier Event
+                {hero.eyebrow}
               </p>
-              <h1 id="homepage-title">The Royal Heritage Cup</h1>
-              <p className="homepage__hero-text">
-                Experience the pinnacle of equestrian precision. A legacy defined by speed, lineage,
-                and the pursuit of ultimate glory on the hallowed grounds of the Royal Oaks.
-              </p>
+              <h1 id="homepage-title">{hero.title}</h1>
+              <p className="homepage__hero-text">{hero.description}</p>
 
               <div className="homepage__facts">
                 <div>
                   <span>Prize Pool</span>
-                  <strong>$2,500,000 USD</strong>
+                  <strong>{hero.prizePool}</strong>
                 </div>
                 <div>
                   <span>Race Date</span>
-                  <strong>October 24, 2024</strong>
+                  <strong>{hero.raceDate}</strong>
                 </div>
               </div>
 
               <div className="homepage__hero-actions">
                 <button className="homepage__button homepage__button--primary" type="button">
-                  View Details
+                  {hero.primaryAction}
                 </button>
                 <button className="homepage__button homepage__button--secondary" type="button">
-                  Full Calendar
+                  {hero.secondaryAction}
                 </button>
               </div>
             </div>
@@ -216,7 +156,7 @@ const Homepage: React.FC = () => {
         <div className="homepage__shell homepage__footer-inner">
           <div>
             <h2>Heritage Racing</h2>
-            <p>© 2024 Heritage Racing. All rights reserved.</p>
+            <p>(c) 2024 Heritage Racing. All rights reserved.</p>
           </div>
           <nav className="homepage__footer-nav" aria-label="Footer navigation">
             <a href="#privacy">Privacy Policy</a>

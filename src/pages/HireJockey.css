@@ -14,7 +14,7 @@
 .hire-jockey__wrap{
   max-width:1280px;
   margin:0 auto;
-  padding:64px 64px 96px;
+  padding:96px 64px 96px;
 }
 
 .hire-jockey__header{
@@ -111,7 +111,7 @@
   .hire-jockey__grid{grid-template-columns:repeat(2, minmax(0,1fr));}
 }
 @media (max-width: 800px){
-  .hire-jockey__wrap{padding:40px 16px 72px;}
+  .hire-jockey__wrap{padding:72px 16px 72px;}
   .hire-jockey__grid{grid-template-columns:1fr;}
   .hire-jockey__controls{flex-direction:column;align-items:stretch;}
 }
