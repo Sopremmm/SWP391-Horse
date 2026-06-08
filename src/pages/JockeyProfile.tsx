@@ -1,16 +1,10 @@
 import React from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { Header } from '../components/common/Header.tsx';
 import { getPageData, Jockey } from '../data/pageData.ts';
 import './JockeyProfile.css';
 
 const PLACEHOLDER_IMG = 'https://placehold.co/480x600';
-
-const navLinks = [
-  { label: 'Home', href: '/HorseOwnerHome' },
-  { label: 'Tournament', href: '/HorseOwner/Tournaments' },
-  { label: 'My Horses', href: '/HorseOwner/MyHorses' },
-  { label: 'Hire Jockey', href: '/HorseOwner/HireJockeys', active: true },
-];
 
 function StarIcon() {
   return (
@@ -24,22 +18,6 @@ function TrendIcon() {
   return (
     <svg viewBox="0 0 17 10" aria-hidden="true">
       <path d="M1.17 10 0 8.83l6.17-6.2L9.5 5.96l4.33-4.3h-2.16V0h5v5H15V2.83L9.5 8.33 6.17 5l-5 5Z" />
-    </svg>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg viewBox="0 0 32 36" aria-hidden="true">
-      <path d="M8 25v-2h2v-7c0-1.38.42-2.61 1.25-3.69.83-1.07 1.92-1.78 3.25-2.11v-.7c0-.42.15-.77.44-1.06.29-.29.65-.44 1.06-.44s.77.15 1.06.44c.29.29.44.64.44 1.06v.7c1.33.33 2.42 1.04 3.25 2.11.83 1.08 1.25 2.31 1.25 3.69v7h2v2H8Zm8 3c-.55 0-1.02-.2-1.41-.59A1.93 1.93 0 0 1 14 26h4c0 .55-.2 1.02-.59 1.41-.39.39-.86.59-1.41.59Zm-4-5h8v-7c0-1.1-.39-2.04-1.17-2.83A3.86 3.86 0 0 0 16 12c-1.1 0-2.04.39-2.83 1.17A3.86 3.86 0 0 0 12 16v7Z" />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg viewBox="0 0 36 36" aria-hidden="true">
-      <path d="M11.85 23.1a10 10 0 0 1 12.3 0A8.04 8.04 0 0 0 26 18c0-2.22-.78-4.1-2.34-5.66A7.72 7.72 0 0 0 18 10c-2.22 0-4.1.78-5.66 2.34A7.72 7.72 0 0 0 10 18c0 .98.16 1.91.49 2.78.32.86.78 1.64 1.36 2.32ZM18 19c-.98 0-1.81-.34-2.49-1.01a3.39 3.39 0 0 1-1.01-2.49c0-.98.34-1.81 1.01-2.49A3.39 3.39 0 0 1 18 12c.98 0 1.81.34 2.49 1.01.67.68 1.01 1.51 1.01 2.49s-.34 1.81-1.01 2.49A3.39 3.39 0 0 1 18 19Zm0 9c-1.38 0-2.68-.26-3.9-.79a10.06 10.06 0 0 1-5.31-5.31A9.74 9.74 0 0 1 8 18c0-1.38.26-2.68.79-3.9a10.06 10.06 0 0 1 5.31-5.31A9.74 9.74 0 0 1 18 8c1.38 0 2.68.26 3.9.79a10.06 10.06 0 0 1 5.31 5.31c.53 1.22.79 2.52.79 3.9s-.26 2.68-.79 3.9a10.06 10.06 0 0 1-5.31 5.31A9.74 9.74 0 0 1 18 28Z" />
     </svg>
   );
 }
@@ -109,32 +87,7 @@ export default function JockeyProfile() {
 
   return (
     <div className="jockey-profile">
-      <header className="jockey-profile__header">
-        <div className="jockey-profile__nav">
-          <Link className="jockey-profile__brand" to="/HorseOwnerHome">
-            Heritage Racing
-          </Link>
-          <nav className="jockey-profile__links" aria-label="Horse owner navigation">
-            {navLinks.map((link) => (
-              <Link
-                className={`jockey-profile__link ${link.active ? 'jockey-profile__link--active' : ''}`}
-                to={link.href}
-                key={link.label}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="jockey-profile__actions" aria-label="Account actions">
-            <button type="button" aria-label="Notifications">
-              <BellIcon />
-            </button>
-            <button type="button" aria-label="Profile">
-              <UserIcon />
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main className="jockey-profile__main">
         <section className="jockey-profile__hero" aria-labelledby="jockey-profile-title">

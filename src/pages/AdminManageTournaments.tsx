@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import AdminLayout from '../components/admin/AdminLayout.tsx';
 import './AdminManageTournaments.css';
 
 type TournamentStatus = 'REGISTRATION OPEN' | 'DRAFT' | 'COMPLETED' | 'CLOSING SOON';
@@ -103,71 +104,14 @@ function Icon({ name }: { name: 'bell' | 'user' | 'grid' | 'users' | 'trophy' | 
   );
 }
 
-function AdminProfileDropdown() {
-  const navigate = useNavigate();
-  const [open, setOpen] = React.useState(false);
-
-  const handleBlur = (event: React.FocusEvent<HTMLDivElement>) => {
-    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpen(false);
-  };
-
-  return (
-    <div className="admin-manage-tournaments__profile" onBlur={handleBlur}>
-      <button type="button" aria-label="Admin profile" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((current) => !current)}>
-        <Icon name="user" />
-      </button>
-      {open ? (
-        <div className="admin-manage-tournaments__profile-menu" role="menu">
-          <Link to="/Admin/Profile" role="menuitem" onClick={() => setOpen(false)}>Profile</Link>
-          <Link to="/Admin/ManageUsers" role="menuitem" onClick={() => setOpen(false)}>Manage User</Link>
-          <Link to="/Admin/ManageTournaments" role="menuitem" onClick={() => setOpen(false)}>Manage Tournament</Link>
-          <Link to="/Admin/ConfirmRegistration" role="menuitem" onClick={() => setOpen(false)}>Confirm Registration</Link>
-          <button type="button" role="menuitem" onClick={() => navigate('/')}>Log Out</button>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 function statusClass(status: TournamentStatus) {
   return status.toLowerCase().replaceAll(' ', '-');
 }
 
 export default function AdminManageTournaments() {
   return (
-    <div className="admin-manage-tournaments">
-      <aside className="admin-manage-tournaments__sidebar" aria-label="Admin navigation">
-        <div>
-          <div className="admin-manage-tournaments__brand">Heritage Racing</div>
-          <div className="admin-manage-tournaments__kicker">Administration Portal</div>
-          <nav className="admin-manage-tournaments__side-nav">
-            <Link to="/admin"><Icon name="grid" />Dashboard</Link>
-            <Link to="/Admin/ManageUsers"><Icon name="users" />Users</Link>
-            <Link className="is-active" to="/Admin/ManageTournaments"><Icon name="trophy" />Tournaments</Link>
-            <Link to="/Admin/ConfirmRegistration"><Icon name="check" />Registrations</Link>
-            <Link to="/Admin/Profile"><Icon name="settings" />Settings</Link>
-          </nav>
-        </div>
-        <div className="admin-manage-tournaments__side-bottom">
-          <button type="button"><Icon name="plus" />Create Tournament</button>
-          <Link to="#help"><Icon name="help" />Help Center</Link>
-          <Link to="/"><Icon name="logout" />Logout</Link>
-        </div>
-      </aside>
-
-      <main className="admin-manage-tournaments__main">
-        <header className="admin-manage-tournaments__topbar">
-          <nav aria-label="Admin sections">
-            <Link to="/admin">Overview</Link>
-            <Link className="is-active" to="/Admin/ManageTournaments">Reports</Link>
-            <Link to="#analytics">Analytics</Link>
-          </nav>
-          <div className="admin-manage-tournaments__top-actions">
-            <button type="button" aria-label="Notifications"><Icon name="bell" /></button>
-            <AdminProfileDropdown />
-          </div>
-        </header>
-
+    <AdminLayout active="tournaments" title="Manage Tournaments" topNavActive="reports">
+      <div className="admin-manage-tournaments">
         <section className="admin-manage-tournaments__canvas">
           <div className="admin-manage-tournaments__heading">
             <div>
@@ -177,7 +121,7 @@ export default function AdminManageTournaments() {
                 and manage prize disbursements for prestigious grade stakes.
               </p>
             </div>
-            <button type="button" className="admin-manage-tournaments__add"><Icon name="plus" />Add Tournament</button>
+            <Link to="/Admin/ManageTournaments/Create" className="admin-manage-tournaments__add"><Icon name="plus" />Add Tournament</Link>
           </div>
 
           <div className="admin-manage-tournaments__filters" aria-label="Filter and sort tournaments">
@@ -230,7 +174,7 @@ export default function AdminManageTournaments() {
                 </div>
                 <div className="admin-manage-tournaments__prize">{tournament.prizePool}</div>
                 <div className="admin-manage-tournaments__actions-cell">
-                  <button type="button">Manage</button>
+                  <Link to={`/Admin/ManageTournaments/${encodeURIComponent(tournament.name)}`}>Manage</Link>
                 </div>
               </article>
             ))}
@@ -246,7 +190,7 @@ export default function AdminManageTournaments() {
             ))}
           </section>
         </section>
-      </main>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

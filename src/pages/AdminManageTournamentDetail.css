@@ -2,17 +2,25 @@
 
 .amtDetailPage {
   position: relative;
-  width: 1280px;
-  min-height: 1614px;
+  width: 100%;
+  min-height: 100vh;
   background: #f5f5f4;
-  padding-left: 64px;
-  overflow: hidden;
+  padding-left: 0;
+  overflow-x: auto;
   font-family: Manrope, Inter, Arial, sans-serif;
   color: #404942;
+  box-sizing: border-box;
+}
+
+.amtDetailPage *,
+.amtDetailPage *::before,
+.amtDetailPage *::after {
+  box-sizing: border-box;
 }
 
 .amtDetailWrap {
   position: relative;
+  min-height: 100vh;
 }
 
 .amtDetailTopbar {
@@ -35,6 +43,7 @@
 .amtDetailBreadcrumbItem {
   color: #717971;
   font-size: 14px;
+  text-decoration: none;
 }
 
 .amtDetailTournamentTitle {
@@ -59,17 +68,28 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: #004225;
+  cursor: pointer;
+  font-weight: 800;
 }
 
 .amtDetailCircleBtn {
   width: 40px;
   height: 40px;
-  background: #e5e7eb;
+  border: 1px solid #d6d3d1;
+  background: #fff;
   border-radius: 12px;
-  outline: 1px solid #d6d3d1;
+  color: #404942;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.amtDetailIconBtn .amtDetailNavSvg,
+.amtDetailCircleBtn .amtDetailNavSvg {
+  width: 20px;
+  height: 20px;
 }
 
 .amtDetailMain {
@@ -162,21 +182,22 @@
 }
 
 .amtDetailEditBtn {
+  border: 0;
   background: rgba(251, 191, 36, 0.6);
-  padding: 8px 32px;
+  min-height: 44px;
+  padding: 12px 28px;
   border-radius: 2px;
   box-shadow: 0px 1px 2px rgba(0,0,0,0.05);
   display: inline-flex;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
   color: #785a1a;
-}
-
-.amtDetailEditText {
-  font-weight: 700;
-  color: #785a1a;
+  cursor: pointer;
+  font-family: inherit;
   font-size: 14px;
+  font-weight: 800;
   line-height: 20px;
+  text-decoration: none;
 }
 
 .amtDetailGrid {
@@ -288,6 +309,7 @@
 }
 
 .amtDetailCreateHeat {
+  border: 0;
   background: #004225;
   border-radius: 2px;
   padding: 12px 32px;
@@ -295,6 +317,8 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  cursor: pointer;
+  font-family: inherit;
   font-weight: 700;
 }
 
@@ -321,6 +345,14 @@
   gap: 16px;
 }
 
+.amtHeatHeaderBar {
+  width: 8px;
+  height: 32px;
+  border-radius: 999px;
+  background: #002a15;
+  flex: 0 0 auto;
+}
+
 .amtHeatTitle {
   font-size: 20px;
   font-weight: 600;
@@ -339,6 +371,13 @@
   width: fit-content;
 }
 
+.amtHeatReferee {
+  margin-top: 6px;
+  color: #717971;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .amtHeatHeaderActions {
   display: flex;
   gap: 16px;
@@ -348,6 +387,8 @@
   border: 0;
   background: transparent;
   color: #004225;
+  cursor: pointer;
+  font-family: inherit;
   font-size: 12px;
   font-weight: 800;
   padding: 0;
@@ -437,11 +478,78 @@
   color: #1c1917;
 }
 
+.amtAssignRankSelect {
+  min-width: 136px;
+  min-height: 40px;
+  padding: 9px 12px;
+  border-radius: 2px;
+  border: 1px solid rgba(214, 211, 209, 0.8);
+  background: #fafaf9;
+  color: #1c1917;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.amtAssignHorseSelect {
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 12px;
+  border-radius: 2px;
+  border: 1px solid rgba(214, 211, 209, 0.8);
+  background: #fafaf9;
+  color: #1c1917;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.amtAssignRankSelect:disabled {
+  color: rgba(64, 73, 66, 0.45);
+  cursor: not-allowed;
+}
+
 .amtHeatFooter {
   padding: 16px 24px;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 14px;
   border-top: 1px solid rgba(214, 211, 209, 0.3);
+}
+
+.amtHeatRefereeControl {
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.amtHeatRefereeControl span {
+  color: #717971;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.amtHeatRefereeControl select {
+  min-height: 36px;
+  padding: 8px 34px 8px 12px;
+  border: 1px solid rgba(214, 211, 209, 0.8);
+  border-radius: 2px;
+  background: #fafaf9;
+  color: #004225;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.amtSavedState {
+  color: #166534;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .amtSaveRankBtn {
@@ -450,96 +558,251 @@
   color: #b45309;
   border-radius: 2px;
   padding: 10px 24px;
+  cursor: pointer;
+  font-family: inherit;
   font-weight: 800;
 }
 
 .amtDetailAside {
-  position: absolute;
+  position: fixed;
   left: 0;
   top: 0;
   width: 256px;
-  height: 1614px;
-  background: #f5f5f4;
-  border-right: 1px solid rgba(214, 211, 209, 0.8);
+  height: 100vh;
+  background: #fafaf9;
+  border-right: 1px solid #d6d3d1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 16px;
+  padding: 32px 16px;
+  z-index: 20;
 }
 
 .amtDetailAsideTop {
-  padding-top: 24px;
+  padding: 0 8px;
 }
 
 .amtDetailBrand {
-  font-family: 'EB Garamond', Georgia, serif;
-  font-size: 48px;
-  font-weight: 600;
+  font-family: 'EB Garamond', 'Liberation Serif', Georgia, serif;
+  font-size: 32px;
+  font-weight: 400;
   color: #004225;
-  line-height: 56px;
+  line-height: 40px;
 }
 
 .amtDetailKicker {
-  margin-top: 6px;
-  color: rgba(71, 85, 105, 0.7);
+  margin-top: 4px;
+  color: #404942;
   font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  line-height: 16px;
   text-transform: uppercase;
 }
 
 .amtDetailNav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 16px;
+  margin-top: 40px;
+  display: grid;
+  gap: 4px;
 }
 
 .amtDetailNavItem {
-  height: 44px;
-  padding: 0 16px;
+  min-height: 44px;
+  padding: 12px 16px;
   border-radius: 2px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  color: #717971;
+  gap: 14px;
+  color: #404942;
+  font-size: 14px;
   font-weight: 400;
+  line-height: 20px;
+  text-decoration: none;
 }
 
-.amtDetailNavIcon {
-  width: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.amtDetailNavSvg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  flex: 0 0 auto;
 }
 
 .amtDetailNavItemActive {
   background: #e5e7eb;
-  border-right: 4px solid #004225;
-  color: #004225;
-  font-weight: 600;
+  border-right: 4px solid #002a15;
+  color: #002a15;
+  font-weight: 700;
 }
 
 .amtDetailAsideBottom {
-  border-top: 1px solid rgba(214, 211, 209, 0.7);
-  padding-top: 24px;
+  border-top: 1px solid #d6d3d1;
+  padding-top: 32px;
   display: grid;
-  gap: 12px;
+  gap: 4px;
 }
 
 .amtDetailAsideLink {
-  height: 44px;
+  border: 0;
+  background: transparent;
+  min-height: 44px;
+  border-radius: 2px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  color: #717971;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  gap: 14px;
+  color: #404942;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 20px;
+  text-decoration: none;
+  text-transform: none;
 }
 
 .amtDetailAsideLinkDanger {
   color: #b91c1c;
+}
+
+.amtDetailCreateTournament {
+  min-height: 44px;
+  border: 0;
+  border-radius: 2px;
+  background: #004225;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.amtNoHeatState {
+  margin-top: 32px;
+  min-height: 120px;
+  border: 1px dashed rgba(113, 121, 113, 0.45);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #717971;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.amtModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.45);
+  display: grid;
+  place-items: center;
+}
+
+.amtCreateHeatModal {
+  width: min(100%, 480px);
+  border: 1px solid rgba(214, 211, 209, 0.9);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+  padding: 24px;
+}
+
+.amtModalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.amtModalTitle {
+  color: #004225;
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 34px;
+}
+
+.amtModalDesc {
+  margin-top: 6px;
+  color: #717971;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.amtModalClose {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: #f5f5f4;
+  color: #404942;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.amtModalField {
+  margin-top: 22px;
+  display: grid;
+  gap: 8px;
+}
+
+.amtModalField span {
+  color: #404942;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.amtModalField select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(214, 211, 209, 0.9);
+  border-radius: 4px;
+  background: #fafaf9;
+  color: #1c1917;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 0 12px;
+}
+
+.amtModalActions {
+  margin-top: 28px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.amtModalPrimary,
+.amtModalSecondary {
+  min-height: 42px;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  padding: 0 20px;
+}
+
+.amtModalPrimary {
+  background: #004225;
+  color: #fff;
+}
+
+.amtModalSecondary {
+  background: #f5f5f4;
+  color: #404942;
 }
 

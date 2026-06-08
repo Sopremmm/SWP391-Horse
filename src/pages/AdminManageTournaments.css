@@ -268,6 +268,7 @@
   gap: 8px;
   font-family: inherit;
   font-size: 14px;
+  text-decoration: none;
 }
 
 .admin-manage-tournaments__filters {
@@ -453,6 +454,7 @@
   justify-content: flex-end;
 }
 
+.admin-manage-tournaments__actions-cell a,
 .admin-manage-tournaments__actions-cell button {
   min-height: 36px;
   padding: 8px 20px;
@@ -461,10 +463,13 @@
   background: transparent;
   color: var(--amt-green);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
   font-family: inherit;
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.08em;
+  text-decoration: none;
   text-transform: uppercase;
 }
 
