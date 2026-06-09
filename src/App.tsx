@@ -15,6 +15,11 @@ import AdminManageTournaments from "./pages/AdminManageTournaments.tsx";
 import AdminCreateTournament from "./pages/AdminCreateTournament.tsx";
 import AdminManageTournamentDetail from "./pages/AdminManageTournamentDetail.tsx";
 import JockeyProfile from "./pages/JockeyProfile.tsx";
+import HorseOwnerTournamentDetail from "./pages/HorseOwnerTournamentDetail.tsx";
+import HorseOwnerHorseDetail from "./pages/HorseOwnerHorseDetail.tsx";
+import JockeyHome from "./pages/JockeyHome.tsx";
+import JockeyProfilePage from "./pages/JockeyProfilePage.tsx";
+import JockeyInvitationPage from "./pages/JockeyInvitationPage.tsx";
 
 
 
@@ -38,11 +43,18 @@ export default function App() {
         <Route path="/HorseOwner/Profile" element={<HorseOwnerHome />} />
         <Route path="/HorseOwner/MyHorses" element={<MyHorses />} />
         <Route path="/HorseOwner/MyHorses/Add" element={<AddHorse />} />
+        <Route path="/HorseOwner/MyHorses/edit/:name" element={<AddHorse mode="edit" />} />
+        <Route path="/HorseOwner/MyHorses/:name" element={<HorseOwnerHorseDetail />} />
         <Route path="/HorseOwner/Tournaments" element={<Tournament />} />
+        <Route path="/HorseOwner/Tournaments/:name" element={<HorseOwnerTournamentDetail />} />
         <Route path="/HorseOwner/MyTournament" element={<Tournament />} />
         <Route path="/HorseOwner/HireJockeys" element={<HireJockey />} />
         <Route path="/horseowner/hirejockey" element={<JockeyProfile />} />
         <Route path="/horseowner/hirejockey/:name" element={<JockeyProfile />} />
+        <Route path="/Jockey/Home" element={<JockeyHome />} />
+        <Route path="/Jockey/Profile" element={<JockeyProfilePage />} />
+        <Route path="/Jockey/Invitation" element={<JockeyInvitationPage />} />
+        <Route path="/Jockey/Invitations" element={<JockeyInvitationPage />} />
         <Route path="/admin" element={<AdminHome />} />
         <Route path="/Admin/Profile" element={<AdminHome />} />
         <Route path="/Admin/ManageUsers" element={<AdminHome />} />

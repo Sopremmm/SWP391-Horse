@@ -32,7 +32,7 @@ export const Header: React.FC = () => {
               to={link.href}
               className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
               style={{ textDecoration: 'none' }}
-              end
+              end={link.href === homeHref}
             >
               {link.label}
             </NavLink>

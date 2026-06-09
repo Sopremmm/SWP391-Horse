@@ -163,9 +163,9 @@ export const MyHorses: React.FC = () => {
                   <h2 className="horse-card__name">{horse.name}</h2>
                   <p className="horse-card__meta">{horse.meta}</p>
                 </div>
-                <button className="horse-card__manage" type="button">
+                <Link className="horse-card__manage" to={`/HorseOwner/MyHorses/${encodeURIComponent(horse.name)}`}>
                   Manage Horse
-                </button>
+                </Link>
               </div>
             </article>
           ))}

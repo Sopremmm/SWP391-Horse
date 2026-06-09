@@ -12,6 +12,7 @@ const Register: React.FC = () => {
   const [username, setUsername] = useState('');
   const [age, setAge] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [role, setRole] = useState<Role>('horse owner');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -96,6 +97,18 @@ const Register: React.FC = () => {
                     onChange={(event) => setEmail(event.target.value)}
                     placeholder="e.g. alistair@sterling-estates.com"
                     autoComplete="email"
+                    required
+                  />
+                </label>
+
+                <label className="field field--full">
+                  <span>PHONE NUMBER</span>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(event) => setPhone(event.target.value)}
+                    placeholder="e.g. +84 912 345 678"
+                    autoComplete="tel"
                     required
                   />
                 </label>

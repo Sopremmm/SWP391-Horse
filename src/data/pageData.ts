@@ -1,5 +1,5 @@
 import HomeBanner from '../assets/images/HomeBanner.png';
-import HorseRaceCartoon from '../Main UI/horse_race_cartoon.png';
+import HorseRidingImage from '../assets/images/horseriding1.webp';
 import horse1 from '../assets/images/horse1.webp';
 import horse2 from '../assets/images/horse2.jpg';
 import horse3 from '../assets/images/horse3.jpg';
@@ -182,7 +182,7 @@ export const DEFAULT_PAGE_DATA: PageData = {
         dateValue: 'Nov 12, 2024',
         prizePool: '$750,000',
         action: 'View Stakes',
-        image: HorseRaceCartoon,
+        image: HorseRidingImage,
       },
       {
         title: 'The Emerald Invitational',
@@ -204,7 +204,7 @@ export const DEFAULT_PAGE_DATA: PageData = {
         dateValue: 'Dec 05, 2024',
         prizePool: '$500,000',
         action: 'Notify Me',
-        image: HorseRaceCartoon,
+        image: HorseRidingImage,
       },
     ],
   },
@@ -238,7 +238,7 @@ export const DEFAULT_PAGE_DATA: PageData = {
         badgeTone: 'stone',
         title: 'Emerald Derby',
         description: 'A test of endurance and speed across the verdant hills of the North.',
-        imageUrl: HorseRaceCartoon,
+        imageUrl: HorseRidingImage,
         prizePool: 'GBP 250,000',
         meta1Label: 'STARTS',
         meta1Value: 'Nov 12, 2024',
@@ -251,7 +251,7 @@ export const DEFAULT_PAGE_DATA: PageData = {
         badgeTone: 'amber',
         title: 'Winter Solstice Cup',
         description: 'The premier winter sprint. Short distance, high stakes, and absolute precision.',
-        imageUrl: HorseRaceCartoon,
+        imageUrl: HorseRidingImage,
         prizePool: 'GBP 500,000',
         meta1Label: 'DEADLINE',
         meta1Value: 'Oct 05, 2024',
@@ -358,7 +358,7 @@ export const DEFAULT_PAGE_DATA: PageData = {
           ],
           gallery: [
             { label: 'CHAMPIONSHIP MOMENT', title: 'Epsom Downs 2023', imageSrc: HomeBanner },
-            { label: 'PREPARATION', title: 'The Royal Stables', imageSrc: HorseRaceCartoon },
+            { label: 'PREPARATION', title: 'The Royal Stables', imageSrc: HorseRidingImage },
           ],
         },
       },

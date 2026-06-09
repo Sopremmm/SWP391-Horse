@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // hook điều hướng
-import bgImage from "./horse_race_cartoon.png";
+import bgImage from "../assets/images/horseriding1.webp";
 
 function LoginPage() {
   const [identifier, setIdentifier] = useState("");

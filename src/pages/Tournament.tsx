@@ -1,10 +1,15 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Header } from '../components/common/Header.tsx';
 import { Footer } from '../components/common/Footer.tsx';
 import { getPageData } from '../data/pageData.ts';
 import './Tournament.css';
 
 type FilterTab = 'all' | 'registration-open' | 'upcoming' | 'completed';
+
+function tournamentHref(value: string) {
+  return `/HorseOwner/Tournaments/${encodeURIComponent(value)}`;
+}
 
 export default function Tournament() {
   const { tournamentPage } = getPageData();
@@ -93,9 +98,9 @@ export default function Tournament() {
                       </div>
 
                       <div className="tournament-page__card-action">
-                        <button type="button" className="tournament-page__primary-btn">
+                        <Link to={tournamentHref(tournament.id)} className="tournament-page__primary-btn">
                           {tournament.actionText}
-                        </button>
+                        </Link>
                       </div>
                     </div>
                   </article>
@@ -133,9 +138,9 @@ export default function Tournament() {
                       </div>
 
                       <div className="tournament-page__sm-action">
-                        <button type="button" className="tournament-page__outline-btn">
+                        <Link to={tournamentHref(tournament.id)} className="tournament-page__outline-btn">
                           {tournament.actionText}
-                        </button>
+                        </Link>
                       </div>
                     </div>
                   </article>
@@ -179,14 +184,14 @@ export default function Tournament() {
                       <div className="tournament-page__td tournament-page__td--prize">{row.prizePool}</div>
 
                       <div className="tournament-page__td tournament-page__td--action">
-                        <button
-                          type="button"
+                        <Link
+                          to={tournamentHref(row.name)}
                           className={`tournament-page__action-btn ${
                             row.statusTone === 'amber' ? 'tournament-page__action-btn--amber' : ''
                           }`}
                         >
                           {row.action}
-                        </button>
+                        </Link>
                       </div>
                     </div>
                   ))}

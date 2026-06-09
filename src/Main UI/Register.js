@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import bgImage from "./horse_race_cartoon.png"; 
+import bgImage from "../assets/images/horseriding2.webp"; 
 
 function RegisterPage() {
   const [formData, setFormData] = useState({
