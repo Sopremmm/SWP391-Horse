@@ -4,6 +4,7 @@ import com.swp391.horseracing.dto.request.LoginRequest;
 import com.swp391.horseracing.dto.request.SignupRequest;
 import com.swp391.horseracing.dto.response.JwtResponse;
 import com.swp391.horseracing.entity.User;
+import com.swp391.horseracing.entity.enums.Role;
 import com.swp391.horseracing.entity.enums.UserStatus;
 import com.swp391.horseracing.repository.UserRepository;
 import com.swp391.horseracing.security.jwt.JwtUtils;
@@ -17,10 +18,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
+    private static final Set<Role> SELF_REGISTER_ROLES = Set.of(Role.HORSE_OWNER, Role.JOCKEY, Role.SPECTATOR);
+
     @Autowired
     AuthenticationManager authenticationManager;
 
@@ -34,8 +39,9 @@ public class AuthService {
     JwtUtils jwtUtils;
 
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
+        String normalizedEmail = loginRequest.getEmail() == null ? null : loginRequest.getEmail().trim().toLowerCase(Locale.ROOT);
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(normalizedEmail, loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
@@ -53,13 +59,18 @@ public class AuthService {
     }
 
     public void registerUser(SignupRequest signUpRequest) {
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+        String normalizedEmail = signUpRequest.getEmail() == null ? null : signUpRequest.getEmail().trim().toLowerCase(Locale.ROOT);
+        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             throw new RuntimeException("Error: Email is already in use!");
+        }
+
+        if (signUpRequest.getRole() == null || !SELF_REGISTER_ROLES.contains(signUpRequest.getRole())) {
+            throw new RuntimeException("Error: You cannot self-register with this role!");
         }
 
         // Create new user's account
         User user = User.builder()
-                .email(signUpRequest.getEmail())
+                .email(normalizedEmail)
                 .password(encoder.encode(signUpRequest.getPassword()))
                 .fullName(signUpRequest.getFullName())
                 .phone(signUpRequest.getPhone())

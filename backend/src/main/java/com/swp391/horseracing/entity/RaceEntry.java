@@ -42,6 +42,18 @@ public class RaceEntry {
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
 
+    @Column(name = "checked_in")
+    private Boolean checkedIn = false;
+
+    @Column(name = "checked_in_at")
+    private LocalDateTime checkedInAt;
+
+    @Column(name = "no_show")
+    private Boolean noShow = false;
+
+    @Column(name = "no_show_at")
+    private LocalDateTime noShowAt;
+
     public RaceEntry() {}
 
     public RaceEntry(Horse horse, User jockey, Tournament tournament, Race race, String status) {
@@ -89,4 +101,12 @@ public class RaceEntry {
     public void setRegisteredAt(LocalDateTime registeredAt) { this.registeredAt = registeredAt; }
     public LocalDateTime getApprovedAt() { return approvedAt; }
     public void setApprovedAt(LocalDateTime approvedAt) { this.approvedAt = approvedAt; }
+    public Boolean getCheckedIn() { return checkedIn; }
+    public void setCheckedIn(Boolean checkedIn) { this.checkedIn = checkedIn; }
+    public LocalDateTime getCheckedInAt() { return checkedInAt; }
+    public void setCheckedInAt(LocalDateTime checkedInAt) { this.checkedInAt = checkedInAt; }
+    public Boolean getNoShow() { return noShow; }
+    public void setNoShow(Boolean noShow) { this.noShow = noShow; }
+    public LocalDateTime getNoShowAt() { return noShowAt; }
+    public void setNoShowAt(LocalDateTime noShowAt) { this.noShowAt = noShowAt; }
 }

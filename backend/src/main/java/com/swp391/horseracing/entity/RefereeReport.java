@@ -35,6 +35,11 @@ public class RefereeReport {
     @Column
     private String notes;
 
+    private Boolean submitted = false;
+
+    @Column(name = "submitted_at")
+    private LocalDateTime submittedAt;
+
     private Boolean confirmed = false;
 
     @Column(name = "confirmed_at")

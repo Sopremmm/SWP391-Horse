@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swp391.horseracing.entity.Notification;
 import com.swp391.horseracing.entity.User;
+import com.swp391.horseracing.entity.enums.Role;
+import com.swp391.horseracing.entity.enums.UserStatus;
 import com.swp391.horseracing.repository.NotificationRepository;
 import com.swp391.horseracing.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -43,6 +46,9 @@ class BackendE2EIntegrationTest {
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Test
     void fullFlow_shouldWork_and_enforceOwnershipAndAuthz() throws Exception {
         String adminEmail = "admin@test.com";
@@ -52,11 +58,11 @@ class BackendE2EIntegrationTest {
         String refereeEmail = "referee@test.com";
         String password = "secret123";
 
-        signup(adminEmail, password, "Admin", "000", "ADMIN");
+        seedStaffUser(adminEmail, password, "Admin", "000", Role.ADMIN);
         signup(owner1Email, password, "Owner One", "111", "HORSE_OWNER");
         signup(owner2Email, password, "Owner Two", "222", "HORSE_OWNER");
         signup(jockeyEmail, password, "Jockey", "333", "JOCKEY");
-        signup(refereeEmail, password, "Referee", "444", "REFEREE");
+        seedStaffUser(refereeEmail, password, "Referee", "444", Role.REFEREE);
 
         AuthSession admin = signin(adminEmail, password);
         AuthSession owner1 = signin(owner1Email, password);
@@ -159,6 +165,21 @@ class BackendE2EIntegrationTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void signup_shouldRejectAdminAndRefereeRoles() throws Exception {
+        Map<String, Object> body = new HashMap<>();
+        body.put("email", "badrole@test.com");
+        body.put("password", "secret123");
+        body.put("fullName", "Bad Role");
+        body.put("phone", "000");
+        body.put("role", "ADMIN");
+
+        mockMvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isBadRequest());
+    }
+
     private void signup(String email, String password, String fullName, String phone, String role) throws Exception {
         Map<String, Object> body = new HashMap<>();
         body.put("email", email);
@@ -171,6 +192,18 @@ class BackendE2EIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isOk());
+    }
+
+    private void seedStaffUser(String email, String password, String fullName, String phone, Role role) {
+        User user = User.builder()
+                .email(email)
+                .password(passwordEncoder.encode(password))
+                .fullName(fullName)
+                .phone(phone)
+                .role(role)
+                .status(UserStatus.ACTIVE)
+                .build();
+        userRepository.save(user);
     }
 
     private AuthSession signin(String email, String password) throws Exception {
