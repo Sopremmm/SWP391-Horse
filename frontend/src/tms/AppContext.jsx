@@ -3,8 +3,12 @@ import { TOURNAMENT_SEED } from "./tournament.js";
 import { RACES_SEED } from "./races.js";
 import { USERS } from "./users.js";
 import { NOTIFICATIONS_SEED } from "./notifications.js";
+import { getOddsForHorse } from "./data.js";
 
 const AppContext = createContext(null);
+
+// Spectator bet storage (mock — persists in memory only)
+const INITIAL_BETS = [];
 
 export function AppProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -15,6 +19,7 @@ export function AppProvider({ children }) {
     () => Object.fromEntries(USERS.map((u) => [u.id, { ...u }]))
   );
   const [notifications, setNotifications] = useState(NOTIFICATIONS_SEED);
+  const [bets, setBets] = useState(INITIAL_BETS);
 
   const login = (userId) => {
     const found = profiles[userId];
@@ -58,6 +63,34 @@ export function AppProvider({ children }) {
 
   const unreadCount = (userObj) => getNotifications(userObj).filter((n) => !n.read).length;
 
+  // Spectator Bet actions
+  const placeBet = ({ raceId, horseName, jockeyName, amount }) => {
+    if (!user) return null;
+    const odds = getOddsForHorse(horseName);
+    const payout = Math.round(amount * odds * 100) / 100;
+    const bet = {
+      id: "BET" + Date.now() + Math.random().toString(36).slice(2, 6).toUpperCase(),
+      userId: user.id,
+      raceId,
+      horseName,
+      jockeyName,
+      amount: Number(amount),
+      odds,
+      payout,
+      placedAt: new Date().toISOString(),
+      status: "Pending",
+    };
+    setBets((prev) => [bet, ...prev]);
+    return bet;
+  };
+
+  const getMyBets = (userId) => {
+    if (!userId) return [];
+    return bets
+      .filter((b) => b.userId === userId)
+      .sort((a, b) => new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime());
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -80,6 +113,9 @@ export function AppProvider({ children }) {
         markAllRead,
         getNotifications,
         unreadCount,
+        bets,
+        placeBet,
+        getMyBets,
       }}
     >
       {children}

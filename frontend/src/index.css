@@ -1,18 +1,52 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Liberation+Serif:wght@400;700&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-serif: "Liberation Serif", ui-serif, Georgia, serif;
+
   --color-brand: #064e3b;
   --color-brand-hover: #043d2e;
   --color-brand-light: #ecfdf5;
+  --color-brand-subtle: #f0fdf4;
+  --color-brand-border: #a7f3d0;
+  --color-brand-ring: #d1fae5;
+  --color-brand-text: #065f46;
+
+  --color-accent-gold: #b8860b;
+  --color-accent-gold-light: #fff8e7;
+  --color-accent-gold-border: #d4a820;
+
+  --color-accent-orange: #fdba74;
+
+  --color-page-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f9fafb;
+  --color-surface-alt: #f3f4f6;
+  --color-text: #111827;
+  --color-text-muted: #6b7280;
+  --color-text-subtle: #9ca3af;
+  --color-border: #e5e7eb;
+  --color-border-input: #d1d5db;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: #f8fafc;
-  color: #111827;
+  background-color: var(--color-page-bg);
+  color: var(--color-text);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* Card shadow tokens (kept as utility classes via @apply-like inline if needed) */
+.shadow-card {
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+.shadow-card-hover {
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
 }
 
 /* Custom scrollbars */

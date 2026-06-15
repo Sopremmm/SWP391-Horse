@@ -6,6 +6,7 @@ import OwnerDashboard from './tms/pages/OwnerDashboard.jsx';
 import JockeyDashboard from './tms/pages/JockeyDashboard.jsx';
 import RefereeDashboard from './tms/pages/RefereeDashboard.jsx';
 import SpectatorDashboard from './tms/pages/SpectatorDashboard.jsx';
+import SpectatorBets from './tms/pages/SpectatorBets.jsx';
 import ProfilePage from './tms/pages/ProfilePage.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import AdminLayout from './admin/Layout.jsx';
@@ -48,6 +49,7 @@ function AppRoutes() {
       <Route path="/jockey" element={<RequireAuth><JockeyDashboard /></RequireAuth>} />
       <Route path="/referee" element={<RequireAuth><RefereeDashboard /></RequireAuth>} />
       <Route path="/spectator" element={<RequireAuth><SpectatorDashboard /></RequireAuth>} />
+      <Route path="/spectator/bets" element={<RequireAuth><SpectatorBets /></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
 
       {/* ── Legacy TMS Dashboard ── */}

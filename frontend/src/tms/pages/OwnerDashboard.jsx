@@ -130,7 +130,7 @@ export default function OwnerDashboard() {
   ];
 
   return (
-    <AppShell page={tab} setPage={setTab} nav={nav} subtitle={"Owner \u2014 " + (user?.org || "")}>
+    <AppShell page={tab} setPage={setTab} nav={nav} subtitle={"Horse Owner \u2014 " + (user?.org || "")}>
       {toast && (
         <div className="fixed top-5 right-5 z-[9999] px-4 py-3 rounded-xl text-sm font-semibold shadow-lg"
           style={{ background: "#d1fae5", color: "#166534", border: "1px solid #86efac" }}>
@@ -149,7 +149,7 @@ export default function OwnerDashboard() {
           <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-6 shadow-sm">
             <div className="flex justify-between items-start mb-3">
               <div>
-                <h2 className="text-base font-bold text-slate-800 m-0">{tournament.name}</h2>
+                <h2 className="text-base font-bold text-slate-800 m-0 font-serif">{tournament.name}</h2>
                 <p className="text-sm text-slate-500 mt-1 m-0">{tournament.organizer}</p>
               </div>
               <StatusPill status={tournament.status} />

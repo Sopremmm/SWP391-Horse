@@ -88,3 +88,28 @@ export const AVAILABLE_BREED_IMAGES = [
   { name: "Sunlit Chestnut", url: "https://images.unsplash.com/photo-1505244208761-ba873587233e?auto=format&fit=crop&q=80&w=600&h=600" },
   { name: "Classic Bay", url: "https://images.unsplash.com/photo-1598974357801-cbca100e6543?auto=format&fit=crop&q=80&w=600&h=600" },
 ];
+
+// Mocks for mock odds per horse (used by Spectator Bet feature)
+export const MOCK_ODDS = {
+  default: 3.0,
+};
+
+export const MOCK_ODDS_BY_HORSE = {
+  "Thunder Bolt": 2.5,
+  "Silver Arrow": 4.0,
+  "Dark Knight": 5.5,
+  "Desert Storm": 3.2,
+  "Golden Flash": 3.8,
+  "Iron Fist": 6.0,
+  "Midnight Thunder": 4.5,
+  "Coastal Wind": 7.0,
+  "Phantom Rider": 4.2,
+  "Blue Horizon": 5.0,
+  "Red Wind": 6.5,
+  "Summit Star": 3.5,
+  "Storm Rider": 8.0,
+};
+
+export function getOddsForHorse(horseName) {
+  return MOCK_ODDS_BY_HORSE[horseName] ?? MOCK_ODDS.default;
+}

@@ -80,7 +80,7 @@ export default function ProfilePage() {
               {user?.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
             </div>
             <div>
-              <h1 className="text-xl font-black text-slate-800 m-0">{user?.name}</h1>
+              <h1 className="text-xl font-black text-slate-800 m-0 font-serif">{user?.name}</h1>
               <span
                 className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border"
                 style={{ background: BRAND_LIGHT, color: BRAND_TEXT, borderColor: BRAND_BORDER }}

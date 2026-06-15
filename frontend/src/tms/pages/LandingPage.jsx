@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../AppContext.jsx";
+import { RACES_SEED } from "../races.js";
 import {
   BRAND,
   BRAND_BORDER,
@@ -8,318 +9,94 @@ import {
   BRAND_TEXT,
   BORDER,
   PAGE_BG,
-  SURFACE,
   TEXT,
   TEXT_MUTED,
-  TEXT_SUBTLE,
 } from "../constants.js";
-import { fmtDateTime } from "../format.js";
-import { RACES_SEED } from "../races.js";
 
-function GradeBadge({ grade }) {
-  const style = grade === "G1" ? { bg: "#fef3c7", color: "#92400e", border: "#fde68a" }
-    : grade === "G2" ? { bg: "#eff6ff", color: "#1e40af", border: "#93c5fd" }
-    : { bg: "#f3f4f6", color: TEXT_MUTED, border: BORDER };
+const HERO_IMAGE =
+  "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1920&q=80&auto=format&fit=crop";
+
+const TOURNAMENT_IMAGES = [
+  "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=900&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1534773728080-33d31da27ae5?w=900&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=900&q=80&auto=format&fit=crop",
+];
+
+function getStatus(state) {
+  if (state === "registering") return { text: "Registering", tone: "amber" };
+  if (state === "in-progress") return { text: "In Progress", tone: "green" };
+  return { text: "Opening Soon", tone: "stone" };
+}
+
+const HERO_DATA = {
+  eyebrow: "Premier Event",
+  title: "The Royal Heritage Cup",
+  description:
+    "Experience the pinnacle of equestrian precision. A legacy defined by speed, lineage, and the pursuit of ultimate glory on the hallowed grounds of the Royal Oaks.",
+  prizePool: "$2,500,000 USD",
+  raceDate: "October 24, 2024",
+  primaryAction: "View Details",
+  secondaryAction: "Full Calendar",
+};
+
+const STATS = [
+  { value: "150+", label: "Total tournaments hosted" },
+  { value: "42", label: "Elite class jockeys" },
+  { value: "12", label: "Global racing hubs" },
+];
+
+const TOURNAMENTS = [
+  {
+    title: "Autumn Classic Series",
+    location: "Ascot Park \u2014 Group 1 Stakes",
+    state: "registering",
+    stateText: "Registering",
+    dateLabel: "Starts",
+    dateValue: "Nov 12, 2024",
+    prizePool: "$750,000",
+    action: "View Stakes",
+  },
+  {
+    title: "The Emerald Invitational",
+    location: "Dubai Meadows \u2014 Invitations Only",
+    state: "in-progress",
+    stateText: "In Progress",
+    dateLabel: "Phase",
+    dateValue: "Quarter Finals",
+    prizePool: "$1,200,000",
+    action: "Follow Live",
+  },
+  {
+    title: "Crown of St. Petersburg",
+    location: "Winterthur Estate \u2014 Maiden Cup",
+    state: "opening-soon",
+    stateText: "Opening Soon",
+    dateLabel: "Opens",
+    dateValue: "Dec 02, 2024",
+    prizePool: "$480,000",
+    action: "Notify Me",
+  },
+];
+
+function SearchIcon() {
   return (
-    <span className="text-[11px] font-bold px-2 py-0.5 rounded-md border"
-      style={{ background: style.bg, color: style.color, borderColor: style.border }}>{grade}</span>
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+      <path
+        d="M13.83 15 8.58 9.75a5.43 5.43 0 0 1-3.16 1.08A5.23 5.23 0 0 1 0 5.42 5.23 5.23 0 0 1 5.42 0a5.23 5.23 0 0 1 5.41 5.42 5.43 5.43 0 0 1-1.08 3.16L15 13.83 13.83 15ZM5.42 9.17A3.62 3.62 0 0 0 9.17 5.42a3.62 3.62 0 0 0-3.75-3.75 3.62 3.62 0 0 0-3.75 3.75 3.62 3.62 0 0 0 3.75 3.75Z"
+        fill="currentColor"
+      />
+    </svg>
   );
 }
 
-function ProductCard({ race, onViewDetail }) {
-  const [hovered, setHovered] = useState(false);
-  const imgs = ["🐎", "🏇"];
-
+function ArrowIcon() {
   return (
-    <div
-      className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm group cursor-pointer transition-all duration-300"
-      style={{ boxShadow: hovered ? "0 8px 24px rgba(0,0,0,0.1)" : "0 1px 3px rgba(0,0,0,0.04)" }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onClick={onViewDetail}
-    >
-      <div className="relative aspect-[4/3] flex items-center justify-center overflow-hidden" style={{ background: "linear-gradient(135deg, #f0fdf4, #dcfce7)" }}>
-        <span className="text-6xl transition-opacity duration-300">{imgs[0]}</span>
-        {hovered && (
-          <span className="absolute inset-0 flex items-center justify-center text-6xl transition-opacity duration-300" style={{ background: "rgba(0,0,0,0.05)" }}>
-            {imgs[1]}
-          </span>
-        )}
-        <GradeBadge grade={race.grade} />
-        {race.status === "Running" && (
-          <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md text-[10px] font-bold text-white bg-red-500">LIVE</div>
-        )}
-      </div>
-      <div className="p-4">
-        <p className="text-xs text-slate-400 mb-0.5 flex items-center gap-1"><i className="ti ti-map-pin text-[13px]" />{race.venue}</p>
-        <h3 className="text-sm font-bold text-slate-800 mb-1 leading-tight line-clamp-1">{race.name}</h3>
-        <div className="flex items-center gap-1 mb-2">
-          <i className="ti ti-calendar text-[12px]" style={{ color: TEXT_MUTED }} />
-          <span className="text-xs" style={{ color: TEXT_MUTED }}>{race.date} · {race.time}</span>
-        </div>
-        <div className="flex items-end justify-between">
-          <div>
-            <span className="text-lg font-black" style={{ color: BRAND_TEXT }}>${(race.prizePool / 1000).toFixed(0)}K</span>
-            <span className="text-[11px] text-slate-400 ml-1">Prize</span>
-          </div>
-          <span className="text-xs font-medium px-2 py-0.5 rounded-md border" style={{ background: BRAND_LIGHT, color: BRAND_TEXT, borderColor: BRAND_BORDER }}>
-            {race.distance}m
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RaceDetail({ race, onClose }) {
-  const [selectedReg, setSelectedReg] = useState(null);
-  const [activeImg, setActiveImg] = useState(0);
-  const [zoom, setZoom] = useState(false);
-  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
-  const [reviewText, setReviewText] = useState("");
-  const [reviewName, setReviewName] = useState("");
-  const [reviewEmail, setReviewEmail] = useState("");
-  const [reviewSent, setReviewSent] = useState(false);
-  const [rating, setRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
-  const [activeTab, setActiveTab] = useState("desc");
-  const zoomRef = useRef(null);
-  const imgs = ["🐎", "🏇", "🏆", "🎯"];
-
-  const handleMouseMove = (e) => {
-    const rect = zoomRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    setZoomPos({ x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 });
-  };
-
-  const reviews = [
-    { name: "Alex Thompson", rating: 5, text: "Incredible race! The atmosphere was electrifying and the horses performed beautifully.", date: "2 days ago" },
-    { name: "Sarah Mitchell", rating: 4, text: "Great event overall. Would love to see more vendors next year.", date: "1 week ago" },
-  ];
-
-  const relatedRaces = RACES_SEED.filter((r) => r.id !== race.id && r.grade === race.grade).slice(0, 4);
-
-  return (
-    <div className="max-w-6xl mx-auto px-7 pb-12 pt-7">
-      <div className="flex items-center gap-2 text-xs text-slate-400 mb-6">
-        <button type="button" onClick={onClose} className="hover:text-emerald-700 cursor-pointer bg-transparent border-none font-sans transition-colors">
-          Home
-        </button>
-        <i className="ti ti-chevron-right text-[12px]" />
-        <span className="text-slate-600 font-medium">{race.name}</span>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10">
-        <div>
-          <div
-            ref={zoomRef}
-            className="relative aspect-[4/3] rounded-2xl overflow-hidden cursor-crosshair mb-4 border border-slate-200"
-            style={{ background: "linear-gradient(135deg, #f0fdf4, #dcfce7)" }}
-            onMouseEnter={() => setZoom(true)}
-            onMouseLeave={() => setZoom(false)}
-            onMouseMove={handleMouseMove}
-          >
-            <div className="absolute inset-0 flex items-center justify-center text-8xl select-none pointer-events-none">
-              {imgs[activeImg]}
-            </div>
-            {zoom && (
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  backgroundImage: `radial-gradient(circle at ${zoomPos.x}% ${zoomPos.y}%, rgba(6,78,59,0.15), transparent 60%)`,
-                }}
-              />
-            )}
-          </div>
-          <div className="flex gap-2">
-            {imgs.map((_, i) => (
-              <button key={i} type="button" onClick={() => setActiveImg(i)}
-                className="w-16 h-16 rounded-lg border-2 flex items-center justify-center text-2xl transition-all cursor-pointer bg-white"
-                style={{ borderColor: activeImg === i ? BRAND : BORDER }}>
-                {imgs[i]}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <GradeBadge grade={race.grade} />
-            <span className="text-xs font-medium px-2 py-0.5 rounded-md border" style={{ background: race.status === "Running" ? "#fef2f2" : "#eff6ff", color: race.status === "Running" ? "#991b1b" : "#1e40af", borderColor: race.status === "Running" ? "#fca5a5" : "#93c5fd" }}>
-              {race.status}
-            </span>
-          </div>
-          <h1 className="text-2xl font-black text-slate-800 mb-2">{race.name}</h1>
-          <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
-            <span className="flex items-center gap-1"><i className="ti ti-map-pin text-[14px]" />{race.venue}</span>
-            <span className="flex items-center gap-1"><i className="ti ti-calendar text-[14px]" />{race.date}</span>
-            <span className="flex items-center gap-1"><i className="ti ti-clock text-[14px]" />{race.time}</span>
-          </div>
-
-          <div className="text-3xl font-black mb-4" style={{ color: BRAND_TEXT }}>
-            ${(race.prizePool / 1000).toFixed(0)}K <span className="text-sm font-normal text-slate-400">Prize Pool</span>
-          </div>
-
-          <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-            {race.condition} track conditions · {race.distance}m distance · {race.registrations.length} registered horses competing for the championship title.
-          </p>
-
-          <div className="mb-4">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Select Horse</p>
-            <div className="flex flex-wrap gap-2">
-              {race.registrations.slice(0, 6).map((reg) => (
-                <button key={String(reg.id)} type="button" onClick={() => setSelectedReg(selectedReg?.id === reg.id ? null : reg)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold border cursor-pointer transition-all"
-                  style={selectedReg?.id === reg.id
-                    ? { background: BRAND, color: "#fff", borderColor: BRAND }
-                    : { background: "#fff", color: TEXT_MUTED, borderColor: BORDER }}>
-                  {reg.horseName}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="border border-slate-200 rounded-xl overflow-hidden">
-            {[
-              { icon: "map-pin", label: "Venue", value: race.venue },
-              { icon: "ruler", label: "Distance", value: `${race.distance}m` },
-              { icon: "cloud", label: "Track", value: race.condition },
-              { icon: "trophy", label: "Grade", value: race.grade },
-              { icon: "users", label: "Entries", value: `${race.registrations.length} horses` },
-            ].map((row, i, arr) => (
-              <div key={row.label} className="flex items-center gap-3 px-4 py-2.5" style={{ borderBottom: i < arr.length - 1 ? "1px solid #f3f4f6" : "none", background: i % 2 === 0 ? "#fafafa" : "#fff" }}>
-                <i className={`ti ti-${row.icon} text-sm`} style={{ color: TEXT_MUTED }} />
-                <span className="text-xs text-slate-500 w-16">{row.label}</span>
-                <span className="text-sm font-semibold text-slate-800">{row.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-6">
-        <div className="flex border-b border-slate-200 mb-4">
-          {["desc", "info", "review"].map((tab) => (
-            <button key={tab} type="button" onClick={() => setActiveTab(tab)}
-              className="px-5 py-3 text-sm font-semibold capitalize cursor-pointer bg-transparent border-none transition-all"
-              style={{ color: activeTab === tab ? BRAND : TEXT_MUTED, borderBottom: activeTab === tab ? `2px solid ${BRAND}` : "2px solid transparent", marginBottom: -1 }}>
-              {tab === "desc" ? "Description" : tab === "info" ? "Race Info" : "Reviews"}
-            </button>
-          ))}
-        </div>
-
-        {activeTab === "desc" && (
-          <div className="text-sm text-slate-500 leading-relaxed max-w-3xl">
-            <p className="mb-3">The {race.name} is one of the most prestigious events in the racing calendar, held at the world-renowned {race.venue}. With a prize pool of ${race.prizePool.toLocaleString()} and featuring the finest horses and jockeys, this race attracts competitors from across the globe.</p>
-            <p>Track conditions are expected to be {race.condition}, providing excellent footing for the {race.distance}m sprint. Spectators can expect a thrilling display of speed, skill, and strategy as the top contenders battle for championship glory.</p>
-          </div>
-        )}
-
-        {activeTab === "info" && (
-          <div className="max-w-3xl">
-            <div className="grid grid-cols-2 gap-3">
-              {race.registrations.map((reg) => (
-                <div key={String(reg.id)} className="bg-white border border-slate-200 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg" style={{ background: BRAND_LIGHT }}>🐎</div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-800">{reg.horseName}</p>
-                      <p className="text-[11px] text-slate-400">{reg.horseColor} · {reg.horseAge} yrs</p>
-                    </div>
-                  </div>
-                  <div className="text-xs text-slate-500 space-y-0.5">
-                    <p><span className="font-medium text-slate-600">Jockey:</span> {reg.jockeyName}</p>
-                    <p><span className="font-medium text-slate-600">Trainer:</span> {reg.trainerName}</p>
-                    <p><span className="font-medium text-slate-600">License:</span> {reg.licenseNo}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === "review" && (
-          <div className="max-w-3xl">
-            <div className="bg-white border border-slate-200 rounded-xl p-5 mb-6">
-              <p className="text-sm font-bold text-slate-800 mb-3">Leave a Review</p>
-              <div className="flex gap-1 mb-3">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button key={star} type="button"
-                    onMouseEnter={() => setHoverRating(star)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    onClick={() => setRating(star)}
-                    className="cursor-pointer bg-transparent border-none p-0.5 transition-colors">
-                    <i className={`ti ti-star text-lg ${star <= (hoverRating || rating) ? "text-yellow-400" : "text-slate-300"}`}
-                      style={{ fill: star <= (hoverRating || rating) ? "#facc15" : "none" }} />
-                  </button>
-                ))}
-              </div>
-              {!reviewSent ? (
-                <form onSubmit={(e) => { e.preventDefault(); if (rating > 0) setReviewSent(true); }}>
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <input type="text" value={reviewName} onChange={(e) => setReviewName(e.target.value)} placeholder="Your name"
-                      className="px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans text-slate-800 focus:outline-none focus:ring-2"
-                      style={{ borderColor: BORDER }} />
-                    <input type="email" value={reviewEmail} onChange={(e) => setReviewEmail(e.target.value)} placeholder="your@email.com"
-                      className="px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans text-slate-800 focus:outline-none focus:ring-2"
-                      style={{ borderColor: BORDER }} />
-                  </div>
-                  <textarea value={reviewText} onChange={(e) => setReviewText(e.target.value)} placeholder="Write your review..."
-                    rows={3}
-                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans text-slate-800 focus:outline-none focus:ring-2 resize-none mb-3"
-                    style={{ borderColor: BORDER }} />
-                  <button type="submit" disabled={rating === 0}
-                    className="px-5 py-2.5 rounded-xl font-semibold text-white cursor-pointer border-none transition-all text-sm"
-                    style={{ background: rating > 0 ? BRAND : "#9ca3af", cursor: rating > 0 ? "pointer" : "not-allowed" }}>
-                    Submit Review
-                  </button>
-                </form>
-              ) : (
-                <div className="text-center py-3">
-                  <i className="ti ti-circle-check text-2xl mb-2 block" style={{ color: BRAND_TEXT }} />
-                  <p className="text-sm font-semibold text-slate-800">Thanks for your review!</p>
-                </div>
-              )}
-            </div>
-            {reviews.map((r, i) => (
-              <div key={i} className="border-b border-slate-100 pb-4 mb-4 last:border-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: BRAND }}>{r.name[0]}</div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800">{r.name}</p>
-                    <div className="flex gap-0.5">
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <i key={s} className={`ti ti-star text-[12px] ${s <= r.rating ? "text-yellow-400" : "text-slate-300"}`}
-                          style={{ fill: s <= r.rating ? "#facc15" : "none" }} />
-                      ))}
-                    </div>
-                  </div>
-                  <span className="text-[11px] text-slate-400 ml-auto">{r.date}</span>
-                </div>
-                <p className="text-sm text-slate-500">{r.text}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {relatedRaces.length > 0 && (
-        <div>
-          <h2 className="text-lg font-bold text-slate-800 mb-4">Related Races</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {relatedRaces.map((r) => (
-              <div key={r.id} className="bg-white border border-slate-200 rounded-xl p-3 cursor-pointer hover:shadow-md transition-shadow"
-                onClick={onClose}>
-                <div className="aspect-[4/3] rounded-lg flex items-center justify-center text-4xl mb-2" style={{ background: "linear-gradient(135deg, #f0fdf4, #dcfce7)" }}>🐎</div>
-                <p className="text-xs text-slate-400">{r.venue}</p>
-                <p className="text-sm font-bold text-slate-800 leading-tight">{r.name}</p>
-                <p className="text-sm font-black mt-1" style={{ color: BRAND_TEXT }}>${(r.prizePool / 1000).toFixed(0)}K</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path
+        d="M9.13 6.75H0v-1.5h9.13l-4.2-4.2L6 0l6 6-6 6-1.07-1.05 4.2-4.2Z"
+        fill="currentColor"
+      />
+    </svg>
   );
 }
 
@@ -327,12 +104,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const { login, user } = useApp();
 
-  const [tab, setTab] = useState("home");
   const [signInOpen, setSignInOpen] = useState(false);
-  const [showInbox, setShowInbox] = useState(false);
-  const [openStat, setOpenStat] = useState(null);
-  const [detailRace, setDetailRace] = useState(null);
-
   const [authTab, setAuthTab] = useState("signin");
   const [authMode, setAuthMode] = useState("form");
   const [forgotEmail, setForgotEmail] = useState("");
@@ -348,20 +120,32 @@ export default function LandingPage() {
   const [signInError, setSignInError] = useState("");
 
   const handleSignUp = (e) => {
-    e.preventDefault(); setRegError("");
-    if (!regName.trim() || !regEmail.trim() || !regPhone.trim() || !regRole) { setRegError("Please fill in all fields and select a role."); return; }
+    e.preventDefault();
+    setRegError("");
+    if (!regName.trim() || !regEmail.trim() || !regPhone.trim() || !regRole) {
+      setRegError("Please fill in all fields and select a role.");
+      return;
+    }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(regEmail)) { setRegError("Please enter a valid email address."); return; }
+    if (!emailRegex.test(regEmail)) {
+      setRegError("Please enter a valid email address.");
+      return;
+    }
     setRegSuccess(true);
-    setRegName(""); setRegEmail(""); setRegPhone(""); setRegRole("");
+    setRegName("");
+    setRegEmail("");
+    setRegPhone("");
+    setRegRole("");
   };
 
   const handleSignIn = (e) => {
-    e.preventDefault(); setSignInError("");
+    e.preventDefault();
+    setSignInError("");
     if (signInId === "U001" && signInPw === "admin123") {
       login("U001");
       setSignInOpen(false);
-      setSignInId(""); setSignInPw("");
+      setSignInId("");
+      setSignInPw("");
       navigate("/admin");
     } else if (signInId === "U002" && signInPw === "host123") {
       login("U002");
@@ -388,158 +172,319 @@ export default function LandingPage() {
     }
   };
 
-  if (detailRace) {
-    return (
-      <div className="min-h-screen" style={{ background: PAGE_BG, color: TEXT }}>
-        <header className="bg-white border-b border-slate-200 flex items-center px-7" style={{ height: 64 }}>
-          <div className="flex items-center gap-2.5 mr-10">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white" style={{ background: BRAND }}><i className="ti ti-trophy text-lg" /></div>
-            <div>
-              <div className="text-sm font-black text-slate-800 tracking-wide">Racing TMS</div>
-              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">GRAND PRIX 2025</div>
-            </div>
-          </div>
-          <div className="flex-1" />
-          <button type="button" onClick={() => setDetailRace(null)}
-            className="px-4 py-2 rounded-lg text-sm font-semibold border cursor-pointer font-sans transition-all"
-            style={{ background: BRAND, color: "#fff", borderColor: BRAND }}>
-            <i className="ti ti-arrow-left text-sm mr-1.5" />Back
-          </button>
-        </header>
-        <main style={{ background: PAGE_BG }}>
-          <RaceDetail race={detailRace} onClose={() => setDetailRace(null)} />
-        </main>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen" style={{ background: PAGE_BG, color: TEXT }}>
+    <div
+      className="min-h-screen font-sans"
+      style={{ background: "#f7f6f1", color: "#002a15" }}
+    >
       {/* HEADER */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-        <div className="max-w-7xl mx-auto px-7">
-          <div className="flex items-center h-16 gap-6">
-            <div className="flex items-center gap-2.5 flex-shrink-0">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white" style={{ background: BRAND }}><i className="ti ti-trophy text-lg" /></div>
-              <div>
-                <div className="text-sm font-black text-slate-800 tracking-wide">Racing TMS</div>
-                <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">GRAND PRIX 2025</div>
-              </div>
-            </div>
-
-            <nav className="hidden md:flex items-center gap-0.5">
-              {([
-                { id: "home", label: "Home", icon: "home" },
-                { id: "shop", label: "Races", icon: "trophy" },
-              ]).map((t) => (
-                <button key={t.id} type="button" onClick={() => setTab(t.id)}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer font-sans transition-all"
-                  style={{ background: tab === t.id ? BRAND : "transparent", color: tab === t.id ? "#fff" : TEXT_MUTED }}>
-                  <i className={`ti ti-${t.icon} text-sm`} />{t.label}
-                </button>
-              ))}
+      <header
+        className="fixed inset-x-0 top-0 z-30 bg-white/95 backdrop-blur"
+        style={{ height: 80, borderBottom: "1px solid #d7d3c7", boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}
+      >
+        <div
+          className="w-full mx-auto px-7 md:px-10 lg:px-16 flex items-center justify-between gap-6"
+          style={{ height: 80 }}
+        >
+          <div className="flex items-center gap-12 min-w-0">
+            <a
+              href="#top"
+              className="flex-shrink-0 no-underline"
+              style={{
+                color: "#002a15",
+                fontSize: "1.3rem",
+                fontWeight: 600,
+                fontFamily: '"EB Garamond", Georgia, serif',
+              }}
+            >
+              Heritage Racing
+            </a>
+            <nav
+              className="hidden md:flex items-center"
+              style={{ gap: "clamp(18px, 3vw, 32px)" }}
+              aria-label="Primary navigation"
+            >
+              <a
+                href="#tournaments"
+                className="px-0 py-1 text-xs font-bold tracking-widest no-underline"
+                style={{
+                  color: "#002a15",
+                  fontSize: "0.75rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  borderBottom: "2px solid #002a15",
+                }}
+              >
+                Tournaments
+              </a>
+              <a
+                href="#race-info"
+                className="text-xs font-bold tracking-widest no-underline"
+                style={{ color: "#555e58", letterSpacing: "0.08em", borderBottom: "2px solid transparent" }}
+              >
+                Race Info
+              </a>
+              <a
+                href="#about"
+                className="text-xs font-bold tracking-widest no-underline"
+                style={{ color: "#555e58", letterSpacing: "0.08em", borderBottom: "2px solid transparent" }}
+              >
+                About Us
+              </a>
             </nav>
+          </div>
 
-            <div className="flex-1" />
-
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setSignInOpen(true)}
-                className="px-3.5 h-9 rounded-lg flex items-center gap-1.5 text-sm font-semibold cursor-pointer no-underline transition-colors hover:opacity-90"
-                style={{ background: BRAND, color: "#fff" }}>
-                <i className="ti ti-login text-sm" />
-                Login
-              </button>
-            </div>
+          <div className="flex items-center" style={{ gap: "clamp(14px, 2vw, 24px)" }}>
+            <button
+              type="button"
+              aria-label="Search"
+              className="inline-grid place-items-center bg-transparent border-0 cursor-pointer"
+              style={{ width: 40, height: 40, color: "#002a15" }}
+            >
+              <SearchIcon />
+            </button>
+            <button
+              type="button"
+              onClick={() => setSignInOpen(true)}
+              className="uppercase inline-flex items-center justify-center cursor-pointer transition-colors"
+              style={{
+                minHeight: 44,
+                padding: "0 28px",
+                fontSize: "0.75rem",
+                fontWeight: 800,
+                letterSpacing: "0.12em",
+                color: "#002a15",
+                background: "transparent",
+                boxShadow: "inset 0 0 0 1px rgba(0,42,21,0.25)",
+              }}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSignInOpen(true);
+                setAuthTab("signup");
+              }}
+              className="uppercase inline-flex items-center justify-center cursor-pointer transition-colors"
+              style={{
+                minHeight: 44,
+                padding: "0 28px",
+                fontSize: "0.75rem",
+                fontWeight: 800,
+                letterSpacing: "0.12em",
+                color: "#fff",
+                background: "#002a15",
+              }}
+            >
+              Sign Up
+            </button>
           </div>
         </div>
       </header>
 
-      {/* SIGN IN */}
+      {/* SIGN IN / SIGN UP MODAL */}
       {signInOpen && (
-        <div className="fixed inset-0 z-[9999]" onClick={() => setSignInOpen(false)}>
-          <div className="absolute top-[80px] right-7 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
-            onClick={(e) => e.stopPropagation()}>
-            <div className="p-5 text-center border-b border-slate-100">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: BRAND_LIGHT, border: `2px solid ${BRAND_BORDER}` }}>
+        <div
+          className="fixed inset-0 z-[9999] flex items-start justify-end px-7 pt-24"
+          onClick={() => setSignInOpen(false)}
+        >
+          <div
+            className="w-80 bg-white rounded-2xl shadow-2xl border overflow-hidden"
+            style={{ borderColor: BORDER }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-5 text-center border-b" style={{ borderColor: "#f1f5f9" }}>
+              <div
+                className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
+                style={{ background: BRAND_LIGHT, border: `2px solid ${BRAND_BORDER}` }}
+              >
                 <i className="ti ti-user text-2xl" style={{ color: BRAND }} />
               </div>
-              <p className="text-sm font-semibold text-slate-800">Welcome!</p>
-              <p className="text-xs text-slate-400 mt-0.5">Sign in to access your account</p>
+              <p className="text-sm font-semibold" style={{ color: TEXT }}>Welcome!</p>
+              <p className="text-xs mt-0.5" style={{ color: TEXT_MUTED }}>
+                Sign in to access your account
+              </p>
             </div>
-            <div className="flex border-b border-slate-100">
-              <button type="button" onClick={() => { setAuthTab("signin"); setAuthMode("form"); setSignInError(""); }}
-                className="flex-1 py-2.5 text-sm font-semibold transition-all cursor-pointer bg-transparent border-none"
-                style={{ color: authTab === "signin" ? BRAND : TEXT_MUTED, borderBottom: authTab === "signin" ? `2px solid ${BRAND}` : "2px solid transparent" }}>Sign In</button>
-              <button type="button" onClick={() => { setAuthTab("signup"); setRegError(""); }}
-                className="flex-1 py-2.5 text-sm font-semibold transition-all cursor-pointer bg-transparent border-none"
-                style={{ color: authTab === "signup" ? BRAND : TEXT_MUTED, borderBottom: authTab === "signup" ? `2px solid ${BRAND}` : "2px solid transparent" }}>Sign Up</button>
+            <div className="flex border-b" style={{ borderColor: "#f1f5f9" }}>
+              <button
+                type="button"
+                onClick={() => { setAuthTab("signin"); setAuthMode("form"); setSignInError(""); }}
+                className="flex-1 py-2.5 text-sm font-semibold transition-all cursor-pointer bg-transparent border-0"
+                style={{
+                  color: authTab === "signin" ? BRAND : TEXT_MUTED,
+                  borderBottom: authTab === "signin" ? `2px solid ${BRAND}` : "2px solid transparent",
+                }}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAuthTab("signup"); setRegError(""); }}
+                className="flex-1 py-2.5 text-sm font-semibold transition-all cursor-pointer bg-transparent border-0"
+                style={{
+                  color: authTab === "signup" ? BRAND : TEXT_MUTED,
+                  borderBottom: authTab === "signup" ? `2px solid ${BRAND}` : "2px solid transparent",
+                }}
+              >
+                Sign Up
+              </button>
             </div>
             <div className="p-5">
               {authTab === "signin" && authMode === "form" && (
                 <form onSubmit={handleSignIn}>
                   <div className="mb-3">
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">User ID</label>
-                    <input type="text" value={signInId} onChange={(e) => setSignInId(e.target.value)} placeholder="U001"
-                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans text-slate-800 focus:outline-none focus:ring-2 transition-all" style={{ borderColor: BORDER }} />
+                    <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: TEXT_MUTED }}>
+                      User ID
+                    </label>
+                    <input
+                      type="text"
+                      value={signInId}
+                      onChange={(e) => setSignInId(e.target.value)}
+                      placeholder="U001"
+                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans focus:outline-none focus:ring-2 transition-all"
+                      style={{ borderColor: BORDER, color: TEXT }}
+                    />
                   </div>
                   <div className="mb-4">
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Password</label>
-                    <input type="password" value={signInPw} onChange={(e) => setSignInPw(e.target.value)} placeholder="Enter password"
-                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans text-slate-800 focus:outline-none focus:ring-2 transition-all" style={{ borderColor: BORDER }} />
+                    <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: TEXT_MUTED }}>
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      value={signInPw}
+                      onChange={(e) => setSignInPw(e.target.value)}
+                      placeholder="Enter password"
+                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans focus:outline-none focus:ring-2 transition-all"
+                      style={{ borderColor: BORDER, color: TEXT }}
+                    />
                   </div>
                   {signInError && <p className="text-xs text-red-500 mb-3">{signInError}</p>}
-                  <button type="submit" className="w-full py-2.5 rounded-xl font-sans text-sm font-semibold text-white cursor-pointer border-none transition-all" style={{ background: BRAND }}>Sign In</button>
-                  <button type="button" onClick={() => { setAuthMode("forgot"); setSignInError(""); }}
-                    className="w-full mt-2 bg-transparent border-none font-sans text-xs text-slate-400 cursor-pointer hover:text-emerald-700 transition-all">Forgot password?</button>
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 rounded-xl font-sans text-sm font-semibold text-white cursor-pointer border-0 transition-all"
+                    style={{ background: BRAND }}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setAuthMode("forgot"); setSignInError(""); }}
+                    className="w-full mt-2 bg-transparent border-0 font-sans text-xs cursor-pointer transition-all"
+                    style={{ color: TEXT_MUTED }}
+                  >
+                    Forgot password?
+                  </button>
                 </form>
               )}
               {authTab === "signin" && authMode === "forgot" && !forgotSent && (
                 <form onSubmit={(e) => { e.preventDefault(); setForgotSent(true); }}>
-                  <p className="text-xs text-slate-500 mb-4">Enter your email and we'll send you a link to reset your password.</p>
+                  <p className="text-xs mb-4" style={{ color: TEXT_MUTED }}>
+                    Enter your email and we&apos;ll send you a link to reset your password.
+                  </p>
                   <div className="mb-4">
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Email</label>
-                    <input type="email" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} placeholder="you@example.com"
-                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans text-slate-800 focus:outline-none focus:ring-2 transition-all" style={{ borderColor: BORDER }} />
+                    <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: TEXT_MUTED }}>
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans focus:outline-none focus:ring-2 transition-all"
+                      style={{ borderColor: BORDER, color: TEXT }}
+                    />
                   </div>
-                  <button type="submit" className="w-full py-2.5 rounded-xl font-sans text-sm font-semibold text-white cursor-pointer border-none transition-all" style={{ background: BRAND }}>Send Reset Link</button>
-                  <button type="button" onClick={() => { setAuthMode("form"); setForgotEmail(""); }}
-                    className="w-full mt-2 bg-transparent border-none font-sans text-xs text-slate-400 cursor-pointer hover:text-emerald-700 transition-all">Back to Sign In</button>
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 rounded-xl font-sans text-sm font-semibold text-white cursor-pointer border-0 transition-all"
+                    style={{ background: BRAND }}
+                  >
+                    Send Reset Link
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setAuthMode("form"); setForgotEmail(""); }}
+                    className="w-full mt-2 bg-transparent border-0 font-sans text-xs cursor-pointer transition-all"
+                    style={{ color: TEXT_MUTED }}
+                  >
+                    Back to Sign In
+                  </button>
                 </form>
               )}
               {authTab === "signin" && authMode === "forgot" && forgotSent && (
                 <div className="text-center py-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: BRAND_LIGHT }}>
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
+                    style={{ background: BRAND_LIGHT }}
+                  >
                     <i className="ti ti-mail text-xl" style={{ color: BRAND }} />
                   </div>
-                  <p className="text-sm font-semibold text-slate-800 mb-1">Check your email</p>
-                  <p className="text-xs text-slate-500 mb-4">We sent a password reset link to <span className="font-semibold text-slate-700">{forgotEmail}</span></p>
-                  <button type="button" onClick={() => { setAuthMode("form"); setForgotSent(false); setForgotEmail(""); }}
-                    className="px-4 py-2 rounded-xl font-sans text-sm font-semibold text-white cursor-pointer border-none transition-all" style={{ background: BRAND }}>Back to Sign In</button>
+                  <p className="text-sm font-semibold mb-1" style={{ color: TEXT }}>Check your email</p>
+                  <p className="text-xs mb-4" style={{ color: TEXT_MUTED }}>
+                    We sent a password reset link to <span className="font-semibold">{forgotEmail}</span>
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => { setAuthMode("form"); setForgotSent(false); setForgotEmail(""); }}
+                    className="px-4 py-2 rounded-xl font-sans text-sm font-semibold text-white cursor-pointer border-0 transition-all"
+                    style={{ background: BRAND }}
+                  >
+                    Back to Sign In
+                  </button>
                 </div>
               )}
               {authTab === "signup" && !regSuccess && (
                 <form onSubmit={handleSignUp}>
                   <div className="mb-3">
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Full Name</label>
-                    <input type="text" value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="John Doe"
-                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans text-slate-800 focus:outline-none focus:ring-2 transition-all" style={{ borderColor: BORDER }} />
+                    <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: TEXT_MUTED }}>
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      placeholder="John Doe"
+                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans focus:outline-none focus:ring-2 transition-all"
+                      style={{ borderColor: BORDER, color: TEXT }}
+                    />
                   </div>
                   <div className="mb-3">
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Email</label>
-                    <input type="email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} placeholder="you@example.com"
-                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans text-slate-800 focus:outline-none focus:ring-2 transition-all" style={{ borderColor: BORDER }} />
+                    <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: TEXT_MUTED }}>
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans focus:outline-none focus:ring-2 transition-all"
+                      style={{ borderColor: BORDER, color: TEXT }}
+                    />
                   </div>
                   <div className="mb-3">
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Phone</label>
-                    <input type="tel" value={regPhone} onChange={(e) => setRegPhone(e.target.value)} placeholder="+1 555 0000"
-                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans text-slate-800 focus:outline-none focus:ring-2 transition-all" style={{ borderColor: BORDER }} />
+                    <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: TEXT_MUTED }}>
+                      Phone
+                    </label>
+                    <input
+                      type="tel"
+                      value={regPhone}
+                      onChange={(e) => setRegPhone(e.target.value)}
+                      placeholder="+1 555 0000"
+                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans focus:outline-none focus:ring-2 transition-all"
+                      style={{ borderColor: BORDER, color: TEXT }}
+                    />
                   </div>
                   <div className="mb-4">
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Role</label>
-                    <select value={regRole} onChange={(e) => setRegRole(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans text-slate-800 focus:outline-none focus:ring-2 transition-all cursor-pointer" style={{ borderColor: BORDER }}>
+                    <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: TEXT_MUTED }}>
+                      Role
+                    </label>
+                    <select
+                      value={regRole}
+                      onChange={(e) => setRegRole(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white font-sans focus:outline-none focus:ring-2 transition-all cursor-pointer"
+                      style={{ borderColor: BORDER, color: TEXT }}
+                    >
                       <option value="">Select your role</option>
                       <option value="owner">Horse Owner</option>
                       <option value="jockey">Jockey</option>
@@ -547,18 +492,35 @@ export default function LandingPage() {
                     </select>
                   </div>
                   {regError && <p className="text-xs text-red-500 mb-3">{regError}</p>}
-                  <button type="submit" className="w-full py-2.5 rounded-xl font-sans text-sm font-semibold text-white cursor-pointer border-none transition-all" style={{ background: BRAND }}>Create Account</button>
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 rounded-xl font-sans text-sm font-semibold text-white cursor-pointer border-0 transition-all"
+                    style={{ background: BRAND }}
+                  >
+                    Create Account
+                  </button>
                 </form>
               )}
               {authTab === "signup" && regSuccess && (
                 <div className="text-center py-6">
-                  <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: "#d1fae5" }}>
+                  <div
+                    className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+                    style={{ background: "#d1fae5" }}
+                  >
                     <i className="ti ti-circle-check text-2xl" style={{ color: "#166534" }} />
                   </div>
-                  <p className="text-base font-bold text-slate-800 mb-1">Registration Submitted!</p>
-                  <p className="text-xs text-slate-500 mb-4">Your request is pending approval. You will be notified once reviewed.</p>
-                  <button type="button" onClick={() => { setAuthTab("signin"); setRegSuccess(false); setRegError(""); }}
-                    className="px-4 py-2 rounded-xl font-sans text-sm font-semibold text-white cursor-pointer border-none transition-all" style={{ background: BRAND }}>Go to Sign In</button>
+                  <p className="text-base font-bold mb-1" style={{ color: TEXT }}>Registration Submitted!</p>
+                  <p className="text-xs mb-4" style={{ color: TEXT_MUTED }}>
+                    Your request is pending approval. You will be notified once reviewed.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => { setAuthTab("signin"); setRegSuccess(false); setRegError(""); }}
+                    className="px-4 py-2 rounded-xl font-sans text-sm font-semibold text-white cursor-pointer border-0 transition-all"
+                    style={{ background: BRAND }}
+                  >
+                    Go to Sign In
+                  </button>
                 </div>
               )}
             </div>
@@ -566,221 +528,442 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* MAIN CONTENT */}
-      <main className="max-w-7xl mx-auto px-7 pb-12">
-        {tab === "home" && (
-          <>
-            {/* HERO */}
-            <div className="rounded-2xl p-9 mt-7 mb-8 text-white relative overflow-hidden"
-              style={{ background: "linear-gradient(135deg, #064e3b 0%, #065f46 40%, #047857 100%)" }}>
-              <div className="absolute -top-10 -right-7 w-52 h-52 rounded-full pointer-events-none" style={{ background: "rgba(255,255,255,0.05)" }} />
-              <div className="absolute -bottom-7 right-32 w-24 h-24 rounded-full pointer-events-none" style={{ background: "rgba(255,255,255,0.04)" }} />
-              <div className="absolute top-5 right-16 w-14 h-14 rounded-full pointer-events-none" style={{ background: "rgba(255,255,255,0.03)" }} />
-              <div className="absolute bottom-0 right-20 w-36 h-36 rounded-full pointer-events-none" style={{ background: "rgba(255,255,255,0.03)" }} />
-
-              <div className="flex items-center gap-2.5 mb-3.5">
-                <div className="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-widest" style={{ background: "rgba(255,255,255,0.15)" }}>SEASON 2025</div>
-                <div className="w-1 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.5)" }} />
-                <div className="text-xs" style={{ color: "rgba(255,255,255,0.7)" }}>Grand Prix Championship Series</div>
-              </div>
-
-              <h1 className="text-3xl font-black tracking-tight mb-2 leading-tight max-w-xl">
-                Horse Racing Tournament<br />Management System
+      <main id="top">
+        {/* HERO */}
+        <section
+          className="relative flex items-center overflow-hidden"
+          style={{ minHeight: "clamp(680px, 92vh, 980px)" }}
+        >
+          <img
+            src={HERO_IMAGE}
+            alt="Heritage Racing hero"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ transform: "scale(1.02)" }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(0,42,21,0.92) 0%, rgba(0,42,21,0.48) 48%, rgba(0,42,21,0.04) 100%), linear-gradient(0deg, rgba(0,42,21,0.18), rgba(0,42,21,0.04))",
+            }}
+          />
+          <div
+            className="relative z-10 w-full mx-auto px-7 md:px-10 lg:px-16"
+            style={{ paddingBlock: "128px 80px" }}
+          >
+            <div
+              className="flex flex-col items-start"
+              style={{ width: "min(100%, 672px)", gap: 24 }}
+            >
+              <p
+                className="m-0 inline-flex items-center gap-3"
+                style={{
+                  color: "#ffdea5",
+                  fontSize: "0.75rem",
+                  fontWeight: 800,
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                }}
+              >
+                <span style={{ width: 48, height: 1, background: "#ffdea5" }} />
+                {HERO_DATA.eyebrow}
+              </p>
+              <h1
+                className="m-0 text-white"
+                style={{
+                  fontFamily: '"EB Garamond", Georgia, serif',
+                  fontSize: "clamp(3rem, 7vw, 5.6rem)",
+                  fontWeight: 600,
+                  lineHeight: 1.04,
+                }}
+              >
+                {HERO_DATA.title}
               </h1>
-              <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>
-                Manage registrations, track race results, and connect with the racing community.
+              <p
+                className="m-0"
+                style={{
+                  width: "min(100%, 540px)",
+                  color: "rgba(245,245,244,0.9)",
+                  fontSize: "1rem",
+                  lineHeight: 1.65,
+                }}
+              >
+                {HERO_DATA.description}
               </p>
 
-              <div className="flex gap-7">
-                {([
-                  { icon: "trophy", label: "Total Races", value: String(RACES_SEED.length), sub: "Across 5 venues" },
-                  { icon: "coins", label: "Prize Pool", value: "$1.5M", sub: "Grand total" },
-                  { icon: "calendar", label: "Season Start", value: "15 Apr", sub: "Spring Classic" },
-                  { icon: "clock", label: "Reg. Deadline", value: "10 Apr", sub: "Register now" },
-                ]).map(({ icon, label, value, sub }) => (
-                  <div key={label} className="flex flex-col gap-0.5">
-                    <div className="text-[11px] flex items-center gap-1" style={{ color: "rgba(255,255,255,0.6)", fontWeight: 500 }}>
-                      <i className={`ti ti-${icon} text-[13px]`} />{label}
-                    </div>
-                    <div className="text-xl font-black leading-tight">{value}</div>
-                    <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>{sub}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Stats bar */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-3">
-              <div className="flex">
-                {([
-                  { key: "races", icon: "trophy", label: "Total Races", value: String(RACES_SEED.length), color: "#92400e", bg: "#fef3c7", border: "#fde68a" },
-                  { key: "prize", icon: "coins", label: "Prize Pool", value: "$1.5M", color: "#065f46", bg: BRAND_LIGHT, border: BRAND_BORDER },
-                  { key: "registered", icon: "user", label: "Registered", value: String(RACES_SEED.flatMap((r) => r.registrations).length), color: "#1e40af", bg: "#eff6ff", border: "#bfdbfe" },
-                  { key: "horses", icon: "horse", label: "Active Horses", value: String(new Set(RACES_SEED.flatMap((r) => r.registrations).map((r) => r.horseName)).size), color: "#5b21b6", bg: "#f5f3ff", border: "#c4b5fd" },
-                ]).map(({ key, icon, label, value, color, bg, border }, i) => {
-                  const isOpen = openStat === key;
-                  return (
-                    <div key={key} className="flex items-center gap-3.5 px-2 flex-1" style={{ borderRight: i < 3 ? "1px solid #e5e7eb" : "none" }}>
-                      <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border" style={{ background: bg, borderColor: border }}>
-                        <i className={`ti ti-${icon} text-xl`} style={{ color }} />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-2xl font-black text-slate-800 leading-tight">{value}</div>
-                        <button type="button" onClick={() => setOpenStat(isOpen ? null : key)}
-                          className="text-xs text-slate-500 mt-0.5 flex items-center gap-1 cursor-pointer bg-transparent border-none font-sans hover:text-emerald-700 transition-colors p-0">
-                          {label}
-                          <i className={`ti ti-chevron-${isOpen ? "up" : "down"} text-[11px]`} style={{ color: TEXT_SUBTLE }} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {openStat && (
-                <div className="mt-4 pt-4 border-t border-slate-100">
-                  {openStat === "races" && (
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-                      {RACES_SEED.map((r) => (
-                        <button key={r.id} type="button" onClick={() => { setOpenStat(null); setDetailRace(r); }}
-                          className="flex items-center gap-2.5 p-2.5 rounded-xl border cursor-pointer bg-white text-left transition-all hover:border-emerald-300 hover:bg-emerald-50"
-                          style={{ borderColor: BORDER }}>
-                          <div className="w-9 h-9 rounded-lg flex items-center justify-center text-base flex-shrink-0" style={{ background: BRAND_LIGHT, color: BRAND_TEXT }}>🐎</div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-semibold text-slate-800 truncate">{r.name}</div>
-                            <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
-                              <GradeBadge grade={r.grade} />
-                              <span>{r.venue}</span>
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {openStat === "prize" && (
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-                      {RACES_SEED.map((r) => (
-                        <div key={r.id} className="p-3 rounded-xl border" style={{ borderColor: BORDER, background: SURFACE }}>
-                          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 truncate">{r.name}</div>
-                          <div className="text-lg font-black" style={{ color: BRAND_TEXT }}>${(r.prizePool / 1000).toFixed(0)}K</div>
-                          <div className="text-[11px] text-slate-400 mt-0.5">{((r.prizePool / 1500000) * 100).toFixed(1)}% of total</div>
-                          <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: "#f3f4f6" }}>
-                            <div className="h-full rounded-full" style={{ width: `${(r.prizePool / 750000) * 100}%`, background: BRAND }} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {openStat === "registered" && (
-                    <div>
-                      {RACES_SEED.map((r) => (
-                        <div key={r.id} className="flex items-center gap-3 py-2 border-b border-slate-100 last:border-0">
-                          <i className="ti ti-flag text-sm flex-shrink-0" style={{ color: BRAND }} />
-                          <span className="text-sm font-medium text-slate-700 flex-1 truncate">{r.name}</span>
-                          <span className="text-sm font-black tabular-nums" style={{ color: BRAND_TEXT }}>{r.registrations.length}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {openStat === "horses" && (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-                      {Array.from(new Set(RACES_SEED.flatMap((r) => r.registrations).map((r) => r.horseName))).map((name) => {
-                        const reg = RACES_SEED.flatMap((r) => r.registrations).find((r) => r.horseName === name);
-                        return (
-                          <div key={name} className="flex items-center gap-2.5 p-2 rounded-lg border" style={{ borderColor: BORDER }}>
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0" style={{ background: BRAND_LIGHT }}>🐎</div>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-sm font-semibold text-slate-800 truncate">{name}</div>
-                              <div className="text-[11px] text-slate-500 truncate">{reg?.jockeyName} · {reg?.horseColor}</div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+              <div
+                className="grid gap-7"
+                style={{
+                  width: "min(100%, 560px)",
+                  paddingLeft: 32,
+                  borderLeft: "1px solid rgba(255,222,165,0.32)",
+                }}
+              >
+                <div className="grid gap-1.5">
+                  <span
+                    style={{
+                      color: "rgba(255,222,165,0.82)",
+                      fontSize: "0.75rem",
+                      fontWeight: 800,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Prize Pool
+                  </span>
+                  <strong
+                    style={{
+                      color: "#fff",
+                      fontSize: "1.7rem",
+                      fontWeight: 500,
+                      lineHeight: 1.2,
+                      fontFamily: '"EB Garamond", Georgia, serif',
+                    }}
+                  >
+                    {HERO_DATA.prizePool}
+                  </strong>
                 </div>
-              )}
-            </div>
-
-            {/* Featured Races */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-800 m-0">Featured Races</h2>
-                  <p className="text-xs text-slate-500 mt-1">Don't miss these top upcoming events</p>
+                <div className="grid gap-1.5">
+                  <span
+                    style={{
+                      color: "rgba(255,222,165,0.82)",
+                      fontSize: "0.75rem",
+                      fontWeight: 800,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Race Date
+                  </span>
+                  <strong
+                    style={{
+                      color: "#fff",
+                      fontSize: "1.7rem",
+                      fontWeight: 500,
+                      lineHeight: 1.2,
+                      fontFamily: '"EB Garamond", Georgia, serif',
+                    }}
+                  >
+                    {HERO_DATA.raceDate}
+                  </strong>
                 </div>
-                <button type="button" onClick={() => setTab("shop")}
-                  className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border flex items-center gap-1.5 cursor-pointer font-sans bg-transparent"
-                  style={{ borderColor: BORDER, color: TEXT_MUTED }}>
-                  View all <i className="ti ti-arrow-right text-[13px]" />
+              </div>
+
+              <div className="flex flex-wrap gap-4 pt-3">
+                <button
+                  type="button"
+                  className="uppercase cursor-pointer border-0 transition-colors"
+                  style={{
+                    minWidth: 164,
+                    padding: "18px 36px",
+                    fontSize: "0.75rem",
+                    fontWeight: 800,
+                    letterSpacing: "0.12em",
+                    color: "#fff",
+                    background: "#002a15",
+                  }}
+                >
+                  {HERO_DATA.primaryAction}
+                </button>
+                <button
+                  type="button"
+                  className="uppercase cursor-pointer transition-colors"
+                  style={{
+                    minWidth: 164,
+                    padding: "18px 36px",
+                    fontSize: "0.75rem",
+                    fontWeight: 800,
+                    letterSpacing: "0.12em",
+                    color: "#fff",
+                    background: "transparent",
+                    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.32)",
+                  }}
+                >
+                  {HERO_DATA.secondaryAction}
                 </button>
               </div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {RACES_SEED.slice(0, 4).map((race) => (
-                  <ProductCard key={race.id} race={race}
-                    onViewDetail={() => setDetailRace(race)}
-                  />
-                ))}
-              </div>
             </div>
+          </div>
+        </section>
 
-            {/* Recent Activity */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-3.5">
-                <h2 className="text-lg font-bold text-slate-800 m-0">Recent Activity</h2>
+        {/* STATS */}
+        <section
+          aria-label="Heritage Racing statistics"
+          style={{ background: "#002a15", paddingBlock: 64 }}
+        >
+          <div
+            className="w-full mx-auto px-7 md:px-10 lg:px-16 grid gap-9"
+            style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}
+          >
+            {STATS.map((stat) => (
+              <div key={stat.label} className="grid justify-items-center gap-2 text-center">
+                <strong
+                  style={{
+                    color: "#ffdea5",
+                    fontSize: "clamp(3rem, 5vw, 4.25rem)",
+                    fontWeight: 600,
+                    lineHeight: 1,
+                    fontFamily: '"EB Garamond", Georgia, serif',
+                  }}
+                >
+                  {stat.value}
+                </strong>
+                <span
+                  style={{
+                    color: "rgba(210,245,219,0.82)",
+                    fontSize: "0.75rem",
+                    fontWeight: 800,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {stat.label}
+                </span>
               </div>
-              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                {([
-                  { icon: "circle-check", iconBg: BRAND_LIGHT, iconColor: BRAND_TEXT, iconBorder: BRAND_BORDER, actor: "Thunder Bolt", action: "registration approved", race: "Spring Classic", time: "2h ago" },
-                  { icon: "clock", iconBg: "#fef9c3", iconColor: "#713f12", iconBorder: "#fde047", actor: "Silver Arrow", action: "registration pending", race: "Spring Classic", time: "4h ago" },
-                  { icon: "user-check", iconBg: "#eff6ff", iconColor: "#1e40af", iconBorder: "#93c5fd", actor: "Golden Flash", action: "jockey assigned", race: "Derby Cup", time: "1d ago" },
-                  { icon: "circle-check", iconBg: BRAND_LIGHT, iconColor: BRAND_TEXT, iconBorder: BRAND_BORDER, actor: "Phantom Rider", action: "registration approved", race: "Mid-Season Stakes", time: "2d ago" },
-                ]).map((a, i, arr) => (
-                  <div key={a.id} className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: i < arr.length - 1 ? "1px solid #f3f4f6" : "none" }}>
-                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 border" style={{ background: a.iconBg, borderColor: a.iconBorder }}>
-                      <i className={`ti ti-${a.icon} text-base`} style={{ color: a.iconColor }} />
-                    </div>
-                    <div className="flex-1 text-sm">
-                      <span className="font-semibold">{a.actor}</span>
-                      <span className="text-slate-500"> — {a.action} </span>
-                      <span className="font-semibold" style={{ color: BRAND_TEXT }}>{a.race}</span>
-                    </div>
-                    <div className="text-[11px] flex-shrink-0" style={{ color: TEXT_SUBTLE }}>{a.time}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
+            ))}
+          </div>
+        </section>
 
-        {tab === "shop" && (
-          <div className="mt-7">
-            <div className="flex items-center justify-between mb-6">
+        {/* TOURNAMENTS */}
+        <section
+          id="tournaments"
+          aria-labelledby="tournaments-heading"
+          style={{ paddingBlock: "clamp(64px, 9vw, 96px)" }}
+        >
+          <div className="w-full mx-auto px-7 md:px-10 lg:px-16">
+            <div
+              className="flex justify-between items-end gap-8"
+              style={{ marginBottom: 64 }}
+            >
               <div>
-                <h1 className="text-2xl font-black text-slate-800 m-0">Our Shop</h1>
-                <p className="text-sm text-slate-500 mt-1">{RACES_SEED.length} races available</p>
+                <h2
+                  id="tournaments-heading"
+                  className="m-0"
+                  style={{
+                    color: "#002a15",
+                    fontSize: "clamp(2.2rem, 4vw, 3.2rem)",
+                    fontWeight: 600,
+                    lineHeight: 1.1,
+                    fontFamily: '"EB Garamond", Georgia, serif',
+                  }}
+                >
+                  Current Tournaments
+                </h2>
+                <p
+                  className="mt-4 m-0"
+                  style={{ width: "min(100%, 420px)", color: "#555e58", fontSize: "1rem", lineHeight: 1.55 }}
+                >
+                  Join the most prestigious racing circles in the world. Real-time stakes, legendary venues.
+                </p>
               </div>
+              <a
+                href="#all-stakes"
+                className="inline-flex items-center gap-2 no-underline whitespace-nowrap"
+                style={{
+                  paddingBottom: 5,
+                  color: "#004225",
+                  borderBottom: "1px solid #004225",
+                  fontSize: "0.75rem",
+                  fontWeight: 800,
+                  letterSpacing: "0.08em",
+                  textTransform: "none",
+                }}
+              >
+                View All Stakes
+                <ArrowIcon />
+              </a>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {RACES_SEED.map((race) => (
-                <ProductCard key={race.id} race={race}
-                  onViewDetail={() => setDetailRace(race)}
-                />
-              ))}
-            </div>
-          </div>
-        )}
 
-        {/* Footer */}
-        <div className="mt-10 pt-5 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-2">
-          <div className="text-xs text-slate-400">Racing TMS — Grand Prix Championship Series 2025</div>
-          <div className="flex items-center gap-3 text-xs text-slate-400">
-            <a href="#" className="hover:text-emerald-700 transition-colors"><i className="ti ti-brand-facebook" /></a>
-            <a href="#" className="hover:text-emerald-700 transition-colors"><i className="ti ti-brand-instagram" /></a>
-            <a href="#" className="hover:text-emerald-700 transition-colors"><i className="ti ti-brand-youtube" /></a>
+            <div
+              className="grid gap-6"
+              style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}
+            >
+              {TOURNAMENTS.map((t, idx) => {
+                const status = getStatus(t.state);
+                const statusBg =
+                  status.tone === "amber"
+                    ? "rgba(255,222,165,0.92)"
+                    : status.tone === "green"
+                    ? "rgba(0,42,21,0.92)"
+                    : "#e7e5dd";
+                const statusColor = status.tone === "amber" ? "#263b12" : status.tone === "green" ? "#fff" : "#555e58";
+                return (
+                  <article
+                    key={t.title}
+                    className="bg-white overflow-hidden"
+                    style={{
+                      border: "1px solid rgba(215,211,199,0.5)",
+                      borderRadius: 8,
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                    }}
+                  >
+                    <div
+                      className="relative overflow-hidden"
+                      style={{ height: 192, background: "#e4e1d7" }}
+                    >
+                      <img
+                        src={TOURNAMENT_IMAGES[idx]}
+                        alt={t.title}
+                        className="block w-full h-full object-cover"
+                      />
+                      <span
+                        className="absolute"
+                        style={{
+                          top: 12,
+                          right: 12,
+                          padding: "6px 12px",
+                          borderRadius: 999,
+                          background: statusBg,
+                          color: statusColor,
+                          fontSize: "0.7rem",
+                          fontWeight: 800,
+                          lineHeight: 1.25,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {status.text}
+                      </span>
+                    </div>
+                    <div className="grid gap-5" style={{ padding: 32 }}>
+                      <div>
+                        <h3
+                          className="m-0"
+                          style={{
+                            color: "#002a15",
+                            fontSize: "1.58rem",
+                            fontWeight: 500,
+                            lineHeight: 1.25,
+                            fontFamily: '"EB Garamond", Georgia, serif',
+                          }}
+                        >
+                          {t.title}
+                        </h3>
+                        <p
+                          className="m-0"
+                          style={{ marginTop: 8, color: "#5e655f", fontSize: "0.88rem", lineHeight: 1.45 }}
+                        >
+                          {t.location}
+                        </p>
+                      </div>
+                      <dl className="m-0 grid gap-3.5" style={{ padding: "4px 0 6px" }}>
+                        <div className="flex justify-between items-center gap-4">
+                          <dt
+                            style={{
+                              color: "#747b75",
+                              fontSize: "0.75rem",
+                              fontWeight: 800,
+                              letterSpacing: "0.08em",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            {t.dateLabel}
+                          </dt>
+                          <dd
+                            className="m-0 text-right"
+                            style={{
+                              color: "#1f231f",
+                              fontSize: "0.75rem",
+                              fontWeight: 800,
+                              letterSpacing: "0.08em",
+                            }}
+                          >
+                            {t.dateValue}
+                          </dd>
+                        </div>
+                        <div className="flex justify-between items-center gap-4">
+                          <dt
+                            style={{
+                              color: "#747b75",
+                              fontSize: "0.75rem",
+                              fontWeight: 800,
+                              letterSpacing: "0.08em",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            Prize Pool
+                          </dt>
+                          <dd
+                            className="m-0 text-right"
+                            style={{
+                              color: "#002a15",
+                              fontSize: "0.75rem",
+                              fontWeight: 800,
+                              letterSpacing: "0.08em",
+                            }}
+                          >
+                            {t.prizePool}
+                          </dd>
+                        </div>
+                      </dl>
+                      <button
+                        type="button"
+                        className="w-full cursor-pointer transition-colors"
+                        style={{
+                          padding: "14px 18px",
+                          color: "#002a15",
+                          background: "#fff",
+                          borderRadius: 2,
+                          boxShadow: "inset 0 0 0 1px #002a15",
+                          fontSize: "0.75rem",
+                          fontWeight: 800,
+                          letterSpacing: "0.12em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {t.action}
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        </section>
       </main>
+
+      {/* FOOTER */}
+      <footer style={{ background: "#3f4541", borderTop: "1px solid rgba(215,211,199,0.1)" }}>
+        <div
+          className="w-full mx-auto px-7 md:px-10 lg:px-16 flex flex-col md:flex-row justify-between items-start md:items-center gap-8"
+          style={{ paddingBlock: 48 }}
+        >
+          <div>
+            <h2
+              className="m-0"
+              style={{
+                color: "#ffdea5",
+                fontSize: "1.55rem",
+                fontWeight: 500,
+                lineHeight: 1.25,
+                fontFamily: '"EB Garamond", Georgia, serif',
+              }}
+            >
+              Heritage Racing
+            </h2>
+            <p
+              className="m-0"
+              style={{
+                marginTop: 8,
+                color: "rgba(217,217,217,0.72)",
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+              }}
+            >
+              © 2024 Heritage Racing. All rights reserved.
+            </p>
+          </div>
+          <nav
+            className="flex flex-wrap gap-7"
+            aria-label="Footer navigation"
+          >
+            <a href="#privacy" className="no-underline" style={{ color: "rgba(217,217,217,0.76)", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.06em" }}>Privacy Policy</a>
+            <a href="#terms" className="no-underline" style={{ color: "rgba(217,217,217,0.76)", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.06em" }}>Terms of Service</a>
+            <a href="#support" className="no-underline" style={{ color: "rgba(217,217,217,0.76)", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.06em" }}>Contact Support</a>
+            <a href="#standings" className="no-underline" style={{ color: "#ffbd6b", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.06em", textDecoration: "underline" }}>Global Standings</a>
+          </nav>
+        </div>
+      </footer>
     </div>
   );
 }
