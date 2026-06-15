@@ -75,7 +75,11 @@ export default function HorseDetail() {
   const horse = HORSES.find((h) => h.id === horseId) || HORSES[0];
 
   const upcomingRaces = RACES_SEED.filter((r) => r.status === "Upcoming");
-  const [selectedRace, setSelectedRace] = useState(upcomingRaces[0]?.id || "");
+  // Only show races where this horse is in the approved field
+  const eligibleRaces = upcomingRaces.filter((r) =>
+    (r.registrations || []).some((reg) => reg.status === "Approved" && reg.horseName === horse.name)
+  );
+  const [selectedRace, setSelectedRace] = useState(eligibleRaces[0]?.id || "");
   const [betAmount, setBetAmount] = useState(50);
   const [betSuccess, setBetSuccess] = useState(null);
   const [betError, setBetError] = useState("");
@@ -389,12 +393,21 @@ export default function HorseDetail() {
                   className="w-full px-3 py-2.5 text-sm border bg-white cursor-pointer"
                   style={{ borderColor: "#d7d3c7", borderRadius: 2, color: "#002a15" }}
                 >
-                  {upcomingRaces.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name} — {new Date(r.date).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
-                    </option>
-                  ))}
+                  {eligibleRaces.length === 0 ? (
+                    <option value="">No upcoming entries</option>
+                  ) : (
+                    eligibleRaces.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.name} — {new Date(r.date).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
+                      </option>
+                    ))
+                  )}
                 </select>
+                {eligibleRaces.length === 0 && (
+                  <p className="m-0" style={{ marginTop: 6, color: "#747b75", fontSize: "0.74rem" }}>
+                    This horse is not currently entered in any upcoming race.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -468,16 +481,18 @@ export default function HorseDetail() {
               <button
                 type="button"
                 onClick={handlePlaceBet}
-                className="w-full cursor-pointer border-0"
+                disabled={eligibleRaces.length === 0}
+                className="w-full border-0"
                 style={{
                   padding: "14px 20px",
-                  background: betSuccess ? "#166534" : "#002a15",
+                  background: betSuccess ? "#166534" : eligibleRaces.length === 0 ? "#9ca3af" : "#002a15",
                   color: "#fff", borderRadius: 2,
                   fontSize: "0.78rem", fontWeight: 800,
                   letterSpacing: "0.12em", textTransform: "uppercase",
+                  cursor: eligibleRaces.length === 0 ? "not-allowed" : "pointer",
                 }}
               >
-                {betSuccess ? "✓ Bet Placed" : "Confirm Bet"}
+                {betSuccess ? "✓ Bet Placed" : eligibleRaces.length === 0 ? "No Eligible Races" : "Confirm Bet"}
               </button>
             </div>
           </aside>
