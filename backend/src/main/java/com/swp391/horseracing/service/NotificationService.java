@@ -12,15 +12,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import com.swp391.horseracing.repository.BetRepository;
+
 
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final BetRepository betRepository;
+    private final RaceRepository raceRepository;
+    private final EmailService emailService;
 
     // Tạo notification cho 1 user
     @Transactional
@@ -83,5 +87,52 @@ public class NotificationService {
     @Transactional
     public void deleteOldNotifications(int daysOld) {
         // Có thể implement nếu cần
+    }
+    // Gửi notification kèm email
+    @Transactional
+    public Notification createNotificationWithEmail(Long userId, String title, String message,
+                                                    String type, Long refId, String refType,
+                                                    String recipientEmail) {
+        Notification notification = createNotification(userId, title, message, type, refId, refType);
+
+        if (recipientEmail != null && !recipientEmail.isEmpty()) {
+            try {
+                emailService.sendSimpleEmail(recipientEmail, title, message);
+                notification.setEmailSent(true);
+                notificationRepository.save(notification);
+            } catch (Exception e) {
+                System.err.println("Failed to send email: " + e.getMessage());
+            }
+        }
+        return notification;
+    }
+
+    // Gửi thông báo khi có kết quả race
+    public void notifyRaceResult(Long raceId, Long winningEntryId) {
+        Race race = raceRepository.findById(raceId).orElseThrow();
+        List<Bet> bets = betRepository.findByRaceId(raceId);
+
+        for (Bet bet : bets) {
+            boolean isWin = bet.getPredictedEntry().getId().equals(winningEntryId);
+            bet.setResult(isWin ? Bet.BetResult.WIN : Bet.BetResult.LOSE);
+            bet.setResolvedAt(LocalDateTime.now());
+            betRepository.save(bet);
+
+            String title = isWin ? "🎉 Prediction WIN!" : "Prediction Result";
+            String message = String.format(
+                    "Your prediction for race '%s' was %s",
+                    race.getName(), isWin ? "CORRECT! You won the prize!" : "incorrect"
+            );
+
+            createNotificationWithEmail(
+                    bet.getSpectator().getId(),
+                    title,
+                    message,
+                    "BET_RESULT",
+                    raceId,
+                    "Race",
+                    bet.getSpectator().getEmail()
+            );
+        }
     }
 }
