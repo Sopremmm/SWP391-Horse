@@ -166,7 +166,7 @@ export default function LandingPage() {
     } else if (signInId === "U009" && signInPw === "spectator123") {
       login("U009");
       setSignInOpen(false);
-      navigate("/spectator");
+      navigate("/spectator/home");
     } else {
       setSignInError("Invalid ID or password.");
     }

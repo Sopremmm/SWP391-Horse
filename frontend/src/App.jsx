@@ -8,6 +8,14 @@ import RefereeDashboard from './tms/pages/RefereeDashboard.jsx';
 import SpectatorDashboard from './tms/pages/SpectatorDashboard.jsx';
 import SpectatorBets from './tms/pages/SpectatorBets.jsx';
 import ProfilePage from './tms/pages/ProfilePage.jsx';
+import SpectatorHome from './tms/pages/SpectatorHome.jsx';
+import TournamentsList from './tms/pages/TournamentsList.jsx';
+import TournamentDetail from './tms/pages/TournamentDetail.jsx';
+import HorseRegistry from './tms/pages/HorseRegistry.jsx';
+import HorseDetail from './tms/pages/HorseDetail.jsx';
+import JockeysList from './tms/pages/JockeysList.jsx';
+import JockeyProfile from './tms/pages/JockeyProfile.jsx';
+import BettingHistory from './tms/pages/BettingHistory.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import AdminLayout from './admin/Layout.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
@@ -43,13 +51,23 @@ function AppRoutes() {
         <Route path="predictions" element={<PredictionsPage />} />
       </Route>
 
-      {/* ── TMS role pages (AppShell layout) ── */}
+      {/* ── Spectator public pages (Heritage Racing design) ── */}
+      <Route path="/spectator/home" element={<SpectatorHome />} />
+      <Route path="/spectator/tournaments" element={<TournamentsList />} />
+      <Route path="/spectator/tournaments/:raceId" element={<TournamentDetail />} />
+      <Route path="/spectator/horses" element={<HorseRegistry />} />
+      <Route path="/spectator/horses/:horseId" element={<HorseDetail />} />
+      <Route path="/spectator/jockeys" element={<JockeysList />} />
+      <Route path="/spectator/jockeys/:jockeyId" element={<JockeyProfile />} />
+      <Route path="/spectator/bets" element={<BettingHistory />} />
+
+      {/* ── Legacy TMS role pages (AppShell layout) ── */}
       <Route path="/host" element={<RequireAuth><HostHome /></RequireAuth>} />
       <Route path="/owner" element={<RequireAuth><OwnerDashboard /></RequireAuth>} />
       <Route path="/jockey" element={<RequireAuth><JockeyDashboard /></RequireAuth>} />
       <Route path="/referee" element={<RequireAuth><RefereeDashboard /></RequireAuth>} />
       <Route path="/spectator" element={<RequireAuth><SpectatorDashboard /></RequireAuth>} />
-      <Route path="/spectator/bets" element={<RequireAuth><SpectatorBets /></RequireAuth>} />
+      <Route path="/spectator/legacy/bets" element={<RequireAuth><SpectatorBets /></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
 
       {/* ── Legacy TMS Dashboard ── */}
