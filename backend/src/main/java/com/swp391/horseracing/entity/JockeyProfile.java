@@ -1,30 +1,27 @@
 package com.swp391.horseracing.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "jockey_profile")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class JockeyProfile {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @Column(nullable = false, unique = true, name = "license_number", length = 50)
+    @Column(name = "license_number", nullable = false, unique = true, length = 50)
     private String licenseNumber;
 
-    @Column(name = "weight_kg", precision = 5, scale = 2)
-    private BigDecimal weightKg;
+    @Column(name = "weight_kg")
+    private Double weightKg;
 
     @Column(name = "experience_years")
     private Integer experienceYears = 0;
@@ -35,6 +32,26 @@ public class JockeyProfile {
     @Column(name = "total_wins")
     private Integer totalWins = 0;
 
-    @Column(columnDefinition = "NVARCHAR(MAX)")
+    @Lob
+    @Column
     private String bio;
+
+    public JockeyProfile() {}
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+    public String getLicenseNumber() { return licenseNumber; }
+    public void setLicenseNumber(String licenseNumber) { this.licenseNumber = licenseNumber; }
+    public Double getWeightKg() { return weightKg; }
+    public void setWeightKg(Double weightKg) { this.weightKg = weightKg; }
+    public Integer getExperienceYears() { return experienceYears; }
+    public void setExperienceYears(Integer experienceYears) { this.experienceYears = experienceYears; }
+    public Integer getTotalRaces() { return totalRaces; }
+    public void setTotalRaces(Integer totalRaces) { this.totalRaces = totalRaces; }
+    public Integer getTotalWins() { return totalWins; }
+    public void setTotalWins(Integer totalWins) { this.totalWins = totalWins; }
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
 }

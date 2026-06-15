@@ -1,11 +1,15 @@
 package com.swp391.horseracing.service;
 
-import com.swp391.horseracing.dto.*;
+import com.swp391.horseracing.dto.request.LoginRequest;
+import com.swp391.horseracing.dto.request.SignupRequest;
+import com.swp391.horseracing.dto.response.JwtResponse;
 import com.swp391.horseracing.entity.User;
+import com.swp391.horseracing.entity.enums.Role;
+import com.swp391.horseracing.entity.enums.UserStatus;
 import com.swp391.horseracing.repository.UserRepository;
-import com.swp391.horseracing.security.UserDetailsImpl;
 import com.swp391.horseracing.security.jwt.JwtUtils;
-import lombok.RequiredArgsConstructor;
+import com.swp391.horseracing.security.user.UserDetailsImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -13,47 +17,67 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class AuthService {
-    private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtils jwtUtils;
+    private static final Set<Role> SELF_REGISTER_ROLES = Set.of(Role.HORSE_OWNER, Role.JOCKEY, Role.SPECTATOR);
 
-    private static final List<User.Role> ALLOWED_REGISTER_ROLES = Arrays.asList(
-            User.Role.HORSE_OWNER,
-            User.Role.JOCKEY,
-            User.Role.SPECTATOR
-    );
+    @Autowired
+    AuthenticationManager authenticationManager;
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    PasswordEncoder encoder;
+
+    @Autowired
+    JwtUtils jwtUtils;
 
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
+        String normalizedEmail = loginRequest.getEmail() == null ? null : loginRequest.getEmail().trim().toLowerCase(Locale.ROOT);
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
-        );
+                new UsernamePasswordAuthenticationToken(normalizedEmail, loginRequest.getPassword()));
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
+
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        return new JwtResponse(jwt, userDetails.getId(), userDetails.getEmail(), userDetails.getFullName(), userDetails.getRole());
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+
+        return new JwtResponse(jwt,
+                userDetails.getId(),
+                userDetails.getEmail(),
+                userDetails.getFullName(),
+                roles);
     }
 
-    public MessageResponse registerUser(SignupRequest signUpRequest) {
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            throw new RuntimeException("Email is already in use!");
+    public void registerUser(SignupRequest signUpRequest) {
+        String normalizedEmail = signUpRequest.getEmail() == null ? null : signUpRequest.getEmail().trim().toLowerCase(Locale.ROOT);
+        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
+            throw new RuntimeException("Error: Email is already in use!");
         }
-        if (!ALLOWED_REGISTER_ROLES.contains(signUpRequest.getRole())) {
-            throw new RuntimeException("Role is not allowed for registration!");
+
+        if (signUpRequest.getRole() == null || !SELF_REGISTER_ROLES.contains(signUpRequest.getRole())) {
+            throw new RuntimeException("Error: You cannot self-register with this role!");
         }
-        User user = new User();
-        user.setEmail(signUpRequest.getEmail());
-        user.setPasswordHash(passwordEncoder.encode(signUpRequest.getPassword()));
-        user.setFullName(signUpRequest.getFullName());
-        user.setPhone(signUpRequest.getPhone());
-        user.setRole(signUpRequest.getRole());
+
+        // Create new user's account
+        User user = User.builder()
+                .email(normalizedEmail)
+                .password(encoder.encode(signUpRequest.getPassword()))
+                .fullName(signUpRequest.getFullName())
+                .phone(signUpRequest.getPhone())
+                .role(signUpRequest.getRole())
+                .status(UserStatus.ACTIVE)
+                .build();
+
         userRepository.save(user);
-        return new MessageResponse("User registered successfully!");
     }
 }
