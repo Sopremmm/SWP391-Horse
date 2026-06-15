@@ -2,6 +2,8 @@ package com.swp391.horseracing.security;
 
 import com.swp391.horseracing.security.jwt.AuthEntryPointJwt;
 import com.swp391.horseracing.security.jwt.AuthTokenFilter;
+import com.swp391.horseracing.repository.UserRepository;
+import com.swp391.horseracing.security.user.UserDetailsImpl;
 import com.swp391.horseracing.security.user.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +16,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -22,6 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 @Configuration
 @EnableMethodSecurity
@@ -38,11 +43,12 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
+    public DaoAuthenticationProvider authenticationProvider(UserDetailsPasswordService userDetailsPasswordService, PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 
         authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setPasswordEncoder(passwordEncoder);
+        authProvider.setUserDetailsPasswordService(userDetailsPasswordService);
 
         return authProvider;
     }
@@ -54,11 +60,25 @@ public class WebSecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new UpgradingPasswordEncoder();
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public UserDetailsPasswordService userDetailsPasswordService(UserRepository userRepository) {
+        return (userDetails, newPassword) -> {
+            String normalizedEmail = userDetails.getUsername() == null ? null : userDetails.getUsername().trim().toLowerCase(Locale.ROOT);
+            return userRepository.findByEmailIgnoreCase(normalizedEmail)
+                    .map(user -> {
+                        user.setPassword(newPassword);
+                        userRepository.save(user);
+                        return (UserDetails) UserDetailsImpl.build(user);
+                    })
+                    .orElse(userDetails);
+        };
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, DaoAuthenticationProvider authenticationProvider) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
@@ -69,7 +89,7 @@ public class WebSecurityConfig {
                                 .anyRequest().authenticated()
                 );
 
-        http.authenticationProvider(authenticationProvider());
+        http.authenticationProvider(authenticationProvider);
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
@@ -87,5 +107,34 @@ public class WebSecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    private static class UpgradingPasswordEncoder implements PasswordEncoder {
+        private final BCryptPasswordEncoder delegate = new BCryptPasswordEncoder();
+
+        @Override
+        public String encode(CharSequence rawPassword) {
+            return delegate.encode(rawPassword);
+        }
+
+        @Override
+        public boolean matches(CharSequence rawPassword, String encodedPassword) {
+            if (encodedPassword == null) {
+                return false;
+            }
+            if (isBcryptHash(encodedPassword)) {
+                return delegate.matches(rawPassword, encodedPassword);
+            }
+            return rawPassword != null && encodedPassword.equals(rawPassword.toString());
+        }
+
+        @Override
+        public boolean upgradeEncoding(String encodedPassword) {
+            return encodedPassword != null && !isBcryptHash(encodedPassword);
+        }
+
+        private static boolean isBcryptHash(String value) {
+            return value.startsWith("$2a$") || value.startsWith("$2b$") || value.startsWith("$2y$");
+        }
     }
 }
