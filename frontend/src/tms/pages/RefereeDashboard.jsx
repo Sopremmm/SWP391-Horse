@@ -1,26 +1,38 @@
 import { useState } from "react";
 import { useApp } from "../AppContext.jsx";
+import { fmtDate } from "../format.js";
+import HeritageLayout, { FONT_SERIF } from "../components/layout/HeritageLayout.jsx";
 import {
-  BRAND,
-  BRAND_BORDER,
-  BRAND_LIGHT,
-  BRAND_TEXT,
-  BORDER,
-  TEXT_MUTED,
-} from "../constants.js";
-import { fmtDate, fmtDateTime } from "../format.js";
-import AppShell from "../components/layout/AppShell.jsx";
-import StatusPill from "../components/common/StatusPill.jsx";
+  HeritageTabs,
+  HeritageStat,
+  HeritageCard,
+  HeritageButton,
+  HeritageStatusPill,
+  HeritageToast,
+  HeritagePageHeader,
+  HeritageField,
+  HeritageTextarea,
+  HeritageSelect,
+  HeritageSlidePanel,
+} from "../components/layout/HeritageUI.jsx";
 
-function StatCard({ label, value, icon, color, bg, border }) {
+function PositionBadge({ pos }) {
+  const styles = {
+    1: { bg: "#ffdea5", color: "#002a15" },
+    2: { bg: "#d1d5db", color: "#1f231f" },
+    3: { bg: "#fed7aa", color: "#7c2d12" },
+  };
+  const s = styles[pos] || { bg: "#e5e7eb", color: "#6b7280" };
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-      <div className="w-9 h-9 rounded-lg flex items-center justify-center border" style={{ background: bg, borderColor: border }}>
-        <i className={`ti ti-${icon} text-base`} style={{ color }} />
-      </div>
-      <div className="text-2xl font-black text-slate-800">{value}</div>
-      <div className="text-xs text-slate-400 font-medium">{label}</div>
-    </div>
+    <span
+      className="grid place-items-center"
+      style={{
+        width: 32, height: 32, borderRadius: 999, background: s.bg, color: s.color,
+        fontSize: "0.78rem", fontWeight: 800,
+      }}
+    >
+      {pos}
+    </span>
   );
 }
 
@@ -53,302 +65,391 @@ export default function RefereeDashboard() {
       return { ...r, registrations: updatedRegs, reportSubmitted: true };
     }));
     setConfirmingReport(null);
-    showToast("Official referee report submitted for " + race.name + ".");
+    showToast(`Official referee report submitted for ${race.name}.`);
   };
 
   const nav = [
-    { id: "assigned", label: "My Races", icon: "shield-check" },
-    { id: "reports",  label: "Reports",  icon: "file-text" },
+    { id: "assigned", label: "My Races" },
+    { id: "reports", label: "Reports", count: pendingReports.length },
   ];
 
   return (
-    <AppShell page={tab} setPage={setTab} nav={nav} subtitle="Referee">
-      {toast && (
-        <div className="fixed top-5 right-5 z-[9999] px-4 py-3 rounded-xl text-sm font-semibold shadow-lg"
-          style={{ background: toast.type === "success" ? "#d1fae5" : "#fee2e2", color: toast.type === "success" ? "#166534" : "#991b1b", border: `1px solid ${toast.type === "success" ? "#86efac" : "#fca5a5"}` }}>
-          <i className={`ti ti-${toast.type === "success" ? "circle-check" : "circle-x"} mr-2`} />
-          {toast.msg}
-        </div>
-      )}
+    <HeritageLayout role="referee" subtitle="Referee">
+      <HeritagePageHeader
+        eyebrow="Referee"
+        title="Race Oversight"
+        subtitle="Manage finish orders, record violations, and submit official race results."
+      />
 
-      {tab === "assigned" && (
-        <div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <StatCard label="Assigned Races" value={myAssignedRaces.length} icon="shield-check" color={BRAND_TEXT} bg={BRAND_LIGHT} border={BRAND_BORDER} />
-            <StatCard label="Upcoming" value={myAssignedRaces.filter(r => r.status === "Upcoming").length} icon="calendar-event" color="#1e40af" bg="#eff6ff" border="#93c5fd" />
-            <StatCard label="Finished" value={myAssignedRaces.filter(r => r.status === "Finished").length} icon="circle-check" color="#166534" bg="#dcfce7" border="#86efac" />
-            <StatCard label="Reports" value={completedReports.length} icon="file-text" color="#b8860b" bg="#fff8e7" border="#d4a820" />
-          </div>
+      <HeritageTabs tabs={nav} active={tab} onChange={setTab} />
 
-          <h2 className="text-lg font-bold text-slate-800 mb-4">Races Assigned to You</h2>
-          <div className="flex flex-col gap-3">
-            {myAssignedRaces.map(race => (
-              <div key={race.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="font-bold text-slate-800">{race.name}</h3>
-                    <p className="text-xs text-slate-400 flex items-center gap-2 mt-1">
-                      <span><i className="ti ti-map-pin mr-1" />{race.venue}</span>
-                      <span><i className="ti ti-calendar mr-1" />{fmtDate(race.date)}</span>
-                      <span><i className="ti ti-ruler-measure mr-1" />{race.distance}m</span>
-                    </p>
-                  </div>
-                  <StatusPill status={race.status} />
-                </div>
-                <div className="flex items-center gap-2 flex-wrap mb-3 text-xs text-slate-500">
-                  <span><i className="ti ti-users mr-1" />{race.registrations.length} participants</span>
-                  <span><i className="ti ti-trophy mr-1" />${race.prizePool.toLocaleString()}</span>
-                  <span><i className="ti ti-weather-partly-cloudy mr-1" />{race.condition}</span>
-                  {race.reportSubmitted && (
-                    <span className="font-semibold" style={{ color: "#b8860b" }}><i className="ti ti-circle-check mr-1" />Report submitted</span>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => setSelectedRace(race)} className="px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: BRAND }}>
-                    <i className="ti ti-eye mr-1.5" />{race.status === "Finished" ? "View Results" : "Manage Race"}
-                  </button>
-                  {race.status === "Finished" && !race.reportSubmitted && (
-                    <button onClick={() => { setSelectedRace(race); setTab("reports"); }} className="px-4 py-2 rounded-xl text-sm font-semibold" style={{ background: "#fff8e7", color: "#b8860b", border: "1px solid #d4a820" }}>
-                      <i className="ti ti-file-text mr-1.5" />Submit Report
-                    </button>
-                  )}
-                  {race.reportSubmitted && (
-                    <span className="px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1" style={{ background: BRAND_LIGHT, color: BRAND_TEXT }}><i className="ti ti-circle-check mr-1" />Report Submitted</span>
-                  )}
-                </div>
+      <section style={{ paddingBlock: "clamp(40px, 5vw, 56px)" }}>
+        <div className="w-full mx-auto px-7 md:px-10 lg:px-16">
+          {tab === "assigned" && (
+            <>
+              <div
+                className="grid gap-5"
+                style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))", marginBottom: 40 }}
+              >
+                <HeritageStat value={myAssignedRaces.length} label="Assigned Races" />
+                <HeritageStat value={myAssignedRaces.filter(r => r.status === "Upcoming").length} label="Upcoming" color="#1e40af" />
+                <HeritageStat value={myAssignedRaces.filter(r => r.status === "Finished").length} label="Finished" color="#166534" />
+                <HeritageStat value={completedReports.length} label="Reports" color="#b8860b" />
               </div>
-            ))}
-            {myAssignedRaces.length === 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: BRAND_LIGHT, border: `1px solid ${BRAND_BORDER}` }}>
-                  <i className="ti ti-shield-check text-2xl" style={{ color: BRAND_TEXT }} />
-                </div>
-                <p className="text-slate-500 text-sm">No races assigned to you yet. Admin will assign races.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
-      {tab === "reports" && (
-        <div>
-          <h2 className="text-lg font-bold text-slate-800 mb-4">Referee Reports</h2>
-
-          {myAssignedRaces.filter(r => r.status === "Finished").length === 0 ? (
-            <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "#fff8e7", border: "1px solid #d4a820" }}>
-                <i className="ti ti-file-text text-2xl" style={{ color: "#b8860b" }} />
-              </div>
-              <p className="text-slate-500 text-sm">No finished races to report on.</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {myAssignedRaces.filter(r => r.status === "Finished").map(race => {
-                const currentOrder = finishOrder[race.id] || {};
-                const existingResults = Object.fromEntries(
-                  race.registrations.map(reg => [reg.id, reg.result])
-                );
-                const mergedOrder = { ...existingResults, ...currentOrder };
-
-                return (
-                  <div key={race.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                    <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                      <div>
-                        <h3 className="font-bold text-slate-800">{race.name}</h3>
-                        <p className="text-xs text-slate-400">{fmtDate(race.date)} · {race.venue}</p>
-                      </div>
-                      {race.reportSubmitted ? (
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold" style={{ background: BRAND_LIGHT, color: BRAND_TEXT }}>
-                          <i className="ti ti-circle-check mr-1" />Submitted
-                        </span>
-                      ) : (
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Pending</span>
-                      )}
-                    </div>
-
-                    {!race.reportSubmitted ? (
-                      <div className="p-4">
-                        <div className="mb-4">
-                          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
-                            Finish Order <span className="text-yellow-600 font-normal">(drag or assign position)</span>
+              <h2 className="m-0" style={{ color: "#002a15", fontSize: "1.5rem", fontWeight: 500, marginBottom: 24, fontFamily: FONT_SERIF }}>
+                Races Assigned to You
+              </h2>
+              <div className="grid gap-3">
+                {myAssignedRaces.length === 0 ? (
+                  <HeritageCard padding={64} style={{ textAlign: "center" }}>
+                    <p className="m-0" style={{ color: "#555e58", fontSize: "0.95rem" }}>No races assigned to you yet. Admin will assign races.</p>
+                  </HeritageCard>
+                ) : (
+                  myAssignedRaces.map(race => (
+                    <HeritageCard key={race.id} padding={28}>
+                      <div className="flex items-center justify-between flex-wrap gap-3" style={{ marginBottom: 14 }}>
+                        <div>
+                          <h3 className="m-0" style={{ color: "#002a15", fontSize: "1.2rem", fontWeight: 500, fontFamily: FONT_SERIF }}>
+                            {race.name}
+                          </h3>
+                          <p className="m-0" style={{ marginTop: 4, color: "#747b75", fontSize: "0.82rem" }}>
+                            {race.venue} · {fmtDate(race.date)} · {race.distance}m
                           </p>
-                          <div className="flex flex-col gap-2">
-                            {race.registrations.map((reg, i) => {
-                              const currentPos = mergedOrder[reg.id] || "";
-                              const medals = { 1: "bg-yellow-400 text-yellow-900", 2: "bg-slate-300 text-slate-700", 3: "bg-orange-300 text-orange-900" };
-                              return (
-                                <div key={reg.id} className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: currentPos && medals[currentPos] ? "transparent" : BORDER }}>
-                                  <div
-                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${currentPos && medals[currentPos] ? medals[currentPos] : ""}`}
-                                    style={!currentPos || !medals[currentPos] ? { background: BRAND } : {}}
-                                  >
-                                    {currentPos || (i + 1)}
-                                  </div>
-                                  <div className="flex-1">
-                                    <p className="text-sm font-semibold text-slate-800">{reg.horseName}</p>
-                                    <p className="text-xs text-slate-400">{reg.jockeyName}</p>
-                                  </div>
-                                  <select
-                                    value={currentPos || ""}
-                                    onChange={e => {
-                                      const val = e.target.value ? parseInt(e.target.value) : "";
-                                      setFinishOrder(prev => ({
-                                        ...prev,
-                                        [race.id]: { ...(prev[race.id] || {}), [reg.id]: val },
-                                      }));
-                                    }}
-                                    className="px-3 py-1.5 text-sm rounded-lg border bg-white font-sans text-slate-700 focus:outline-none focus:ring-2 cursor-pointer"
-                                    style={{ borderColor: BORDER }}
-                                  >
-                                    <option value="">— Position —</option>
-                                    {race.registrations.map((_, idx) => (
-                                      <option key={idx + 1} value={idx + 1}>#{idx + 1}</option>
-                                    ))}
-                                  </select>
-                                </div>
-                              );
-                            })}
-                          </div>
                         </div>
-
-                        <div className="mb-4">
-                          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Violations / Notes (optional)</p>
-                          <textarea
-                            placeholder="Record any violations, incidents, or official notes during the race..."
-                            rows={3}
-                            value={violations[race.id] || ""}
-                            className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2 resize-none"
-                            style={{ borderColor: BORDER }}
-                            onChange={e => setViolations(v => ({ ...v, [race.id]: e.target.value }))}
-                          />
-                        </div>
-
-                        <button
-                          onClick={() => setConfirmingReport(race)}
-                          className="px-5 py-2.5 rounded-xl font-semibold text-white"
-                          style={{ background: "#b8860b" }}
-                        >
-                          <i className="ti ti-send mr-1.5" />Submit Official Report
-                        </button>
+                        <HeritageStatusPill status={race.status} />
                       </div>
-                    ) : (
-                      <div className="p-4">
-                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Official Results</p>
-                        <div className="flex flex-col gap-2">
-                          {race.registrations
-                            .filter(r => r.result)
-                            .sort((a, b) => a.result - b.result)
-                            .map((reg, i) => {
-                              const medalClass = { 1: "bg-yellow-400 text-yellow-900", 2: "bg-slate-300 text-slate-700", 3: "bg-orange-300 text-orange-900" }[reg.result] || "bg-slate-200 text-slate-600";
-                              return (
-                                <div key={reg.id} className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: "#e2e8f0" }}>
-                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${medalClass}`}>
-                                    {reg.result}
-                                  </div>
-                                  <div className="flex-1">
-                                    <p className="text-sm font-semibold text-slate-800">{reg.horseName}</p>
-                                    <p className="text-xs text-slate-400">{reg.jockeyName}</p>
-                                  </div>
-                                  {i === 0 && <span className="text-base">🏆</span>}
-                                </div>
-                              );
-                            })}
-                        </div>
-                        {violations[race.id] && (
-                          <div className="mt-3 p-3 rounded-xl bg-yellow-50 border border-yellow-200 text-xs text-yellow-700">
-                            <i className="ti ti-alert-triangle mr-1.5" /><strong>Notes:</strong> {violations[race.id]}
+                      <div className="flex flex-wrap items-center" style={{ gap: 12, marginBottom: 16 }}>
+                        {[
+                          { k: "Participants", v: race.registrations.length },
+                          { k: "Prize", v: `$${race.prizePool.toLocaleString()}` },
+                          { k: "Condition", v: race.condition },
+                        ].map((f) => (
+                          <div
+                            key={f.k}
+                            style={{ padding: "6px 12px", background: "#f7f6f1", borderRadius: 4, fontSize: "0.78rem" }}
+                          >
+                            <span style={{ color: "#747b75", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", fontSize: "0.66rem" }}>
+                              {f.k}:{" "}
+                            </span>
+                            <span style={{ color: "#002a15", fontWeight: 700 }}>
+                              {f.v}
+                            </span>
                           </div>
+                        ))}
+                        {race.reportSubmitted && (
+                          <span style={{ color: "#b8860b", fontWeight: 700, fontSize: "0.78rem" }}>
+                            ✓ Report submitted
+                          </span>
                         )}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                      <div className="flex flex-wrap" style={{ gap: 8 }}>
+                        <HeritageButton
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedRace(race)}
+                        >
+                          {race.status === "Finished" ? "View Results" : "Manage Race"}
+                        </HeritageButton>
+                        {race.status === "Finished" && !race.reportSubmitted && (
+                          <HeritageButton
+                            size="sm"
+                            onClick={() => { setSelectedRace(race); setTab("reports"); }}
+                            style={{ background: "#b8860b", borderColor: "#b8860b" }}
+                          >
+                            Submit Report
+                          </HeritageButton>
+                        )}
+                        {race.reportSubmitted && (
+                          <span
+                            className="inline-flex items-center"
+                            style={{
+                              padding: "10px 14px", borderRadius: 2,
+                              background: "rgba(255,222,165,0.4)", color: "#002a15",
+                              fontSize: "0.72rem", fontWeight: 800, letterSpacing: "0.08em",
+                              textTransform: "uppercase", gap: 6,
+                            }}
+                          >
+                            ✓ Report Submitted
+                          </span>
+                        )}
+                      </div>
+                    </HeritageCard>
+                  ))
+                )}
+              </div>
+            </>
+          )}
+
+          {tab === "reports" && (
+            <>
+              <h2 className="m-0" style={{ color: "#002a15", fontSize: "1.5rem", fontWeight: 500, marginBottom: 24, fontFamily: FONT_SERIF }}>
+                Referee Reports
+              </h2>
+              {myAssignedRaces.filter(r => r.status === "Finished").length === 0 ? (
+                <HeritageCard padding={64} style={{ textAlign: "center" }}>
+                  <p className="m-0" style={{ color: "#555e58", fontSize: "0.95rem" }}>No finished races to report on.</p>
+                </HeritageCard>
+              ) : (
+                <div className="grid gap-4">
+                  {myAssignedRaces.filter(r => r.status === "Finished").map(race => {
+                    const currentOrder = finishOrder[race.id] || {};
+                    const existingResults = Object.fromEntries(
+                      race.registrations.map(reg => [reg.id, reg.result])
+                    );
+                    const mergedOrder = { ...existingResults, ...currentOrder };
+
+                    return (
+                      <HeritageCard key={race.id} padding={0} style={{ overflow: "hidden" }}>
+                        <div className="flex items-center justify-between flex-wrap gap-3" style={{ padding: 24, borderBottom: "1px solid #f0ede4" }}>
+                          <div>
+                            <h3 className="m-0" style={{ color: "#002a15", fontSize: "1.2rem", fontWeight: 500, fontFamily: FONT_SERIF }}>
+                              {race.name}
+                            </h3>
+                            <p className="m-0" style={{ marginTop: 4, color: "#747b75", fontSize: "0.82rem" }}>
+                              {fmtDate(race.date)} · {race.venue}
+                            </p>
+                          </div>
+                          {race.reportSubmitted ? (
+                            <span style={{ color: "#166534", fontWeight: 700, fontSize: "0.82rem" }}>
+                              ✓ Submitted
+                            </span>
+                          ) : (
+                            <span style={{ color: "#b8860b", fontWeight: 700, fontSize: "0.82rem" }}>
+                              Pending
+                            </span>
+                          )}
+                        </div>
+
+                        {!race.reportSubmitted ? (
+                          <div style={{ padding: 24 }}>
+                            <HeritageField label="Finish Order" hint="Assign each horse their final position.">
+                              <div className="grid gap-2">
+                                {race.registrations.map((reg, i) => {
+                                  const currentPos = mergedOrder[reg.id] || "";
+                                  return (
+                                    <div
+                                      key={reg.id}
+                                      className="flex items-center"
+                                      style={{ padding: 12, background: "#f7f6f1", borderRadius: 4, gap: 12 }}
+                                    >
+                                      <span
+                                        className="grid place-items-center"
+                                        style={{
+                                          width: 32, height: 32, borderRadius: 999,
+                                          background: "#002a15", color: "#ffdea5",
+                                          fontSize: "0.78rem", fontWeight: 800,
+                                        }}
+                                      >
+                                        {currentPos || (i + 1)}
+                                      </span>
+                                      <div className="flex-1">
+                                        <p className="m-0" style={{ color: "#002a15", fontSize: "0.95rem", fontWeight: 700 }}>
+                                          {reg.horseName}
+                                        </p>
+                                        <p className="m-0" style={{ color: "#747b75", fontSize: "0.78rem", marginTop: 2 }}>
+                                          {reg.jockeyName}
+                                        </p>
+                                      </div>
+                                      <HeritageSelect
+                                        value={currentPos || ""}
+                                        onChange={e => {
+                                          const val = e.target.value ? parseInt(e.target.value) : "";
+                                          setFinishOrder(prev => ({
+                                            ...prev,
+                                            [race.id]: { ...(prev[race.id] || {}), [reg.id]: val },
+                                          }));
+                                        }}
+                                        style={{ width: 140 }}
+                                      >
+                                        <option value="">— Position —</option>
+                                        {race.registrations.map((_, idx) => (
+                                          <option key={idx + 1} value={idx + 1}>#{idx + 1}</option>
+                                        ))}
+                                      </HeritageSelect>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </HeritageField>
+
+                            <HeritageField label="Violations / Notes" hint="Optional — record any incidents or official notes.">
+                              <HeritageTextarea
+                                placeholder="Record any violations, incidents, or official notes during the race..."
+                                value={violations[race.id] || ""}
+                                onChange={e => setViolations(v => ({ ...v, [race.id]: e.target.value }))}
+                                rows={3}
+                              />
+                            </HeritageField>
+
+                            <div className="flex justify-end" style={{ marginTop: 16 }}>
+                              <HeritageButton onClick={() => setConfirmingReport(race)} style={{ background: "#b8860b", borderColor: "#b8860b" }}>
+                                Submit Official Report
+                              </HeritageButton>
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ padding: 24 }}>
+                            <p className="m-0" style={{ color: "#747b75", fontSize: "0.66rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+                              Official Results
+                            </p>
+                            <div className="grid gap-2">
+                              {race.registrations
+                                .filter(r => r.result)
+                                .sort((a, b) => a.result - b.result)
+                                .map((reg) => (
+                                  <div
+                                    key={reg.id}
+                                    className="flex items-center"
+                                    style={{ padding: 12, background: "#f7f6f1", borderRadius: 4, gap: 12 }}
+                                  >
+                                    <PositionBadge pos={reg.result} />
+                                    <div className="flex-1">
+                                      <p className="m-0" style={{ color: "#002a15", fontSize: "0.95rem", fontWeight: 700 }}>
+                                        {reg.horseName}
+                                      </p>
+                                      <p className="m-0" style={{ color: "#747b75", fontSize: "0.78rem", marginTop: 2 }}>
+                                        {reg.jockeyName}
+                                      </p>
+                                    </div>
+                                    {reg.result === 1 && <span style={{ fontSize: "1.2rem" }}>🏆</span>}
+                                  </div>
+                                ))}
+                            </div>
+                            {violations[race.id] && (
+                              <div
+                                className="m-0"
+                                style={{ marginTop: 12, padding: 12, background: "rgba(255,222,165,0.4)", color: "#002a15", fontSize: "0.85rem", borderRadius: 4 }}
+                              >
+                                <strong>Notes:</strong> {violations[race.id]}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </HeritageCard>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
         </div>
-      )}
+      </section>
 
-      {/* Race Detail Modal */}
-      {selectedRace && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)" }} onClick={() => setSelectedRace(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center p-5 border-b border-slate-100">
-              <div>
-                <h3 className="text-base font-bold text-slate-800">{selectedRace.name}</h3>
-                <p className="text-xs text-slate-400">{selectedRace.venue} · {fmtDate(selectedRace.date)} {selectedRace.time}</p>
-              </div>
-              <button onClick={() => setSelectedRace(null)} className="cursor-pointer bg-transparent border-none text-slate-400"><i className="ti ti-x text-lg" /></button>
+      <HeritageToast
+        message={toast?.msg}
+        type={toast?.type}
+        onClose={() => setToast(null)}
+      />
+
+      <HeritageSlidePanel
+        open={!!selectedRace}
+        onClose={() => setSelectedRace(null)}
+        title={selectedRace?.name || "Race Detail"}
+      >
+        {selectedRace && (
+          <div className="grid gap-4">
+            <div className="grid" style={{ gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
+              {[
+                { k: "Grade", v: selectedRace.grade },
+                { k: "Distance", v: `${selectedRace.distance}m` },
+                { k: "Condition", v: selectedRace.condition },
+                { k: "Prize", v: `$${selectedRace.prizePool.toLocaleString()}` },
+              ].map((f) => (
+                <div key={f.k} style={{ padding: 12, background: "#f7f6f1", borderRadius: 4 }}>
+                  <p className="m-0" style={{ color: "#747b75", fontSize: "0.66rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                    {f.k}
+                  </p>
+                  <p className="m-0" style={{ color: "#002a15", fontSize: "0.95rem", fontWeight: 700, marginTop: 4 }}>
+                    {f.v}
+                  </p>
+                </div>
+              ))}
             </div>
-            <div className="p-5">
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                {[
-                  ["Grade", selectedRace.grade],
-                  ["Distance", selectedRace.distance + "m"],
-                  ["Condition", selectedRace.condition],
-                  ["Prize", "$" + selectedRace.prizePool.toLocaleString()],
-                ].map(([k, v]) => (
-                  <div key={k} className="bg-slate-50 rounded-xl p-2.5">
-                    <div className="text-[11px] text-slate-400 mb-0.5">{k}</div>
-                    <div className="text-sm font-semibold text-slate-800">{v}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Status:</span>
-                <StatusPill status={selectedRace.status} />
-              </div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Participants ({selectedRace.registrations.length})</p>
-              <div className="flex flex-col gap-2">
+            <div className="flex items-center" style={{ gap: 10 }}>
+              <span style={{ color: "#747b75", fontSize: "0.66rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>Status</span>
+              <HeritageStatusPill status={selectedRace.status} />
+            </div>
+            <div>
+              <p className="m-0" style={{ color: "#747b75", fontSize: "0.66rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10 }}>
+                Participants ({selectedRace.registrations.length})
+              </p>
+              <div className="grid gap-2">
                 {selectedRace.registrations.map((reg, i) => (
-                  <div key={reg.id} className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: BORDER }}>
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: BRAND }}>{i + 1}</div>
+                  <div
+                    key={reg.id}
+                    className="flex items-center"
+                    style={{ padding: 12, background: "#f7f6f1", borderRadius: 4, gap: 12 }}
+                  >
+                    <span
+                      className="grid place-items-center"
+                      style={{
+                        width: 32, height: 32, borderRadius: 999,
+                        background: "#002a15", color: "#ffdea5",
+                        fontSize: "0.78rem", fontWeight: 800,
+                      }}
+                    >
+                      {i + 1}
+                    </span>
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-slate-800">{reg.horseName}</p>
-                      <p className="text-xs text-slate-400">{reg.jockeyName} · {reg.ownerName}</p>
+                      <p className="m-0" style={{ color: "#002a15", fontSize: "0.95rem", fontWeight: 700 }}>
+                        {reg.horseName}
+                      </p>
+                      <p className="m-0" style={{ color: "#747b75", fontSize: "0.78rem", marginTop: 2 }}>
+                        {reg.jockeyName} · {reg.ownerName}
+                      </p>
                     </div>
-                    <StatusPill status={reg.status} />
+                    <HeritageStatusPill status={reg.status} />
                   </div>
                 ))}
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </HeritageSlidePanel>
 
-      {/* Confirm Report Modal */}
       {confirmingReport && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)" }} onClick={() => setConfirmingReport(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="p-5 border-b border-slate-100">
-              <h3 className="text-base font-bold text-slate-800">Submit Referee Report</h3>
-              <p className="text-xs text-slate-500 mt-1">{confirmingReport.name}</p>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,42,21,0.55)", backdropFilter: "blur(3px)" }}
+          onClick={() => setConfirmingReport(null)}
+        >
+          <div
+            className="bg-white"
+            style={{
+              width: "min(100%, 460px)",
+              borderRadius: 8,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ padding: "20px 28px", borderBottom: "1px solid #d7d3c7" }}>
+              <h2 className="m-0" style={{ color: "#002a15", fontSize: "1.4rem", fontWeight: 500, fontFamily: FONT_SERIF }}>
+                Submit Referee Report
+              </h2>
+              <p className="m-0" style={{ color: "#747b75", fontSize: "0.85rem", marginTop: 6 }}>
+                {confirmingReport.name}
+              </p>
             </div>
-            <div className="p-5">
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 text-xs text-blue-700">
-                <i className="ti ti-info-circle mr-1.5" />
+            <div className="grid gap-3" style={{ padding: 28 }}>
+              <div style={{ padding: 14, background: "#dbeafe", color: "#1e40af", fontSize: "0.85rem", borderRadius: 4 }}>
                 By submitting, you confirm the official results of this race are final and will be published.
               </div>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4 text-xs text-yellow-700">
-                <i className="ti ti-alert-triangle mr-1.5" />
+              <div style={{ padding: 14, background: "rgba(255,222,165,0.4)", color: "#002a15", fontSize: "0.85rem", borderRadius: 4 }}>
                 This action cannot be undone. Results will be locked.
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => setConfirmingReport(null)} className="flex-1 py-2.5 rounded-xl border text-sm font-semibold font-sans cursor-pointer" style={{ borderColor: BORDER, color: TEXT_MUTED }}>
+              <div className="flex" style={{ gap: 8, marginTop: 8 }}>
+                <HeritageButton variant="outline" style={{ flex: 1, justifyContent: "center" }} onClick={() => setConfirmingReport(null)}>
                   Cancel
-                </button>
-                <button
-                  onClick={() => submitReport(confirmingReport)}
-                  className="flex-1 py-2.5 rounded-xl font-semibold text-white font-sans cursor-pointer border-none"
-                  style={{ background: "#b8860b" }}
-                >
+                </HeritageButton>
+                <HeritageButton style={{ flex: 1, justifyContent: "center", background: "#b8860b", borderColor: "#b8860b" }} onClick={() => submitReport(confirmingReport)}>
                   Submit Report
-                </button>
+                </HeritageButton>
               </div>
             </div>
           </div>
         </div>
       )}
-    </AppShell>
+    </HeritageLayout>
   );
 }

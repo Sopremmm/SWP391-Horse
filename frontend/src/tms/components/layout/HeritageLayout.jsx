@@ -3,6 +3,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useApp } from "../../AppContext.jsx";
 import { ROLE_LABELS } from "../../users.js";
 
+export const FONT_SERIF = '"EB Garamond", Georgia, serif';
+const FONT_SANS = "Inter, ui-sans-serif, system-ui, sans-serif";
+
 function SearchIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
