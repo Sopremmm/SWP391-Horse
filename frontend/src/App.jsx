@@ -28,6 +28,15 @@ import RaceResultPage from './pages/RaceResultPage.jsx';
 import PredictionsPage from './pages/PredictionsPage.jsx';
 import UsersPage from './pages/UsersPage.jsx';
 
+// Leader's pages (Heritage Racing design — exact replica of leader's codebase)
+import LeaderHomepage from './tms/pages/leader/Homepage.jsx';
+import LeaderTournament from './tms/pages/leader/Tournament.jsx';
+import LeaderMyHorses from './tms/pages/leader/MyHorses.jsx';
+import LeaderHireJockey from './tms/pages/leader/HireJockey.jsx';
+import LeaderHorseOwnerHome from './tms/pages/leader/HorseOwnerHome.jsx';
+import LeaderJockeyHome from './tms/pages/leader/JockeyHome.jsx';
+import LeaderAdminHome from './tms/pages/leader/AdminHome.jsx';
+
 function RequireAuth({ children }) {
   return children;
 }
@@ -35,11 +44,25 @@ function RequireAuth({ children }) {
 function AppRoutes() {
   return (
     <Routes>
-      {/* ── Public landing ── */}
-      <Route path="/" element={<LandingPage />} />
+      {/* ── Leader's Heritage Racing pages (replicas of leader's codebase) ── */}
+      <Route path="/" element={<LeaderHomepage />} />
+      <Route path="/Homepage" element={<LeaderHomepage />} />
+      <Route path="/homepage" element={<LeaderHomepage />} />
+      <Route path="/HorseOwnerHome" element={<LeaderHorseOwnerHome />} />
+      <Route path="/horseownerhome" element={<LeaderHorseOwnerHome />} />
+      <Route path="/HorseOwner/Profile" element={<LeaderHorseOwnerHome />} />
+      <Route path="/HorseOwner/MyHorses" element={<LeaderMyHorses />} />
+      <Route path="/HorseOwner/Tournaments" element={<LeaderTournament />} />
+      <Route path="/HorseOwner/MyTournament" element={<LeaderTournament />} />
+      <Route path="/HorseOwner/HireJockeys" element={<LeaderHireJockey />} />
+      <Route path="/Jockey/Home" element={<LeaderJockeyHome />} />
+      <Route path="/admin" element={<LeaderAdminHome />} />
+
+      {/* ── Legacy landing fallback (also keeps our local spectator auth modal) ── */}
+      <Route path="/legacy" element={<LandingPage />} />
 
       {/* ── Admin (green sidebar layout) ── */}
-      <Route path="/admin" element={<AdminLayout />}>
+      <Route path="/admin-tms" element={<AdminLayout />}>
         <Route index element={<AdminDashboard />} />
         <Route path="tournament" element={<TournamentPage />} />
         <Route path="races" element={<RacesPage />} />
