@@ -1,10 +1,23 @@
 import { useState } from "react";
 import { useApp } from "../AppContext.jsx";
-import { BRAND, BRAND_BORDER, BRAND_LIGHT, BRAND_TEXT, BORDER } from "../constants.js";
 import { fmtDate, fmtDateTime, fmtMillions } from "../format.js";
-import AppShell from "../components/layout/AppShell.jsx";
-import StatusPill from "../components/common/StatusPill.jsx";
-import SlidePanel from "../components/common/SlidePanel.jsx";
+import HeritageLayout, { FONT_SERIF } from "../components/layout/HeritageLayout.jsx";
+import {
+  HeritageTabs,
+  HeritageStat,
+  HeritageCard,
+  HeritageButton,
+  HeritageStatusPill,
+  HeritageToast,
+  HeritagePageHeader,
+  HeritageField,
+  HeritageInput,
+  HeritageSelect,
+  HeritageTextarea,
+  HeritageSlidePanel,
+} from "../components/layout/HeritageUI.jsx";
+
+const HORSE_EMOJI = "🐎";
 
 const INITIAL_HORSES = [
   { id: "H001", name: "Thunder Bolt", breed: "Thoroughbred", age: 4, weight: 520, color: "Bay", ownerOrg: "Sunrise Stables" },
@@ -12,25 +25,21 @@ const INITIAL_HORSES = [
 ];
 
 const JOCKEYS_POOL = [
-  { id: "J01", name: "Miguel Torres",  license: "JLN-4821", nationality: "Mexico" },
-  { id: "J02", name: "Carlos Ruiz",    license: "JLN-3156", nationality: "Spain" },
-  { id: "J03", name: "Emma Sinclair",   license: "JLN-2201", nationality: "UK" },
+  { id: "J01", name: "Miguel Torres", license: "JLN-4821", nationality: "Mexico" },
+  { id: "J02", name: "Carlos Ruiz", license: "JLN-3156", nationality: "Spain" },
+  { id: "J03", name: "Emma Sinclair", license: "JLN-2201", nationality: "UK" },
   { id: "J04", name: "James O'Brien", license: "JLN-1893", nationality: "Ireland" },
-  { id: "J05", name: "Yuki Tanaka",    license: "JLN-4022", nationality: "Japan" },
-  { id: "J06", name: "Lucas Martini",  license: "JLN-2556", nationality: "Italy" },
+  { id: "J05", name: "Yuki Tanaka", license: "JLN-4022", nationality: "Japan" },
+  { id: "J06", name: "Lucas Martini", license: "JLN-2556", nationality: "Italy" },
 ];
 
-function StatCard({ label, value, icon, color, bg, border }) {
-  return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-      <div className="w-9 h-9 rounded-lg flex items-center justify-center border" style={{ background: bg, borderColor: border }}>
-        <i className={`ti ti-${icon} text-base`} style={{ color }} />
-      </div>
-      <div className="text-2xl font-black text-slate-800">{value}</div>
-      <div className="text-xs text-slate-400 font-medium">{label}</div>
-    </div>
-  );
-}
+const HORSE_COVERS = [
+  "https://images.unsplash.com/photo-1538610111451-b006900ee327?auto=format&fit=crop&q=80&w=600&h=400",
+  "https://images.unsplash.com/photo-1505244208761-ba873587233e?auto=format&fit=crop&q=80&w=600&h=400",
+  "https://images.unsplash.com/photo-1518467166-367ae630fc92?auto=format&fit=crop&q=80&w=600&h=400",
+  "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?auto=format&fit=crop&q=80&w=600&h=400",
+  "https://images.unsplash.com/photo-1598974357801-cbca100e6543?auto=format&fit=crop&q=80&w=600&h=400",
+];
 
 export default function OwnerDashboard() {
   const { user, tournament, races, setRaces } = useApp();
@@ -46,10 +55,7 @@ export default function OwnerDashboard() {
   const [inviteForm, setInviteForm] = useState({ jockeyId: "", message: "" });
   const [regForm, setRegForm] = useState({ horseId: "", raceId: "", jockeyId: "", trainerName: "" });
 
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  };
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
   const myHorses = horses.filter(h => h.ownerOrg === user?.org);
 
@@ -70,7 +76,7 @@ export default function OwnerDashboard() {
     setHorses(prev => [...prev, h]);
     setHorseForm({ name: "", breed: "Thoroughbred", age: "", weight: "", color: "" });
     setAddHorseOpen(false);
-    showToast(h.name + " added successfully.");
+    showToast(`${h.name} added successfully.`);
   };
 
   const saveEditHorse = (e) => {
@@ -90,7 +96,7 @@ export default function OwnerDashboard() {
     }]);
     setInviteOpen(null);
     setInviteForm({ jockeyId: "", message: "" });
-    showToast("Invitation sent to " + jockey.name + ".");
+    showToast(`Invitation sent to ${jockey.name}.`);
   };
 
   const registerHorseForRace = (e) => {
@@ -118,436 +124,524 @@ export default function OwnerDashboard() {
     setRaces(prev => prev.map(r => r.id === regForm.raceId ? { ...r, registrations: [...r.registrations, newReg] } : r));
     setRegForm({ horseId: "", raceId: "", jockeyId: "", trainerName: "" });
     setRegisterOpen(null);
-    showToast(horse.name + " registered for " + race.name + ".");
+    showToast(`${horse.name} registered for ${race.name}.`);
   };
 
   const nav = [
-    { id: "overview",    label: "Overview",    icon: "layout-dashboard" },
-    { id: "horses",      label: "My Horses",  icon: "horse" },
-    { id: "invitations", label: "Invitations", icon: "send" },
-    { id: "schedule",    label: "Schedule",    icon: "calendar" },
-    { id: "results",     label: "Results",     icon: "trophy" },
+    { id: "overview", label: "Overview" },
+    { id: "horses", label: "My Horses", count: myHorses.length },
+    { id: "invitations", label: "Invitations", count: invitations.length },
+    { id: "schedule", label: "Schedule" },
+    { id: "results", label: "Results" },
   ];
 
   return (
-    <AppShell page={tab} setPage={setTab} nav={nav} subtitle={"Horse Owner \u2014 " + (user?.org || "")}>
-      {toast && (
-        <div className="fixed top-5 right-5 z-[9999] px-4 py-3 rounded-xl text-sm font-semibold shadow-lg"
-          style={{ background: "#d1fae5", color: "#166534", border: "1px solid #86efac" }}>
-          <i className="ti ti-circle-check mr-2" />{toast}
-        </div>
-      )}
+    <HeritageLayout role="owner" subtitle={`Horse Owner — ${user?.org || ""}`}>
+      <HeritagePageHeader
+        eyebrow={`Horse Owner · ${user?.org || "—"}`}
+        title={tournament.name}
+        subtitle={tournament.organizer}
+      />
 
-      {tab === "overview" && (
-        <>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <StatCard label="My Horses" value={myHorses.length} icon="horse" color={BRAND_TEXT} bg={BRAND_LIGHT} border={BRAND_BORDER} />
-            <StatCard label="Approved" value={approved} icon="circle-check" color="#065f46" bg="#ecfdf5" border="#a7f3d0" />
-            <StatCard label="Pending" value={pending} icon="clock" color="#92400e" bg="#fef3c7" border="#fde68a" />
-            <StatCard label="Total Races" value={races.length} icon="trophy" color="#1d4ed8" bg="#eff6ff" border="#93c5fd" />
-          </div>
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-6 shadow-sm">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <h2 className="text-base font-bold text-slate-800 m-0 font-serif">{tournament.name}</h2>
-                <p className="text-sm text-slate-500 mt-1 m-0">{tournament.organizer}</p>
-              </div>
-              <StatusPill status={tournament.status} />
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-              {[
-                ["Prize fund", fmtMillions(tournament.totalPrize)],
-                ["Reg. deadline", fmtDate(tournament.registrationDeadline)],
-                ["Start", fmtDate(tournament.startDate)],
-                ["End", fmtDate(tournament.endDate)],
-              ].map(([k, v]) => (
-                <div key={k} className="bg-slate-50 rounded-xl p-2.5">
-                  <div className="text-[11px] text-slate-400 mb-0.5">{k}</div>
-                  <div className="text-sm font-semibold">{v}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <h3 className="text-sm font-bold text-slate-700 mb-3">My Recent Registrations</h3>
-          <div className="flex flex-col gap-3">
-            {myRegs.slice(0, 5).map(h => (
-              <div key={h.id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-bold text-slate-800">{h.horseName}</p>
-                  <p className="text-xs text-slate-400 mt-1">{h.raceName} &middot; {h.raceVenue} &middot; {fmtDate(h.raceDate)}</p>
-                </div>
-                <StatusPill status={h.status} />
-              </div>
-            ))}
-            {myRegs.length === 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
-                <p className="text-slate-500 text-sm">No registrations yet. Go to My Horses to register.</p>
-              </div>
-            )}
-          </div>
-        </>
-      )}
+      <HeritageTabs tabs={nav} active={tab} onChange={setTab} />
 
-      {tab === "horses" && (
-        <>
-          <div className="flex justify-between items-center mb-4 gap-3">
-            <h2 className="text-lg font-bold text-slate-800 m-0">My Horses ({myHorses.length})</h2>
-            <div className="flex gap-2">
-              <button onClick={() => setRegisterOpen(true)}
-                className="px-4 py-2 rounded-xl text-sm font-semibold" style={{ background: "#eff6ff", color: "#1d4ed8", border: "1px solid #93c5fd" }}>
-                <i className="ti ti-flag mr-1.5" />Register
-              </button>
-              <button onClick={() => setAddHorseOpen(true)}
-                className="px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: BRAND }}>
-                <i className="ti ti-plus mr-1.5" />Add Horse
-              </button>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {myHorses.map(h => (
-              <div key={h.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                <div className="h-28 flex items-center justify-center text-5xl" style={{ background: "linear-gradient(135deg, #f0fdf4, #dcfce7)" }}>
-                  &#x1F40E;
-                </div>
-                <div className="p-4">
-                  <h3 className="text-sm font-bold text-slate-800 mb-1">{h.name}</h3>
-                  <p className="text-xs text-slate-400 mb-3">{h.breed} &middot; {h.color} &middot; {h.age} yrs &middot; {h.weight}kg</p>
-                  <div className="flex gap-2">
-                    <button onClick={() => setEditHorse({ ...h })}
-                      className="flex-1 py-1.5 rounded-lg text-xs font-semibold" style={{ background: BRAND_LIGHT, color: BRAND_TEXT, border: "1px solid " + BRAND_BORDER }}>
-                      <i className="ti ti-edit mr-1" />Edit
-                    </button>
-                    <button onClick={() => setInviteOpen({ horseId: h.id, horseName: h.name })}
-                      className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-white" style={{ background: BRAND }}>
-                      <i className="ti ti-send mr-1" />Invite
-                    </button>
+      <section style={{ paddingBlock: "clamp(40px, 5vw, 56px)" }}>
+        <div className="w-full mx-auto px-7 md:px-10 lg:px-16">
+          {tab === "overview" && (
+            <>
+              <div
+                className="grid gap-5"
+                style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))", marginBottom: 40 }}
+              >
+                <HeritageStat value={myHorses.length} label="My Horses" />
+                <HeritageStat value={approved} label="Approved" color="#166534" />
+                <HeritageStat value={pending} label="Pending" color="#b8860b" />
+                <HeritageStat value={races.length} label="Total Races" color="#1e40af" />
+              </div>
+
+              <HeritageCard padding={32} style={{ marginBottom: 32 }}>
+                <div className="flex justify-between items-start flex-wrap gap-4" style={{ marginBottom: 24 }}>
+                  <div>
+                    <p className="m-0" style={{ color: "#747b75", fontSize: "0.7rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                      Current Tournament
+                    </p>
+                    <h2
+                      className="m-0"
+                      style={{ color: "#002a15", fontSize: "1.7rem", fontWeight: 500, marginTop: 6, fontFamily: FONT_SERIF }}
+                    >
+                      {tournament.name}
+                    </h2>
+                    <p className="m-0" style={{ marginTop: 6, color: "#555e58", fontSize: "0.92rem" }}>
+                      {tournament.organizer}
+                    </p>
                   </div>
+                  <HeritageStatusPill status={tournament.status} />
                 </div>
-              </div>
-            ))}
-            {myHorses.length === 0 && (
-              <div className="col-span-full bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: BRAND_LIGHT, border: "1px solid " + BRAND_BORDER }}>
-                  <i className="ti ti-horse text-2xl" style={{ color: BRAND_TEXT }} />
-                </div>
-                <p className="text-slate-500 text-sm">No horses yet. Add your first horse.</p>
-                <button onClick={() => setAddHorseOpen(true)} className="mt-3 px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: BRAND }}>Add Horse</button>
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      {tab === "invitations" && (
-        <>
-          <h2 className="text-lg font-bold text-slate-800 mb-4">Jockey Invitations</h2>
-          <div className="flex flex-col gap-3">
-            {invitations.length === 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: BRAND_LIGHT, border: "1px solid " + BRAND_BORDER }}>
-                  <i className="ti ti-send text-2xl" style={{ color: BRAND_TEXT }} />
-                </div>
-                <p className="text-slate-500 text-sm">No invitations sent yet.</p>
-                <p className="text-xs text-slate-400 mt-1">Go to My Horses and click Invite on a horse.</p>
-              </div>
-            )}
-            {invitations.map(inv => (
-              <div key={inv.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: BRAND_LIGHT, color: BRAND_TEXT }}>{inv.jockeyName[0]}</div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-800">{inv.jockeyName}</p>
-                      <p className="text-xs text-slate-400">{inv.license}</p>
-                    </div>
-                  </div>
-                  <StatusPill status={inv.status} />
-                </div>
-                <div className="flex items-center gap-4 text-xs text-slate-400">
-                  <span><i className="ti ti-horse mr-1" />{inv.horseName}</span>
-                  <span><i className="ti ti-send mr-1" />{fmtDateTime(inv.sentAt)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {tab === "schedule" && (
-        <>
-          <h2 className="text-lg font-bold text-slate-800 mb-4">Race Schedule</h2>
-          <div className="flex flex-col gap-4">
-            {races.filter(r => r.status !== "Cancelled").map(race => {
-              const myReg = race.registrations.find(reg => reg.ownerName === user?.org);
-              return (
-                <div key={race.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                  <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-bold text-slate-800">{race.name}</span>
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: BRAND_LIGHT, color: BRAND_TEXT }}>{race.grade}</span>
-                      </div>
-                      <p className="text-xs text-slate-400 flex items-center gap-3">
-                        <span><i className="ti ti-map-pin mr-1" />{race.venue}</span>
-                        <span><i className="ti ti-calendar mr-1" />{fmtDate(race.date)}</span>
-                        <span><i className="ti ti-ruler-measure mr-1" />{race.distance}m</span>
+                <div
+                  className="grid"
+                  style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 16 }}
+                >
+                  {[
+                    { k: "Prize Fund", v: fmtMillions(tournament.totalPrize) },
+                    { k: "Reg. Deadline", v: fmtDate(tournament.registrationDeadline) },
+                    { k: "Start", v: fmtDate(tournament.startDate) },
+                    { k: "End", v: fmtDate(tournament.endDate) },
+                  ].map((f) => (
+                    <div key={f.k} style={{ padding: 14, background: "#f7f6f1", borderRadius: 6 }}>
+                      <p className="m-0" style={{ color: "#747b75", fontSize: "0.66rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                        {f.k}
+                      </p>
+                      <p className="m-0" style={{ color: "#002a15", fontSize: "0.95rem", fontWeight: 700, marginTop: 4 }}>
+                        {f.v}
                       </p>
                     </div>
-                    <StatusPill status={race.status} />
-                  </div>
-                  {myReg ? (
-                    <div className="p-4 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: BRAND_LIGHT }}>&#x1F40E;</div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-slate-800">{myReg.horseName}</p>
-                        <p className="text-xs text-slate-400">{myReg.horseColor} &middot; {myReg.horseAge}yo &middot; {myReg.jockeyName}</p>
-                      </div>
-                      <StatusPill status={myReg.status} />
-                    </div>
-                  ) : (
-                    <div className="p-4 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "#f3f4f6" }}>?</div>
+                  ))}
+                </div>
+              </HeritageCard>
+
+              <h2 className="m-0" style={{ color: "#002a15", fontSize: "1.5rem", fontWeight: 500, marginBottom: 20, fontFamily: FONT_SERIF }}>
+                My Recent Registrations
+              </h2>
+              <div className="grid gap-3">
+                {myRegs.slice(0, 5).map(h => (
+                  <HeritageCard key={h.id} padding={20}>
+                    <div className="flex justify-between items-start flex-wrap gap-3">
                       <div>
-                        <p className="text-sm text-slate-400">Not registered for this race</p>
-                        <p className="text-xs text-slate-400">{race.venue} &middot; {race.date}</p>
+                        <p className="m-0" style={{ color: "#002a15", fontSize: "1.05rem", fontWeight: 700, fontFamily: FONT_SERIF }}>
+                          {h.horseName}
+                        </p>
+                        <p className="m-0" style={{ marginTop: 4, color: "#747b75", fontSize: "0.82rem" }}>
+                          {h.raceName} · {h.raceVenue} · {fmtDate(h.raceDate)}
+                        </p>
                       </div>
+                      <HeritageStatusPill status={h.status} />
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      {tab === "results" && (
-        <>
-          <h2 className="text-lg font-bold text-slate-800 mb-4">Race Results &amp; Leaderboard</h2>
-          <div className="flex flex-col gap-4">
-            {races.filter(r => r.status === "Finished").length === 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: BRAND_LIGHT, border: "1px solid " + BRAND_BORDER }}>
-                  <i className="ti ti-trophy text-2xl" style={{ color: BRAND_TEXT }} />
-                </div>
-                <p className="text-slate-500 text-sm">No race results published yet.</p>
+                  </HeritageCard>
+                ))}
+                {myRegs.length === 0 && (
+                  <HeritageCard padding={64} style={{ textAlign: "center" }}>
+                    <p className="m-0" style={{ color: "#555e58", fontSize: "0.95rem" }}>
+                      No registrations yet. Go to My Horses to register.
+                    </p>
+                  </HeritageCard>
+                )}
               </div>
-            )}
-            {races.filter(r => r.status === "Finished").map(race => {
-              const myReg = race.registrations.find(reg => reg.ownerName === user?.org);
-              const winner = race.registrations.find(reg => reg.result === 1);
-              return (
-                <div key={race.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                  <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-bold text-slate-800">{race.name}</p>
-                      <p className="text-xs text-slate-400">{race.venue} &middot; {fmtDate(race.date)}</p>
+            </>
+          )}
+
+          {tab === "horses" && (
+            <>
+              <div className="flex justify-between items-center flex-wrap gap-3" style={{ marginBottom: 24 }}>
+                <h2 className="m-0" style={{ color: "#002a15", fontSize: "1.5rem", fontWeight: 500, fontFamily: FONT_SERIF }}>
+                  My Horses ({myHorses.length})
+                </h2>
+                <div className="flex" style={{ gap: 8 }}>
+                  <HeritageButton variant="outline" onClick={() => setRegisterOpen(true)}>
+                    Register
+                  </HeritageButton>
+                  <HeritageButton onClick={() => setAddHorseOpen(true)}>
+                    Add Horse
+                  </HeritageButton>
+                </div>
+              </div>
+              <div
+                className="grid gap-5"
+                style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}
+              >
+                {myHorses.map((h, idx) => (
+                  <HeritageCard key={h.id} padding={0} style={{ overflow: "hidden" }}>
+                    <div
+                      className="relative overflow-hidden"
+                      style={{ height: 160, background: "#e4e1d7" }}
+                    >
+                      <img
+                        src={HORSE_COVERS[idx % HORSE_COVERS.length]}
+                        alt={h.name}
+                        className="block w-full h-full object-cover"
+                      />
                     </div>
-                    <div className="text-right">
-                      <p className="text-base font-black" style={{ color: BRAND_TEXT }}>${race.prizePool.toLocaleString()}</p>
-                      <StatusPill status="Finished" />
-                    </div>
-                  </div>
-                  {winner && (
-                    <div className="p-4 bg-emerald-50 border-b border-emerald-100">
-                      <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-1">Winner</p>
-                      <p className="text-base font-black text-slate-800">{winner.horseName}</p>
-                      <p className="text-xs text-slate-500">{winner.jockeyName} &middot; ${race.prizePool.toLocaleString()} prize</p>
-                    </div>
-                  )}
-                  {myReg && myReg.result ? (
-                    <div className="p-4">
-                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Your Result</p>
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-black text-slate-800">#{myReg.result}</span>
-                        <span className="text-sm text-slate-700">{myReg.horseName}</span>
+                    <div style={{ padding: 20 }}>
+                      <h3 className="m-0" style={{ color: "#002a15", fontSize: "1.2rem", fontWeight: 500, fontFamily: FONT_SERIF }}>
+                        {h.name}
+                      </h3>
+                      <p className="m-0" style={{ color: "#747b75", fontSize: "0.82rem", marginTop: 4 }}>
+                        {h.breed} · {h.color} · {h.age} yrs · {h.weight}kg
+                      </p>
+                      <div className="flex" style={{ gap: 8, marginTop: 16 }}>
+                        <HeritageButton size="sm" variant="outline" style={{ flex: 1, justifyContent: "center" }} onClick={() => setEditHorse({ ...h })}>
+                          Edit
+                        </HeritageButton>
+                        <HeritageButton size="sm" style={{ flex: 1, justifyContent: "center" }} onClick={() => setInviteOpen({ horseId: h.id, horseName: h.name })}>
+                          Invite
+                        </HeritageButton>
                       </div>
                     </div>
-                  ) : (
-                    <div className="p-4 text-center text-xs text-slate-400">
-                      No result for your horse in this race.
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
+                  </HeritageCard>
+                ))}
+                {myHorses.length === 0 && (
+                  <HeritageCard padding={64} style={{ textAlign: "center" }}>
+                    <p className="m-0" style={{ color: "#555e58", fontSize: "0.95rem" }}>No horses yet.</p>
+                  </HeritageCard>
+                )}
+              </div>
+            </>
+          )}
 
-      <SlidePanel open={addHorseOpen} onClose={() => setAddHorseOpen(false)} title="Add New Horse">
-        <form onSubmit={addHorse} className="flex flex-col gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Horse Name *</label>
-            <input required value={horseForm.name}
-              onChange={e => setHorseForm(f => ({ ...f, name: e.target.value }))}
+          {tab === "invitations" && (
+            <>
+              <h2 className="m-0" style={{ color: "#002a15", fontSize: "1.5rem", fontWeight: 500, marginBottom: 24, fontFamily: FONT_SERIF }}>
+                Jockey Invitations
+              </h2>
+              <div className="grid gap-3">
+                {invitations.length === 0 ? (
+                  <HeritageCard padding={64} style={{ textAlign: "center" }}>
+                    <p className="m-0" style={{ color: "#555e58", fontSize: "0.95rem" }}>No invitations sent yet.</p>
+                    <p className="m-0" style={{ color: "#747b75", fontSize: "0.82rem", marginTop: 8 }}>
+                      Go to My Horses and click Invite on a horse.
+                    </p>
+                  </HeritageCard>
+                ) : (
+                  invitations.map(inv => (
+                    <HeritageCard key={inv.id} padding={24}>
+                      <div className="flex items-center justify-between flex-wrap gap-3" style={{ marginBottom: 12 }}>
+                        <div className="flex items-center" style={{ gap: 14 }}>
+                          <span
+                            className="grid place-items-center"
+                            style={{ width: 48, height: 48, borderRadius: 999, background: "#002a15", color: "#ffdea5", fontSize: "1rem", fontWeight: 800 }}
+                          >
+                            {inv.jockeyName[0]}
+                          </span>
+                          <div>
+                            <p className="m-0" style={{ color: "#002a15", fontSize: "1.05rem", fontWeight: 700, fontFamily: FONT_SERIF }}>
+                              {inv.jockeyName}
+                            </p>
+                            <p className="m-0" style={{ color: "#747b75", fontSize: "0.78rem", marginTop: 2 }}>
+                              {inv.license}
+                            </p>
+                          </div>
+                        </div>
+                        <HeritageStatusPill status={inv.status} />
+                      </div>
+                      <p className="m-0" style={{ color: "#747b75", fontSize: "0.82rem" }}>
+                        Invited to ride {inv.horseName} · {fmtDateTime(inv.sentAt)}
+                      </p>
+                    </HeritageCard>
+                  ))
+                )}
+              </div>
+            </>
+          )}
+
+          {tab === "schedule" && (
+            <>
+              <h2 className="m-0" style={{ color: "#002a15", fontSize: "1.5rem", fontWeight: 500, marginBottom: 24, fontFamily: FONT_SERIF }}>
+                Race Schedule
+              </h2>
+              <div className="grid gap-4">
+                {races.filter(r => r.status !== "Cancelled").map(race => {
+                  const myReg = race.registrations.find(reg => reg.ownerName === user?.org);
+                  return (
+                    <HeritageCard key={race.id} padding={0} style={{ overflow: "hidden" }}>
+                      <div className="flex items-center justify-between flex-wrap gap-3" style={{ padding: 24, borderBottom: "1px solid #f0ede4" }}>
+                        <div>
+                          <div className="flex items-center" style={{ gap: 10, marginBottom: 4 }}>
+                            <h3 className="m-0" style={{ color: "#002a15", fontSize: "1.2rem", fontWeight: 500, fontFamily: FONT_SERIF }}>
+                              {race.name}
+                            </h3>
+                            <span style={{ padding: "3px 9px", background: "#f0ede4", color: "#002a15", fontSize: "0.7rem", fontWeight: 800, borderRadius: 3, letterSpacing: "0.06em" }}>
+                              {race.grade}
+                            </span>
+                          </div>
+                          <p className="m-0" style={{ color: "#747b75", fontSize: "0.85rem" }}>
+                            {race.venue} · {fmtDate(race.date)} · {race.distance}m
+                          </p>
+                        </div>
+                        <HeritageStatusPill status={race.status} />
+                      </div>
+                      <div className="flex items-center flex-wrap" style={{ padding: 20, gap: 14 }}>
+                        {myReg ? (
+                          <>
+                            <span
+                              className="grid place-items-center"
+                              style={{ width: 40, height: 40, borderRadius: 8, background: "rgba(255,222,165,0.4)", fontSize: "1.2rem" }}
+                            >
+                              {HORSE_EMOJI}
+                            </span>
+                            <div className="flex-1">
+                              <p className="m-0" style={{ color: "#002a15", fontSize: "0.95rem", fontWeight: 700 }}>
+                                {myReg.horseName}
+                              </p>
+                              <p className="m-0" style={{ color: "#747b75", fontSize: "0.78rem", marginTop: 2 }}>
+                                {myReg.horseColor} · {myReg.horseAge}yo · {myReg.jockeyName}
+                              </p>
+                            </div>
+                            <HeritageStatusPill status={myReg.status} />
+                          </>
+                        ) : (
+                          <p className="m-0" style={{ color: "#747b75", fontSize: "0.9rem" }}>
+                            You haven&apos;t registered a horse for this race yet.
+                          </p>
+                        )}
+                      </div>
+                    </HeritageCard>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {tab === "results" && (
+            <>
+              <h2 className="m-0" style={{ color: "#002a15", fontSize: "1.5rem", fontWeight: 500, marginBottom: 24, fontFamily: FONT_SERIF }}>
+                Race Results &amp; Leaderboard
+              </h2>
+              <div className="grid gap-4">
+                {races.filter(r => r.status === "Finished").length === 0 && (
+                  <HeritageCard padding={64} style={{ textAlign: "center" }}>
+                    <p className="m-0" style={{ color: "#555e58", fontSize: "0.95rem" }}>No race results published yet.</p>
+                  </HeritageCard>
+                )}
+                {races.filter(r => r.status === "Finished").map(race => {
+                  const myReg = race.registrations.find(reg => reg.ownerName === user?.org);
+                  const winner = race.registrations.find(reg => reg.result === 1);
+                  return (
+                    <HeritageCard key={race.id} padding={0} style={{ overflow: "hidden" }}>
+                      <div className="flex items-center justify-between flex-wrap gap-3" style={{ padding: 24, borderBottom: "1px solid #f0ede4" }}>
+                        <div>
+                          <p className="m-0" style={{ color: "#002a15", fontSize: "1.2rem", fontWeight: 500, fontFamily: FONT_SERIF }}>
+                            {race.name}
+                          </p>
+                          <p className="m-0" style={{ color: "#747b75", fontSize: "0.82rem", marginTop: 4 }}>
+                            {race.venue} · {fmtDate(race.date)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="m-0" style={{ color: "#002a15", fontSize: "1.05rem", fontWeight: 800 }}>
+                            ${race.prizePool.toLocaleString()}
+                          </p>
+                          <HeritageStatusPill status="Finished" />
+                        </div>
+                      </div>
+                      {winner && (
+                        <div style={{ padding: 18, background: "rgba(255,222,165,0.4)", borderBottom: "1px solid rgba(215,211,199,0.4)" }}>
+                          <p className="m-0" style={{ color: "#002a15", fontSize: "0.66rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                            Winner
+                          </p>
+                          <p className="m-0" style={{ color: "#002a15", fontSize: "1.2rem", fontWeight: 500, marginTop: 4, fontFamily: FONT_SERIF }}>
+                            {winner.horseName}
+                          </p>
+                          <p className="m-0" style={{ color: "#555e58", fontSize: "0.82rem", marginTop: 2 }}>
+                            {winner.jockeyName} · ${race.prizePool.toLocaleString()} prize
+                          </p>
+                        </div>
+                      )}
+                      <div style={{ padding: 18 }}>
+                        {myReg && myReg.result ? (
+                          <div className="flex items-center" style={{ gap: 12 }}>
+                            <span style={{ color: "#002a15", fontSize: "1.4rem", fontWeight: 700, fontFamily: FONT_SERIF }}>
+                              #{myReg.result}
+                            </span>
+                            <span style={{ color: "#002a15", fontSize: "0.95rem", fontWeight: 700 }}>
+                              {myReg.horseName}
+                            </span>
+                          </div>
+                        ) : (
+                          <p className="m-0" style={{ color: "#747b75", fontSize: "0.85rem", textAlign: "center" }}>
+                            No result for your horse in this race.
+                          </p>
+                        )}
+                      </div>
+                    </HeritageCard>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+
+      <HeritageToast message={toast} onClose={() => setToast(null)} />
+
+      <HeritageSlidePanel
+        open={addHorseOpen}
+        onClose={() => setAddHorseOpen(false)}
+        title="Add New Horse"
+      >
+        <form onSubmit={addHorse} className="grid gap-4">
+          <HeritageField label="Horse Name" required>
+            <HeritageInput
+              value={horseForm.name}
+              onChange={(e) => setHorseForm(f => ({ ...f, name: e.target.value }))}
               placeholder="e.g. Thunder Bolt"
-              className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Breed</label>
-              <select value={horseForm.breed}
-                onChange={e => setHorseForm(f => ({ ...f, breed: e.target.value }))}
-                className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }}>
+              required
+            />
+          </HeritageField>
+          <div className="grid gap-4" style={{ gridTemplateColumns: "1fr 1fr" }}>
+            <HeritageField label="Breed">
+              <HeritageSelect value={horseForm.breed} onChange={(e) => setHorseForm(f => ({ ...f, breed: e.target.value }))}>
                 <option>Thoroughbred</option><option>Arabian</option><option>Quarter Horse</option><option>Standardbred</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Color</label>
-              <input value={horseForm.color}
-                onChange={e => setHorseForm(f => ({ ...f, color: e.target.value }))}
+              </HeritageSelect>
+            </HeritageField>
+            <HeritageField label="Color">
+              <HeritageInput
+                value={horseForm.color}
+                onChange={(e) => setHorseForm(f => ({ ...f, color: e.target.value }))}
                 placeholder="e.g. Bay"
-                className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }} />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Age (yrs)</label>
-              <input type="number" min="1" max="15" value={horseForm.age}
-                onChange={e => setHorseForm(f => ({ ...f, age: e.target.value }))}
+              />
+            </HeritageField>
+            <HeritageField label="Age (yrs)">
+              <HeritageInput
+                type="number" min="1" max="15"
+                value={horseForm.age}
+                onChange={(e) => setHorseForm(f => ({ ...f, age: e.target.value }))}
                 placeholder="e.g. 4"
-                className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }} />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Weight (kg)</label>
-              <input type="number" min="300" max="700" value={horseForm.weight}
-                onChange={e => setHorseForm(f => ({ ...f, weight: e.target.value }))}
+              />
+            </HeritageField>
+            <HeritageField label="Weight (kg)">
+              <HeritageInput
+                type="number" min="300" max="700"
+                value={horseForm.weight}
+                onChange={(e) => setHorseForm(f => ({ ...f, weight: e.target.value }))}
                 placeholder="e.g. 520"
-                className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }} />
-            </div>
+              />
+            </HeritageField>
           </div>
-          <button type="submit" className="py-2.5 rounded-xl font-semibold text-white mt-2" style={{ background: BRAND }}>
-            <i className="ti ti-plus mr-1.5" />Add Horse
-          </button>
+          <HeritageButton type="submit" size="lg" style={{ width: "100%", justifyContent: "center", marginTop: 8 }}>
+            Add Horse
+          </HeritageButton>
         </form>
-      </SlidePanel>
+      </HeritageSlidePanel>
 
-      <SlidePanel open={!!editHorse} onClose={() => setEditHorse(null)} title={"Edit: " + (editHorse?.name || "")}>
+      <HeritageSlidePanel
+        open={!!editHorse}
+        onClose={() => setEditHorse(null)}
+        title={`Edit: ${editHorse?.name || ""}`}
+      >
         {editHorse && (
-          <form onSubmit={saveEditHorse} className="flex flex-col gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Horse Name *</label>
-              <input required value={editHorse.name}
-                onChange={e => setEditHorse(f => ({ ...f, name: e.target.value }))}
-                className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Breed</label>
-                <select value={editHorse.breed}
-                  onChange={e => setEditHorse(f => ({ ...f, breed: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }}>
+          <form onSubmit={saveEditHorse} className="grid gap-4">
+            <HeritageField label="Horse Name" required>
+              <HeritageInput
+                value={editHorse.name}
+                onChange={(e) => setEditHorse(f => ({ ...f, name: e.target.value }))}
+                required
+              />
+            </HeritageField>
+            <div className="grid gap-4" style={{ gridTemplateColumns: "1fr 1fr" }}>
+              <HeritageField label="Breed">
+                <HeritageSelect value={editHorse.breed} onChange={(e) => setEditHorse(f => ({ ...f, breed: e.target.value }))}>
                   <option>Thoroughbred</option><option>Arabian</option><option>Quarter Horse</option><option>Standardbred</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Color</label>
-                <input value={editHorse.color}
-                  onChange={e => setEditHorse(f => ({ ...f, color: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }} />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Age (yrs)</label>
-                <input type="number" min="1" max="15" value={editHorse.age}
-                  onChange={e => setEditHorse(f => ({ ...f, age: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }} />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Weight (kg)</label>
-                <input type="number" min="300" max="700" value={editHorse.weight}
-                  onChange={e => setEditHorse(f => ({ ...f, weight: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }} />
-              </div>
+                </HeritageSelect>
+              </HeritageField>
+              <HeritageField label="Color">
+                <HeritageInput value={editHorse.color} onChange={(e) => setEditHorse(f => ({ ...f, color: e.target.value }))} />
+              </HeritageField>
+              <HeritageField label="Age (yrs)">
+                <HeritageInput type="number" value={editHorse.age} onChange={(e) => setEditHorse(f => ({ ...f, age: e.target.value }))} />
+              </HeritageField>
+              <HeritageField label="Weight (kg)">
+                <HeritageInput type="number" value={editHorse.weight} onChange={(e) => setEditHorse(f => ({ ...f, weight: e.target.value }))} />
+              </HeritageField>
             </div>
-            <button type="submit" className="py-2.5 rounded-xl font-semibold text-white mt-2" style={{ background: BRAND }}>
-              <i className="ti ti-device-floppy mr-1.5" />Save Changes
-            </button>
+            <HeritageButton type="submit" size="lg" style={{ width: "100%", justifyContent: "center", marginTop: 8 }}>
+              Save Changes
+            </HeritageButton>
           </form>
         )}
-      </SlidePanel>
+      </HeritageSlidePanel>
 
-      <SlidePanel open={!!inviteOpen} onClose={() => { setInviteOpen(null); setInviteForm({ jockeyId: "", message: "" }); }}
-        title={"Invite Jockey \u2014 " + (inviteOpen?.horseName || "")}>
-        <div className="flex flex-col gap-4">
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-700">
-            <i className="ti ti-horse mr-1.5" />
+      <HeritageSlidePanel
+        open={!!inviteOpen}
+        onClose={() => { setInviteOpen(null); setInviteForm({ jockeyId: "", message: "" }); }}
+        title={`Invite Jockey — ${inviteOpen?.horseName || ""}`}
+      >
+        <div className="grid gap-4">
+          <div
+            style={{ padding: 14, background: "rgba(255,222,165,0.4)", borderRadius: 4, fontSize: "0.85rem", color: "#002a15" }}
+          >
             Inviting jockey to ride <strong>{inviteOpen?.horseName}</strong>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Select Jockey *</label>
-            <select required value={inviteForm.jockeyId}
-              onChange={e => setInviteForm(f => ({ ...f, jockeyId: e.target.value }))}
-              className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }}>
+          <HeritageField label="Select Jockey" required>
+            <HeritageSelect
+              value={inviteForm.jockeyId}
+              onChange={(e) => setInviteForm(f => ({ ...f, jockeyId: e.target.value }))}
+            >
               <option value="">— Choose a jockey —</option>
               {JOCKEYS_POOL.map(j => (
                 <option key={j.id} value={j.id}>{j.name} · {j.license} · {j.nationality}</option>
               ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Message (optional)</label>
-            <textarea value={inviteForm.message}
-              onChange={e => setInviteForm(f => ({ ...f, message: e.target.value }))}
-              placeholder={"Dear jockey, you are invited to ride " + (inviteOpen?.horseName || "") + " in our upcoming races."}
-              rows={3}
-              className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2 resize-none" style={{ borderColor: BORDER }} />
-          </div>
-          <button onClick={sendInvite} className="py-2.5 rounded-xl font-semibold text-white mt-2" style={{ background: BRAND }}>
-            <i className="ti ti-send mr-1.5" />Send Invitation
-          </button>
+            </HeritageSelect>
+          </HeritageField>
+          <HeritageField label="Message" hint="Optional — add a personal note for the jockey.">
+            <HeritageTextarea
+              value={inviteForm.message}
+              onChange={(e) => setInviteForm(f => ({ ...f, message: e.target.value }))}
+              placeholder={`You are invited to ride ${inviteOpen?.horseName || ""} in our upcoming races.`}
+              rows={4}
+            />
+          </HeritageField>
+          <HeritageButton size="lg" onClick={sendInvite} style={{ width: "100%", justifyContent: "center", marginTop: 8 }}>
+            Send Invitation
+          </HeritageButton>
         </div>
-      </SlidePanel>
+      </HeritageSlidePanel>
 
-      <SlidePanel open={!!registerOpen} onClose={() => { setRegisterOpen(null); setRegForm({ horseId: "", raceId: "", jockeyId: "", trainerName: "" }); }}
-        title="Register Horse for Race">
-        <form onSubmit={registerHorseForRace} className="flex flex-col gap-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700">
-            <i className="ti ti-flag mr-1.5" />
-            Submit a registration request for a race. It will be reviewed by the host.
+      <HeritageSlidePanel
+        open={!!registerOpen}
+        onClose={() => { setRegisterOpen(null); setRegForm({ horseId: "", raceId: "", jockeyId: "", trainerName: "" }); }}
+        title="Register Horse for Race"
+      >
+        <form onSubmit={registerHorseForRace} className="grid gap-4">
+          <div
+            style={{ padding: 14, background: "#dbeafe", borderRadius: 4, fontSize: "0.85rem", color: "#1e40af" }}
+          >
+            Submit a registration request. It will be reviewed by the host.
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Select Horse *</label>
-            <select required value={regForm.horseId}
-              onChange={e => setRegForm(f => ({ ...f, horseId: e.target.value }))}
-              className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }}>
+          <HeritageField label="Select Horse" required>
+            <HeritageSelect
+              value={regForm.horseId}
+              onChange={(e) => setRegForm(f => ({ ...f, horseId: e.target.value }))}
+            >
               <option value="">— Choose a horse —</option>
               {myHorses.map(h => (
                 <option key={h.id} value={h.id}>{h.name} · {h.breed} · {h.color} · {h.age}yo</option>
               ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Select Race *</label>
-            <select required value={regForm.raceId}
-              onChange={e => setRegForm(f => ({ ...f, raceId: e.target.value }))}
-              className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }}>
+            </HeritageSelect>
+          </HeritageField>
+          <HeritageField label="Select Race" required>
+            <HeritageSelect
+              value={regForm.raceId}
+              onChange={(e) => setRegForm(f => ({ ...f, raceId: e.target.value }))}
+            >
               <option value="">— Choose a race —</option>
               {races.filter(r => r.status !== "Cancelled").map(r => (
                 <option key={r.id} value={r.id}>{r.name} · {r.venue} · {r.date} · {r.grade}</option>
               ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Assign Jockey *</label>
-            <select required value={regForm.jockeyId}
-              onChange={e => setRegForm(f => ({ ...f, jockeyId: e.target.value }))}
-              className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }}>
+            </HeritageSelect>
+          </HeritageField>
+          <HeritageField label="Assign Jockey" required>
+            <HeritageSelect
+              value={regForm.jockeyId}
+              onChange={(e) => setRegForm(f => ({ ...f, jockeyId: e.target.value }))}
+            >
               <option value="">— Choose a jockey —</option>
               {JOCKEYS_POOL.map(j => (
                 <option key={j.id} value={j.id}>{j.name} · {j.license} · {j.nationality}</option>
               ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Trainer Name *</label>
-            <input required value={regForm.trainerName}
-              onChange={e => setRegForm(f => ({ ...f, trainerName: e.target.value }))}
+            </HeritageSelect>
+          </HeritageField>
+          <HeritageField label="Trainer Name" required>
+            <HeritageInput
+              value={regForm.trainerName}
+              onChange={(e) => setRegForm(f => ({ ...f, trainerName: e.target.value }))}
               placeholder="e.g. Williams"
-              className="w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white text-slate-800 focus:outline-none focus:ring-2" style={{ borderColor: BORDER }} />
-          </div>
-          <button type="submit" className="py-2.5 rounded-xl font-semibold text-white mt-2" style={{ background: BRAND }}>
-            <i className="ti ti-flag mr-1.5" />Submit Registration
-          </button>
+              required
+            />
+          </HeritageField>
+          <HeritageButton type="submit" size="lg" style={{ width: "100%", justifyContent: "center", marginTop: 8 }}>
+            Submit Registration
+          </HeritageButton>
         </form>
-      </SlidePanel>
-    </AppShell>
+      </HeritageSlidePanel>
+    </HeritageLayout>
   );
 }

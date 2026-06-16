@@ -1,32 +1,21 @@
 import { useState } from "react";
 import { useApp } from "../AppContext.jsx";
-import { BRAND, BRAND_BORDER, BRAND_LIGHT, BRAND_TEXT, BORDER, SURFACE_MUTED } from "../constants.js";
 import { fmtDate, fmtMillions } from "../format.js";
-import AppShell from "../components/layout/AppShell.jsx";
-import StatusPill from "../components/common/StatusPill.jsx";
-import SlidePanel from "../components/common/SlidePanel.jsx";
-
-function StatCard({ label, value, icon, color, bg, border }) {
-  return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-      <div className="w-9 h-9 rounded-lg flex items-center justify-center border" style={{ background: bg, borderColor: border }}>
-        <i className={`ti ti-${icon} text-base`} style={{ color }} />
-      </div>
-      <div className="text-2xl font-black text-slate-800">{value}</div>
-      <div className="text-xs text-slate-400 font-medium">{label}</div>
-    </div>
-  );
-}
+import HeritageLayout, { FONT_SERIF } from "../components/layout/HeritageLayout.jsx";
+import {
+  HeritageTabs,
+  HeritageStat,
+  HeritageCard,
+  HeritageButton,
+  HeritageStatusPill,
+  HeritageToast,
+  HeritagePageHeader,
+} from "../components/layout/HeritageUI.jsx";
 
 export default function HostHome() {
   const { user, tournament, races } = useApp();
   const [tab, setTab] = useState("overview");
   const [toast, setToast] = useState(null);
-
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  };
 
   const venueRaces = races.filter((r) => r.venue === user?.venue);
   const allRegs = venueRaces.flatMap((r) =>
@@ -35,189 +24,248 @@ export default function HostHome() {
   const pending = allRegs.filter((r) => r.status === "Pending").length;
   const approved = allRegs.filter((r) => r.status === "Approved").length;
 
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
+
   const nav = [
-    { id: "overview",       label: "Overview",       icon: "layout-dashboard" },
-    { id: "schedule",      label: "Schedule",      icon: "calendar-time" },
-    { id: "races",         label: "My Races",      icon: "flag" },
-    { id: "registrations", label: "Registrations", icon: "clipboard-list" },
+    { id: "overview", label: "Overview" },
+    { id: "schedule", label: "Schedule" },
+    { id: "races", label: "My Races" },
+    { id: "registrations", label: "Registrations", count: allRegs.length },
   ];
 
   return (
-    <AppShell page={tab} setPage={setTab} nav={nav} subtitle={"Host \u2014 " + (user?.venue || "")}>
-      {toast && (
-        <div className="fixed top-5 right-5 z-[9999] px-4 py-3 rounded-xl text-sm font-semibold shadow-lg"
-          style={{ background: "#d1fae5", color: "#166534", border: "1px solid #86efac" }}>
-          <i className="ti ti-circle-check mr-2" />{toast}
-        </div>
-      )}
+    <HeritageLayout role="host" subtitle={`Host — ${user?.venue || ""}`}>
+      <HeritagePageHeader
+        eyebrow={`Venue Host · ${user?.venue || "—"}`}
+        title={tournament.name}
+        subtitle={tournament.organizer}
+      />
 
-      {tab === "overview" && (
-        <>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <StatCard label="Races at Venue" value={venueRaces.length} icon="flag" color={BRAND_TEXT} bg={BRAND_LIGHT} border={BRAND_BORDER} />
-            <StatCard label="Total Entries" value={allRegs.length} icon="users" color="#1d4ed8" bg="#eff6ff" border="#93c5fd" />
-            <StatCard label="Pending Review" value={pending} icon="clock" color="#92400e" bg="#fef3c7" border="#fde68a" />
-            <StatCard label="Approved" value={approved} icon="circle-check" color="#065f46" bg="#ecfdf5" border="#a7f3d0" />
-          </div>
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-6 shadow-sm">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <h2 className="text-base font-bold m-0 text-slate-800">{tournament.name}</h2>
-                <p className="text-sm text-slate-500 mt-1 m-0">{tournament.organizer}</p>
-              </div>
-              <StatusPill status={tournament.status} />
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-              {([
-                ["Location", tournament.location],
-                ["Prize fund", fmtMillions(tournament.totalPrize)],
-                ["Deadline", fmtDate(tournament.registrationDeadline)],
-                ["Your venue", user?.venue || ""],
-              ]).map(([k, v]) => (
-                <div key={k} className="bg-slate-50 rounded-xl p-2.5">
-                  <div className="text-[11px] text-slate-400 mb-0.5">{k}</div>
-                  <div className="text-sm font-semibold">{v}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <h3 className="text-sm font-bold text-slate-700 mb-3">Venue Activity</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#fef3c7" }}>
-                  <i className="ti ti-clock text-base" style={{ color: "#92400e" }} />
-                </div>
-                <span className="text-sm font-bold text-slate-800">Pending Approvals</span>
-              </div>
-              <p className="text-2xl font-black text-slate-800">{pending}</p>
-              <p className="text-xs text-slate-400 mt-1">Registration requests awaiting review</p>
-            </div>
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#ecfdf5" }}>
-                  <i className="ti ti-circle-check text-base" style={{ color: "#065f46" }} />
-                </div>
-                <span className="text-sm font-bold text-slate-800">Approved Entries</span>
-              </div>
-              <p className="text-2xl font-black text-slate-800">{approved}</p>
-              <p className="text-xs text-slate-400 mt-1">Registrations confirmed for races</p>
-            </div>
-          </div>
-        </>
-      )}
+      <HeritageTabs tabs={nav} active={tab} onChange={setTab} />
 
-      {tab === "schedule" && (
-        <>
-          <h2 className="text-lg font-bold text-slate-800 mb-4">Race Schedule at {user?.venue}</h2>
-          <div className="flex flex-col gap-3">
-            {venueRaces.filter(r => r.status !== "Cancelled").map(race => (
-              <div key={race.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+      <section style={{ paddingBlock: "clamp(40px, 5vw, 56px)" }}>
+        <div className="w-full mx-auto px-7 md:px-10 lg:px-16">
+          {tab === "overview" && (
+            <>
+              <div
+                className="grid gap-5"
+                style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))", marginBottom: 40 }}
+              >
+                <HeritageStat value={venueRaces.length} label="Races at Venue" />
+                <HeritageStat value={allRegs.length} label="Total Entries" color="#1e40af" />
+                <HeritageStat value={pending} label="Pending Review" color="#b8860b" />
+                <HeritageStat value={approved} label="Approved" color="#166534" />
+              </div>
+
+              <HeritageCard padding={32} style={{ marginBottom: 32 }}>
+                <div className="flex justify-between items-start flex-wrap gap-4" style={{ marginBottom: 24 }}>
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-bold text-slate-800">{race.name}</span>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: BRAND_LIGHT, color: BRAND_TEXT }}>{race.grade}</span>
-                    </div>
-                    <p className="text-xs text-slate-400 flex items-center gap-3">
-                      <span><i className="ti ti-calendar mr-1" />{fmtDate(race.date)}</span>
-                      <span><i className="ti ti-ruler-measure mr-1" />{race.distance}m</span>
+                    <p className="m-0" style={{ color: "#747b75", fontSize: "0.7rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                      Current Tournament
+                    </p>
+                    <h2
+                      className="m-0"
+                      style={{ color: "#002a15", fontSize: "1.7rem", fontWeight: 500, marginTop: 6, fontFamily: FONT_SERIF }}
+                    >
+                      {tournament.name}
+                    </h2>
+                    <p className="m-0" style={{ marginTop: 6, color: "#555e58", fontSize: "0.92rem" }}>
+                      {tournament.organizer}
                     </p>
                   </div>
-                  <StatusPill status={race.status} />
+                  <HeritageStatusPill status={tournament.status} />
                 </div>
-                <div className="p-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#fff7ed", border: "1px solid #fed7aa" }}>
-                      <i className="ti ti-clock text-sm" style={{ color: "#c2410c" }} />
-                      <span className="text-sm font-bold text-slate-800">{race.time}</span>
+                <div
+                  className="grid"
+                  style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 16 }}
+                >
+                  {[
+                    { k: "Location", v: tournament.location },
+                    { k: "Prize Fund", v: fmtMillions(tournament.totalPrize) },
+                    { k: "Registration Deadline", v: fmtDate(tournament.registrationDeadline) },
+                    { k: "Your Venue", v: user?.venue || "—" },
+                  ].map((f) => (
+                    <div key={f.k} style={{ padding: 14, background: "#f7f6f1", borderRadius: 6 }}>
+                      <p className="m-0" style={{ color: "#747b75", fontSize: "0.66rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                        {f.k}
+                      </p>
+                      <p className="m-0" style={{ color: "#002a15", fontSize: "0.95rem", fontWeight: 700, marginTop: 4 }}>
+                        {f.v}
+                      </p>
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
-                      <i className="ti ti-weather-sunny text-sm" style={{ color: "#166534" }} />
-                      <span className="text-sm font-semibold text-slate-700">{race.condition}</span>
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: BRAND_LIGHT, border: "1px solid " + BRAND_BORDER }}>
-                      <i className="ti ti-trophy text-sm" style={{ color: BRAND_TEXT }} />
-                      <span className="text-sm font-semibold" style={{ color: BRAND_TEXT }}>${race.prizePool.toLocaleString()}</span>
-                    </div>
-                    <div className="ml-auto flex items-center gap-2 text-xs text-slate-400">
-                      <i className="ti ti-users mr-1" />{race.registrations.length} entries
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
-            ))}
-            {venueRaces.length === 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: BRAND_LIGHT, border: "1px solid " + BRAND_BORDER }}>
-                  <i className="ti ti-calendar-time text-2xl" style={{ color: BRAND_TEXT }} />
-                </div>
-                <p className="text-slate-500 text-sm">No races scheduled at your venue yet.</p>
-              </div>
-            )}
-          </div>
-        </>
-      )}
+              </HeritageCard>
 
-      {tab === "races" && (
-        <div className="flex flex-col gap-3">
-          {venueRaces.map((race) => (
-            <div key={race.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-              <div className="flex justify-between items-center mb-2.5">
-                <span className="font-bold text-slate-800">{race.name}</span>
-                <StatusPill status={race.status} />
+              <h2 className="m-0" style={{ color: "#002a15", fontSize: "1.5rem", fontWeight: 500, marginBottom: 20, fontFamily: FONT_SERIF }}>
+                Venue Activity
+              </h2>
+              <div
+                className="grid gap-5"
+                style={{ gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}
+              >
+                <HeritageCard padding={24}>
+                  <p className="m-0" style={{ color: "#b8860b", fontSize: "0.7rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                    Pending Approvals
+                  </p>
+                  <p className="m-0" style={{ color: "#002a15", fontSize: "2.4rem", fontWeight: 500, marginTop: 12, fontFamily: FONT_SERIF }}>
+                    {pending}
+                  </p>
+                  <p className="m-0" style={{ color: "#747b75", fontSize: "0.78rem", marginTop: 6 }}>
+                    Registration requests awaiting review
+                  </p>
+                </HeritageCard>
+                <HeritageCard padding={24}>
+                  <p className="m-0" style={{ color: "#166534", fontSize: "0.7rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                    Approved Entries
+                  </p>
+                  <p className="m-0" style={{ color: "#002a15", fontSize: "2.4rem", fontWeight: 500, marginTop: 12, fontFamily: FONT_SERIF }}>
+                    {approved}
+                  </p>
+                  <p className="m-0" style={{ color: "#747b75", fontSize: "0.78rem", marginTop: 6 }}>
+                    Registrations confirmed for races
+                  </p>
+                </HeritageCard>
               </div>
-              <div className="text-sm text-slate-500 flex gap-4 flex-wrap mb-3">
-                <span><i className="ti ti-calendar mr-1" />{fmtDate(race.date)} {race.time}</span>
-                <span><i className="ti ti-ruler-measure mr-1" />{race.distance}m &middot; {race.grade}</span>
-                <span><i className="ti ti-users mr-1" />{race.registrations.length} entries</span>
-                <span><i className="ti ti-trophy mr-1" />${race.prizePool.toLocaleString()}</span>
+            </>
+          )}
+
+          {tab === "schedule" && (
+            <>
+              <h2 className="m-0" style={{ color: "#002a15", fontSize: "1.5rem", fontWeight: 500, marginBottom: 24, fontFamily: FONT_SERIF }}>
+                Race Schedule at {user?.venue}
+              </h2>
+              <div className="grid gap-4">
+                {venueRaces.filter(r => r.status !== "Cancelled").map(race => (
+                  <HeritageCard key={race.id} padding={28}>
+                    <div className="flex items-center justify-between flex-wrap gap-3" style={{ marginBottom: 16 }}>
+                      <div>
+                        <div className="flex items-center" style={{ gap: 10, marginBottom: 4 }}>
+                          <h3 className="m-0" style={{ color: "#002a15", fontSize: "1.3rem", fontWeight: 500, fontFamily: FONT_SERIF }}>
+                            {race.name}
+                          </h3>
+                          <span
+                            style={{
+                              padding: "3px 9px", background: "#f0ede4", color: "#002a15",
+                              fontSize: "0.7rem", fontWeight: 800, letterSpacing: "0.06em", borderRadius: 3,
+                            }}
+                          >
+                            {race.grade}
+                          </span>
+                        </div>
+                        <p className="m-0" style={{ color: "#747b75", fontSize: "0.85rem" }}>
+                          {race.venue} · {race.distance}m
+                        </p>
+                      </div>
+                      <HeritageStatusPill status={race.status} />
+                    </div>
+                    <div className="flex flex-wrap items-center" style={{ gap: 12 }}>
+                      {[
+                        { k: "Time", v: race.time, color: "#263b12", bg: "rgba(255,222,165,0.4)" },
+                        { k: "Track", v: race.condition, color: "#166534", bg: "#dcfce7" },
+                        { k: "Prize", v: `$${race.prizePool.toLocaleString()}`, color: "#002a15", bg: "#f0ede4" },
+                        { k: "Entries", v: `${race.registrations.length} horses`, color: "#555e58", bg: "transparent" },
+                      ].map((c) => (
+                        <div
+                          key={c.k}
+                          className="inline-flex items-center"
+                          style={{ padding: "8px 14px", background: c.bg, borderRadius: 4, gap: 8, border: c.bg === "transparent" ? "1px solid #d7d3c7" : "none" }}
+                        >
+                          <span style={{ color: "#747b75", fontSize: "0.66rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                            {c.k}
+                          </span>
+                          <span style={{ color: c.color, fontSize: "0.85rem", fontWeight: 700 }}>
+                            {c.v}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </HeritageCard>
+                ))}
+                {venueRaces.length === 0 && (
+                  <HeritageCard padding={64} style={{ textAlign: "center" }}>
+                    <p className="m-0" style={{ color: "#555e58", fontSize: "0.95rem" }}>No races scheduled at your venue yet.</p>
+                  </HeritageCard>
+                )}
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-                <i className="ti ti-clock text-sm text-blue-600" />
-                <span className="text-xs font-medium text-blue-700">{race.time} \u2014 {race.condition}</span>
-              </div>
-            </div>
-          ))}
-          {venueRaces.length === 0 && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: BRAND_LIGHT, border: "1px solid " + BRAND_BORDER }}>
-                <i className="ti ti-flag text-2xl" style={{ color: BRAND_TEXT }} />
-              </div>
-              <p className="text-slate-500 text-sm">No races scheduled at your venue yet.</p>
+            </>
+          )}
+
+          {tab === "races" && (
+            <div className="grid gap-4">
+              {venueRaces.map((race) => (
+                <HeritageCard key={race.id} padding={28}>
+                  <div className="flex justify-between items-start flex-wrap gap-3" style={{ marginBottom: 14 }}>
+                    <h3 className="m-0" style={{ color: "#002a15", fontSize: "1.3rem", fontWeight: 500, fontFamily: FONT_SERIF }}>
+                      {race.name}
+                    </h3>
+                    <HeritageStatusPill status={race.status} />
+                  </div>
+                  <p className="m-0" style={{ color: "#555e58", fontSize: "0.88rem", marginBottom: 12 }}>
+                    {fmtDate(race.date)} · {race.time} · {race.venue} · {race.distance}m · {race.grade} · ${race.prizePool.toLocaleString()} · {race.registrations.length} entries
+                  </p>
+                  <div
+                    style={{ padding: 12, background: "#f7f6f1", borderRadius: 4, fontSize: "0.85rem", color: "#002a15", fontWeight: 600 }}
+                  >
+                    Track condition: {race.condition}
+                  </div>
+                </HeritageCard>
+              ))}
+              {venueRaces.length === 0 && (
+                <HeritageCard padding={64} style={{ textAlign: "center" }}>
+                  <p className="m-0" style={{ color: "#555e58", fontSize: "0.95rem" }}>No races scheduled at your venue yet.</p>
+                </HeritageCard>
+              )}
             </div>
           )}
-        </div>
-      )}
 
-      {tab === "registrations" && (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
-                {["Horse", "Jockey", "Race", "Status"].map((h) => (
-                  <th key={h} className="text-left p-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {allRegs.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="p-8 text-center text-slate-400 text-sm">No registrations yet.</td>
-                </tr>
-              )}
-              {allRegs.map((reg) => (
-                <tr key={reg.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                  <td className="p-3 font-semibold text-slate-800">{reg.horseName}</td>
-                  <td className="p-3 text-slate-600">{reg.jockeyName}</td>
-                  <td className="p-3 text-slate-600">{reg.raceName}</td>
-                  <td className="p-3"><StatusPill status={reg.status} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {tab === "registrations" && (
+            <HeritageCard padding={0} style={{ overflow: "hidden" }}>
+              <table className="w-full" style={{ borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "#f7f6f1", borderBottom: "1px solid #d7d3c7" }}>
+                    {["Horse", "Jockey", "Race", "Status"].map((h) => (
+                      <th
+                        key={h}
+                        style={{
+                          textAlign: "left", padding: "16px 24px",
+                          fontSize: "0.7rem", fontWeight: 800, letterSpacing: "0.12em",
+                          textTransform: "uppercase", color: "#555e58",
+                        }}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {allRegs.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} style={{ padding: 64, textAlign: "center", color: "#747b75", fontSize: "0.9rem" }}>
+                        No registrations yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    allRegs.map((reg, i) => (
+                      <tr
+                        key={reg.id}
+                        style={{ borderBottom: i === allRegs.length - 1 ? "none" : "1px solid #f0ede4" }}
+                      >
+                        <td style={{ padding: "16px 24px", color: "#002a15", fontSize: "0.92rem", fontWeight: 700 }}>{reg.horseName}</td>
+                        <td style={{ padding: "16px 24px", color: "#1f231f", fontSize: "0.88rem" }}>{reg.jockeyName}</td>
+                        <td style={{ padding: "16px 24px", color: "#1f231f", fontSize: "0.88rem" }}>{reg.raceName}</td>
+                        <td style={{ padding: "16px 24px" }}><HeritageStatusPill status={reg.status} /></td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </HeritageCard>
+          )}
         </div>
-      )}
-    </AppShell>
+      </section>
+
+      <HeritageToast message={toast} onClose={() => setToast(null)} />
+    </HeritageLayout>
   );
 }
