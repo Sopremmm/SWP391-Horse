@@ -1,0 +1,1894 @@
+/* Spectator pages — aligned with Homepage.css design tokens.
+   Body: Manrope / Headings: EB Garamond. */
+
+.spectator {
+  --figma-green: #002a15;
+  --figma-green-soft: #004225;
+  --figma-stone: #f7f6f1;
+  --figma-border: #d7d3c7;
+  --figma-copy: #555e58;
+  --figma-muted: #747b75;
+  --figma-gold: #ffdea5;
+  --figma-gold-strong: #ffbd6b;
+  --figma-ink: #1f231f;
+  --figma-bg-soft: #f0ede4;
+  font-family: Manrope, Inter, "Segoe UI", sans-serif;
+  color: var(--figma-green);
+}
+
+.spectator *,
+.spectator *::before,
+.spectator *::after {
+  box-sizing: border-box;
+}
+
+.spectator .shell {
+  width: min(100%, 1280px);
+  margin: 0 auto;
+  padding-inline: clamp(20px, 5vw, 64px);
+}
+
+/* ─── HERO ────────────────────────────────────────────────── */
+.spectator__hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  min-height: clamp(680px, 92vh, 980px);
+}
+
+.spectator__hero-image,
+.spectator__hero-gradient {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.spectator__hero-image {
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.02);
+}
+
+.spectator__hero-gradient {
+  background:
+    linear-gradient(180deg, rgba(0, 42, 21, 0.18) 0%, rgba(0, 42, 21, 0.55) 55%, rgba(0, 42, 21, 0.92) 100%);
+}
+
+.spectator__hero-inner {
+  position: relative;
+  z-index: 1;
+  padding-block: 128px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 22px;
+  width: min(100%, 760px);
+}
+
+.spectator__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: var(--figma-gold);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.spectator__eyebrow > span {
+  display: inline-block;
+  width: 48px;
+  height: 1px;
+  background: var(--figma-gold);
+}
+
+.spectator__hero h1 {
+  margin: 0;
+  color: #fff;
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: clamp(3rem, 7.5vw, 6rem);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+
+.spectator__hero-text {
+  margin: 0;
+  width: min(100%, 560px);
+  color: rgba(245, 245, 244, 0.9);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.spectator__facts {
+  display: grid;
+  width: min(100%, 560px);
+  gap: 24px;
+  padding-left: 32px;
+  border-left: 1px solid rgba(255, 222, 165, 0.32);
+  margin-top: 8px;
+}
+
+.spectator__facts > div {
+  display: grid;
+  gap: 6px;
+}
+
+.spectator__facts span {
+  color: rgba(255, 222, 165, 0.82);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.spectator__facts strong {
+  color: #fff;
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.7rem;
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.spectator__hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-top: 12px;
+}
+
+/* ─── BUTTONS ────────────────────────────────────────────── */
+.spectator__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 36px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 0;
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 2px;
+}
+
+.spectator__btn--primary {
+  color: #fff;
+  background: var(--figma-green);
+}
+
+.spectator__btn--primary:hover {
+  background: var(--figma-green-soft);
+}
+
+.spectator__btn--secondary {
+  color: var(--figma-green);
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--figma-green);
+}
+
+.spectator__btn--secondary:hover {
+  color: #fff;
+  background: var(--figma-green);
+}
+
+.spectator__btn--ghost {
+  color: #fff;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.32);
+}
+
+.spectator__btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.spectator__btn--gold {
+  color: var(--figma-green);
+  background: var(--figma-gold);
+}
+
+.spectator__btn--gold:hover {
+  background: #ffd28a;
+}
+
+/* ─── STATS BENTO ────────────────────────────────────────── */
+.spectator__stats {
+  background: var(--figma-green);
+  padding-block: 64px;
+}
+
+.spectator__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 36px;
+}
+
+.spectator__stat {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.spectator__stat strong {
+  color: var(--figma-gold);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.spectator__stat span {
+  color: rgba(210, 245, 219, 0.82);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ─── SECTION HEAD ───────────────────────────────────────── */
+.spectator__section {
+  padding-block: clamp(56px, 8vw, 96px);
+}
+
+.spectator__section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 32px;
+  margin-bottom: 48px;
+  flex-wrap: wrap;
+}
+
+.spectator__section-head > div {
+  min-width: 0;
+}
+
+.spectator__section-head h2 {
+  margin: 0;
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.spectator__section-head p {
+  margin: 14px 0 0;
+  width: min(100%, 480px);
+  color: var(--figma-copy);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.spectator__text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 5px;
+  color: var(--figma-green-soft);
+  border-bottom: 1px solid var(--figma-green-soft);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* ─── EYEBROW ABOVE H1 ───────────────────────────────────── */
+.spectator__page-eyebrow {
+  display: block;
+  margin-bottom: 14px;
+  color: var(--figma-gold-strong);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* ─── BREADCRUMB ─────────────────────────────────────────── */
+.spectator__breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+  color: var(--figma-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.spectator__breadcrumb a,
+.spectator__breadcrumb span {
+  color: inherit;
+  text-decoration: none;
+}
+
+.spectator__breadcrumb a:hover {
+  color: var(--figma-green);
+}
+
+.spectator__breadcrumb__sep {
+  margin-inline: 8px;
+  color: var(--figma-muted);
+}
+
+.spectator__breadcrumb__current {
+  color: var(--figma-green) !important;
+}
+
+/* ─── CARDS GRID ─────────────────────────────────────────── */
+.spectator__cards {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.spectator__card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(215, 211, 199, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.spectator__card-media {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  background: #e4e1d7;
+}
+
+.spectator__card-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 240ms ease;
+}
+
+.spectator__card:hover .spectator__card-media img {
+  transform: scale(1.04);
+}
+
+.spectator__card-status {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  padding: 6px 12px;
+  background: rgba(0, 42, 21, 0.92);
+  color: var(--figma-gold);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 4px;
+}
+
+.spectator__card-body {
+  display: grid;
+  gap: 18px;
+  padding: 28px;
+}
+
+.spectator__card-body h3 {
+  margin: 0;
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.55rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.spectator__card-body p {
+  margin: 6px 0 0;
+  color: #5e655f;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.spectator__card-details {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 12px 0 0;
+  border-top: 1px solid rgba(215, 211, 199, 0.45);
+}
+
+.spectator__card-details > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.spectator__card-details dt,
+.spectator__card-details dd {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.spectator__card-details dt {
+  color: var(--figma-muted);
+}
+
+.spectator__card-details dd {
+  color: var(--figma-ink);
+  text-align: right;
+  font-size: 0.78rem;
+}
+
+.spectator__card-details div:last-child dd {
+  color: var(--figma-green);
+}
+
+.spectator__card-button {
+  width: 100%;
+  padding: 14px 18px;
+  color: var(--figma-green);
+  background: #fff;
+  border: 0;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px var(--figma-green);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.spectator__card-button:hover {
+  color: #fff;
+  background: var(--figma-green);
+}
+
+/* ─── PILL / BADGE ───────────────────────────────────────── */
+.spectator__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 4px;
+}
+
+.spectator__pill--dark {
+  background: rgba(0, 42, 21, 0.92);
+  color: var(--figma-gold);
+}
+
+.spectator__pill--gold {
+  background: rgba(255, 222, 165, 0.92);
+  color: #7a5a00;
+}
+
+.spectator__pill--soft {
+  background: #f4f1e8;
+  color: var(--figma-copy);
+}
+
+.spectator__pill--green {
+  background: rgba(0, 66, 37, 0.12);
+  color: var(--figma-green);
+}
+
+.spectator__pill--red {
+  background: rgba(186, 26, 26, 0.1);
+  color: #ba1a1a;
+}
+
+/* ─── STATUS PILL (Bet history) ──────────────────────────── */
+.spectator__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.spectator__status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.spectator__status--pending {
+  background: rgba(255, 222, 165, 0.92);
+  color: #263b12;
+}
+
+.spectator__status--win {
+  background: rgba(0, 42, 21, 0.92);
+  color: #fff;
+}
+
+.spectator__status--settled {
+  background: #e7e5e4;
+  color: var(--figma-copy);
+}
+
+.spectator__status--lost {
+  background: rgba(186, 26, 26, 0.1);
+  color: #ba1a1a;
+}
+
+/* ─── TABS / FILTERS ─────────────────────────────────────── */
+.spectator__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.spectator__tab {
+  padding: 10px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: #e7e5e4;
+  color: var(--figma-copy);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.spectator__tab:hover {
+  background: #d6d3ce;
+}
+
+.spectator__tab--active {
+  background: var(--figma-green);
+  color: #fff;
+}
+
+/* ─── SEARCH BAR ─────────────────────────────────────────── */
+.spectator__search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px 6px 18px;
+  background: #fff;
+  border: 1px solid var(--figma-border);
+  border-radius: 999px;
+  width: min(100%, 520px);
+}
+
+.spectator__search input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 4px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--figma-green);
+  font-size: 0.88rem;
+  font-family: inherit;
+}
+
+.spectator__search input::placeholder {
+  color: var(--figma-muted);
+}
+
+.spectator__search button {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--figma-green);
+  color: #fff;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+/* ─── PAGE HEAD ──────────────────────────────────────────── */
+.spectator__page-head {
+  padding-block: clamp(40px, 6vw, 72px) 28px;
+}
+
+.spectator__page-head h1 {
+  margin: 0;
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.spectator__page-head p {
+  margin: 14px 0 0;
+  width: min(100%, 640px);
+  color: var(--figma-copy);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* ─── TOURNAMENT DETAIL (split layout) ───────────────────── */
+.spectator__detail {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.spectator__hero-image--detail {
+  position: relative;
+  overflow: hidden;
+  height: 360px;
+  background: #e4e1d7;
+  border-radius: 12px;
+  margin-bottom: 28px;
+}
+
+.spectator__hero-image--detail img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.spectator__hero-image--detail .spectator__pill {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+}
+
+.spectator__stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.spectator__stat-block {
+  background: #fff;
+  border: 1px solid rgba(215, 211, 199, 0.5);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.spectator__stat-block__label {
+  color: var(--figma-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.spectator__stat-block__value {
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1.1;
+  display: block;
+}
+
+.spectator__stat-block__note {
+  color: var(--figma-muted);
+  font-size: 0.78rem;
+  margin-top: 6px;
+}
+
+.spectator__button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ─── CONFIRMED ENTRIES LIST ─────────────────────────────── */
+.spectator__entries {
+  background: #fff;
+  border: 1px solid rgba(215, 211, 199, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.spectator__entry {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 18px;
+  border: 0;
+  border-bottom: 1px solid rgba(215, 211, 199, 0.4);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+}
+
+.spectator__entry:last-child {
+  border-bottom: 0;
+}
+
+.spectator__entry--selected {
+  background: rgba(255, 222, 165, 0.4);
+}
+
+.spectator__entry__name {
+  flex: 1;
+  min-width: 0;
+}
+
+.spectator__entry__name strong {
+  display: block;
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.spectator__entry__name span {
+  color: var(--figma-muted);
+  font-size: 0.78rem;
+  margin-top: 2px;
+  display: block;
+}
+
+.spectator__entry__odds {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f4f1e8;
+  color: var(--figma-green);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.spectator__entry--selected .spectator__entry__odds {
+  background: var(--figma-green);
+  color: var(--figma-gold);
+}
+
+/* ─── BET SLIP CARD ──────────────────────────────────────── */
+.spectator__betslip {
+  position: sticky;
+  top: 100px;
+  background: #fff;
+  border: 1px solid rgba(215, 211, 199, 0.5);
+  border-radius: 8px;
+  padding: 28px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.spectator__betslip__label {
+  color: var(--figma-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.spectator__betslip__odds {
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.8rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.spectator__betslip__heading {
+  color: var(--figma-green);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  margin-top: 14px;
+}
+
+.spectator__betslip__sub {
+  color: var(--figma-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.spectator__betslip__field {
+  display: block;
+  color: var(--figma-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.spectator__betslip__input {
+  display: flex;
+  align-items: center;
+  background: var(--figma-stone);
+  border-radius: 2px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+}
+
+.spectator__betslip__input span:first-child {
+  color: var(--figma-muted);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.spectator__betslip__input input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--figma-green);
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: inherit;
+  min-width: 0;
+}
+
+.spectator__betslip__payout-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 16px;
+  border-top: 1px solid var(--figma-border);
+  margin-bottom: 20px;
+}
+
+.spectator__betslip__payout-row .label {
+  color: var(--figma-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.spectator__betslip__payout-row strong {
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+/* ─── HORSE REGISTRY BENTO ──────────────────────────────── */
+.spectator__bento {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 18px;
+}
+
+.spectator__bento__cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 12px;
+  padding: 28px;
+  min-height: 180px;
+}
+
+.spectator__bento__cell--dark {
+  background: var(--figma-green);
+  color: #fff;
+  min-height: 200px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.spectator__bento__cell--light {
+  background: #fff;
+  border: 1px solid rgba(215, 211, 199, 0.5);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.spectator__bento__eyebrow {
+  color: var(--figma-gold-strong);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.spectator__bento__cell--light .spectator__bento__eyebrow {
+  color: var(--figma-muted);
+}
+
+.spectator__bento__value {
+  display: block;
+  font-family: "EB Garamond", Georgia, serif;
+  font-weight: 500;
+  line-height: 1;
+  margin-bottom: 14px;
+}
+
+.spectator__bento__cell--dark .spectator__bento__value {
+  color: var(--figma-gold);
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+}
+
+.spectator__bento__cell--light .spectator__bento__value {
+  color: var(--figma-green);
+  font-size: clamp(2rem, 3vw, 2.6rem);
+}
+
+.spectator__bento__note {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  max-width: 420px;
+}
+
+.spectator__bento__cell--dark .spectator__bento__note {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.spectator__bento__cell--light .spectator__bento__note {
+  color: var(--figma-copy);
+}
+
+/* ─── HORSE CARD ─────────────────────────────────────────── */
+.spectator__horse-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(215, 211, 199, 0.5);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.spectator__horse-card__media {
+  position: relative;
+  height: 240px;
+  background: #e4e1d7;
+  overflow: hidden;
+}
+
+.spectator__horse-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.spectator__horse-card__media .spectator__pill {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+}
+
+.spectator__horse-card__body {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+}
+
+.spectator__horse-card__body h3 {
+  margin: 0;
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.7rem;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.spectator__horse-card__body p {
+  margin: 6px 0 0;
+  color: #5e655f;
+  font-size: 0.85rem;
+}
+
+/* ─── HORSE DETAIL ───────────────────────────────────────── */
+.spectator__horse-detail {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.spectator__horse-hero {
+  position: relative;
+  height: clamp(360px, 50vh, 480px);
+  overflow: hidden;
+  background: #0c0a08;
+}
+
+.spectator__horse-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.spectator__horse-hero__gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 42, 21, 0.18) 0%, rgba(0, 42, 21, 0.78) 100%);
+}
+
+.spectator__horse-hero__back {
+  position: absolute;
+  top: 100px;
+  left: clamp(20px, 5vw, 64px);
+  color: var(--figma-gold);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.spectator__horse-hero__pill {
+  position: absolute;
+  left: clamp(20px, 5vw, 64px);
+  bottom: 24px;
+}
+
+.spectator__horse-detail__name h1 {
+  margin: 0;
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: clamp(2.6rem, 5vw, 4rem);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.spectator__horse-detail__name p {
+  margin: 12px 0 0;
+  color: var(--figma-copy);
+  font-size: 1rem;
+}
+
+.spectator__horse-detail__bio {
+  margin: 24px 0 0;
+  color: var(--figma-ink);
+  font-size: 1.02rem;
+  line-height: 1.7;
+  max-width: 560px;
+}
+
+.spectator__horse-detail__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.spectator__horse-detail__buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+/* ─── BETTING HISTORY ────────────────────────────────────── */
+.spectator__bet-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.spectator__bet-stat {
+  border-radius: 12px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid rgba(215, 211, 199, 0.5);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.spectator__bet-stat--accent {
+  background: var(--figma-green);
+  border: 0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  color: #fff;
+}
+
+.spectator__bet-stat--accent .spectator__bet-stat__label {
+  color: var(--figma-gold-strong);
+}
+
+.spectator__bet-stat--accent .spectator__bet-stat__value {
+  color: var(--figma-gold);
+}
+
+.spectator__bet-stat__label {
+  color: var(--figma-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.spectator__bet-stat__value {
+  display: block;
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.spectator__bet-table {
+  background: #fff;
+  border: 1px solid rgba(215, 211, 199, 0.5);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.spectator__bet-table__head {
+  display: none;
+  background: var(--figma-stone);
+  border-bottom: 1px solid var(--figma-border);
+  padding: 16px 24px;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .spectator__bet-table__head {
+    display: grid;
+    grid-template-columns: 1.5fr 1.4fr 0.8fr 0.8fr 1.2fr 1fr;
+  }
+}
+
+.spectator__bet-table__head span {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--figma-copy);
+}
+
+.spectator__bet-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--figma-bg-soft);
+}
+
+.spectator__bet-row:last-child {
+  border-bottom: 0;
+}
+
+@media (min-width: 768px) {
+  .spectator__bet-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1.4fr 0.8fr 0.8fr 1.2fr 1fr;
+    align-items: center;
+    gap: 16px;
+  }
+}
+
+/* ─── JOCKEY PROFILE ─────────────────────────────────────── */
+.spectator__jockey-cover {
+  position: relative;
+  height: clamp(300px, 36vh, 380px);
+  overflow: hidden;
+  background: #0c0a08;
+}
+
+.spectator__jockey-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.spectator__jockey-cover__gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 42, 21, 0.55) 100%);
+}
+
+.spectator__jockey-cover__back {
+  position: absolute;
+  top: 100px;
+  left: clamp(20px, 5vw, 64px);
+  color: var(--figma-gold);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.spectator__jockey-cover__socials {
+  position: absolute;
+  top: 100px;
+  right: clamp(20px, 5vw, 64px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spectator__jockey-cover__socials a {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+}
+
+.spectator__jockey-head {
+  display: grid;
+  grid-template-columns: 128px 1fr;
+  gap: 24px;
+  align-items: end;
+  margin-top: -64px;
+}
+
+.spectator__jockey-avatar {
+  width: 128px;
+  height: 128px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #e4e1d7;
+  box-shadow: 0 0 0 4px #fff;
+  flex: 0 0 auto;
+}
+
+.spectator__jockey-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.spectator__jockey-head__name {
+  padding-bottom: 16px;
+}
+
+.spectator__jockey-head__name h1 {
+  margin: 12px 0 0;
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.spectator__jockey-head__name p {
+  margin: 6px 0 0;
+  color: var(--figma-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.spectator__jockey-tabs {
+  display: flex;
+  align-items: center;
+  margin-top: 24px;
+  border-bottom: 1px solid var(--figma-border);
+}
+
+.spectator__jockey-overview {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.spectator__jockey-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.spectator__jockey-stat {
+  background: #fff;
+  border: 1px solid rgba(215, 211, 199, 0.5);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.spectator__jockey-stat__label {
+  color: var(--figma-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.spectator__jockey-stat__value {
+  display: block;
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.spectator__jockey-recent {
+  margin-top: 28px;
+}
+
+.spectator__jockey-recent h2,
+.spectator__jockey-highlights h2 {
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin: 0 0 14px;
+}
+
+.spectator__jockey-recent__list {
+  background: #fff;
+  border: 1px solid rgba(215, 211, 199, 0.5);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.spectator__jockey-recent__row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(215, 211, 199, 0.4);
+}
+
+.spectator__jockey-recent__row:last-child {
+  border-bottom: 0;
+}
+
+.spectator__jockey-recent__row__name {
+  flex: 1;
+  min-width: 0;
+}
+
+.spectator__jockey-recent__row__name strong {
+  display: block;
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.spectator__jockey-recent__row__name span {
+  display: block;
+  color: var(--figma-muted);
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
+.spectator__position {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+
+.spectator__position--1st { background: var(--figma-gold); color: var(--figma-green); }
+.spectator__position--2nd { background: #cbd5e1; color: var(--figma-green); }
+.spectator__position--3rd { background: #d6a373; color: #fff; }
+.spectator__position--4th { background: #e7e5e4; color: var(--figma-copy); }
+
+.spectator__jockey-highlights p {
+  margin: 0 0 24px;
+  color: var(--figma-copy);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.spectator__highlight-card {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  background: #e4e1d7;
+  border-radius: 12px;
+}
+
+.spectator__highlight-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.spectator__highlight-card__gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 42, 21, 0) 40%, rgba(0, 42, 21, 0.85) 100%);
+}
+
+.spectator__highlight-card__caption {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+}
+
+.spectator__highlight-card__caption .label {
+  color: var(--figma-gold-strong);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.spectator__highlight-card__caption strong {
+  color: #fff;
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+/* ─── AVATAR (used in entries & jockey) ──────────────────── */
+.spectator__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #e4e1d7;
+  flex: 0 0 auto;
+}
+
+.spectator__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.spectator__avatar--lg {
+  width: 56px;
+  height: 56px;
+}
+
+/* ─── DARK SPLIT BANNER ──────────────────────────────────── */
+.spectator__split-banner {
+  background: var(--figma-green);
+  color: #fff;
+}
+
+.spectator__split-banner__inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 320px;
+  align-items: stretch;
+}
+
+.spectator__split-banner__copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px clamp(24px, 5vw, 56px);
+}
+
+.spectator__split-banner__copy h2 {
+  margin: 12px 0 0;
+  color: #fff;
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.spectator__split-banner__copy p {
+  margin: 14px 0 0;
+  width: min(100%, 480px);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.spectator__split-banner__copy .actions {
+  margin-top: 28px;
+}
+
+.spectator__split-banner__image {
+  position: relative;
+  min-height: 320px;
+  background: #0c0a08;
+}
+
+.spectator__split-banner__image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+
+/* ─── MAIN GRID 3-COL ────────────────────────────────────── */
+.spectator__home-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.spectator__home-col h2 {
+  margin: 0 0 18px;
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 500;
+}
+
+.spectator__featured-stack {
+  display: grid;
+  gap: 24px;
+  align-content: start;
+}
+
+.spectator__featured-stack__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.spectator__featured-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  border-radius: 8px;
+  min-height: 240px;
+  padding: 24px;
+  color: var(--figma-green);
+}
+
+.spectator__featured-card--gold {
+  background: var(--figma-gold);
+}
+
+.spectator__featured-card--dark {
+  background: var(--figma-green);
+  color: #fff;
+}
+
+.spectator__featured-card--gold::before,
+.spectator__featured-card--dark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.spectator__featured-card--gold::before {
+  background: linear-gradient(180deg, rgba(255, 222, 165, 0.4) 0%, rgba(255, 222, 165, 0.95) 70%);
+}
+
+.spectator__featured-card__inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+}
+
+.spectator__featured-card h3 {
+  margin: 12px 0 0;
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.spectator__featured-card__meta {
+  font-size: 0.82rem;
+  opacity: 0.85;
+}
+
+.spectator__featured-card__prize {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 8px;
+  opacity: 0.75;
+}
+
+.spectator__featured-card__prize strong {
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 1;
+}
+
+.spectator__featured-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding-bottom: 4px;
+  border-bottom: 1px solid currentColor;
+  text-decoration: none;
+  width: max-content;
+}
+
+.spectator__top-jockey {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid rgba(215, 211, 199, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  margin-bottom: 12px;
+}
+
+.spectator__top-jockey__avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #e4e1d7;
+  flex: 0 0 auto;
+}
+
+.spectator__top-jockey__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.spectator__top-jockey__name {
+  flex: 1;
+  min-width: 0;
+}
+
+.spectator__top-jockey__name strong {
+  display: block;
+  color: var(--figma-green);
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.spectator__top-jockey__name p {
+  margin: 2px 0 0;
+  color: var(--figma-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.spectator__top-jockey__tag {
+  padding: 6px 12px;
+  background: var(--figma-green);
+  color: var(--figma-gold);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 4px;
+}
+
+.spectator__results {
+  background: #fff;
+  border: 1px solid rgba(215, 211, 199, 0.5);
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.spectator__result-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid rgba(215, 211, 199, 0.45);
+}
+
+.spectator__result-row:last-child {
+  border-bottom: 0;
+}
+
+.spectator__result-row__index {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+
+.spectator__result-row__name {
+  flex: 1;
+  min-width: 0;
+}
+
+.spectator__result-row__name strong {
+  display: block;
+  color: var(--figma-green);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.spectator__result-row__name p {
+  margin: 2px 0 0;
+  color: var(--figma-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.spectator__result-row__payout {
+  color: var(--figma-green);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+/* ─── TOAST ──────────────────────────────────────────────── */
+.spectator__toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: var(--figma-green);
+  color: var(--figma-gold);
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  max-width: 360px;
+}
+
+.spectator__toast__icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--figma-gold);
+  color: var(--figma-green);
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+
+.spectator__toast strong {
+  display: block;
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.spectator__toast p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.8rem;
+}
+
+/* ─── PAGINATION ─────────────────────────────────────────── */
+.spectator__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 32px;
+}
+
+.spectator__pagination button {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--figma-border);
+  color: var(--figma-green);
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.spectator__pagination button.spectator__pagination--active {
+  background: var(--figma-green);
+  color: var(--figma-gold);
+  box-shadow: none;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .spectator__home-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .spectator__bento,
+  .spectator__bet-stats,
+  .spectator__stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .spectator__detail,
+  .spectator__horse-detail,
+  .spectator__jockey-overview {
+    grid-template-columns: 1fr;
+  }
+  .spectator__split-banner__inner {
+    grid-template-columns: 1fr;
+  }
+  .spectator__split-banner__image {
+    min-height: 240px;
+  }
+}
+
+@media (max-width: 720px) {
+  .spectator__hero {
+    min-height: 640px;
+  }
+  .spectator__hero-inner {
+    padding-block: 108px 48px;
+  }
+  .spectator__cards {
+    grid-template-columns: 1fr;
+  }
+  .spectator__home-grid,
+  .spectator__bento,
+  .spectator__bet-stats,
+  .spectator__stats-grid,
+  .spectator__jockey-stats-grid,
+  .spectator__horse-detail__stats {
+    grid-template-columns: 1fr;
+  }
+  .spectator__stat-grid {
+    grid-template-columns: 1fr;
+  }
+  .spectator__horse-detail__buttons {
+    grid-template-columns: 1fr;
+  }
+  .spectator__hero-actions .spectator__btn {
+    width: 100%;
+  }
+}

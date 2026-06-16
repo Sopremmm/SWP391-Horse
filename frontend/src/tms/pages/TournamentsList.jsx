@@ -1,17 +1,21 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import SpectatorLayout from "../components/spectator/SpectatorLayout.jsx";
-import {
-  Button,
-  Card,
-  Pill,
-  Tabs,
-  SortPill,
-  SearchBar,
-  PageHead,
-  ArrowRight,
-} from "../components/spectator/SpectatorUI.jsx";
 import { FEATURED_RACES } from "../data/spectatorData.js";
+
+function ArrowRight({ size = 12 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 12 12"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path d="M9.13 6.75H0v-1.5h9.13l-4.2-4.2L6 0l6 6-6 6-1.07-1.05 4.2-4.2Z" fill="currentColor" />
+    </svg>
+  );
+}
 
 const FILTER_TABS = [
   { value: "all", label: "All" },
@@ -36,223 +40,147 @@ export default function TournamentsList() {
 
   return (
     <SpectatorLayout>
-      {/* HEADER STRIP — search + filter row */}
-      <section
-        style={{ background: "#fff", borderBottom: "1px solid #d7d3c7" }}
-      >
-        <div
-          className="w-full mx-auto px-7 md:px-10 lg:px-16 flex items-center justify-between flex-wrap"
-          style={{ paddingBlock: 18, gap: 16 }}
-        >
-          <SearchBar />
-        </div>
-      </section>
-
-      {/* BREADCRUMB + PAGE HEAD */}
-      <section>
-        <div className="w-full mx-auto px-7 md:px-10 lg:px-16">
-          <PageHead
-            breadcrumb={[
-              { label: "Home", to: "/spectator/home" },
-              { label: "Tournaments" },
-            ]}
-            eyebrow="Destined for Greatness"
-            title="Available Races & Tournaments"
-            subtitle="The world's most prestigious thoroughbred events — discover qualifiers, group stakes, and invitationals with a single click."
-          />
-
-          {/* FILTER BAR */}
+      <div className="spectator">
+        {/* SEARCH HEADER */}
+        <section style={{ background: "#fff", borderBottom: "1px solid #d7d3c7" }}>
           <div
-            className="flex items-center justify-between flex-wrap"
-            style={{ marginBlock: "8px 32px", gap: 16 }}
+            className="shell"
+            style={{ paddingBlock: 18, display: "flex", flexWrap: "wrap", gap: 16 }}
           >
-            <Tabs tabs={FILTER_TABS} active={activeTab} onChange={setActiveTab} />
-            <SortPill label="By Race Date" />
+            <div className="spectator__search">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" style={{ color: "#747b75" }}>
+                <path d="M11 11l3 3M7 13A6 6 0 1 1 7 1a6 6 0 0 1 0 12Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <input type="text" placeholder="Search for races, horses, or jockeys..." />
+              <button type="button" aria-label="Filter">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* GRID OF RACE CARDS */}
-      <section style={{ paddingBlock: "0 clamp(64px, 8vw, 96px)" }}>
-        <div className="w-full mx-auto px-7 md:px-10 lg:px-16">
+        {/* PAGE HEAD */}
+        <div className="shell">
+          <header className="spectator__page-head">
+            <div className="spectator__breadcrumb">
+              <Link to="/spectator/home">Home</Link>
+              <span className="spectator__breadcrumb__sep">/</span>
+              <span className="spectator__breadcrumb__current">Tournaments</span>
+            </div>
+            <span className="spectator__page-eyebrow">Destined for Greatness</span>
+            <h1>Available Races &amp; Tournaments</h1>
+            <p>
+              The world&apos;s most prestigious thoroughbred events — discover qualifiers,
+              group stakes, and invitationals with a single click.
+            </p>
+          </header>
+        </div>
+
+        {/* FILTER ROW */}
+        <div className="shell">
           <div
-            className="grid"
             style={{
-              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-              gap: 24,
+              display: "flex",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 16,
+              marginBlock: "8px 32px",
             }}
           >
-            {filtered.map((race) => (
-              <article
-                key={race.id}
-                className="bg-white overflow-hidden flex flex-col"
+            <div className="spectator__tabs">
+              {FILTER_TABS.map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => setActiveTab(t.value)}
+                  className={
+                    activeTab === t.value
+                      ? "spectator__tab spectator__tab--active"
+                      : "spectator__tab"
+                  }
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span
                 style={{
-                  border: "1px solid rgba(215,211,199,0.5)",
-                  borderRadius: 8,
-                  boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                  color: "#747b75",
+                  fontSize: "0.68rem",
+                  fontWeight: 800,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
                 }}
               >
-                <div
-                  className="relative"
-                  style={{ height: 220, background: "#e4e1d7" }}
-                >
-                  <img
-                    src={race.image}
-                    alt={race.name}
-                    className="block w-full h-full"
-                    style={{ objectFit: "cover" }}
-                  />
-                  <span
-                    className="absolute"
-                    style={{
-                      top: 14,
-                      left: 14,
-                      padding: "6px 12px",
-                      borderRadius: 4,
-                      background: "rgba(0,42,21,0.92)",
-                      color: "#ffdea5",
-                      fontSize: "0.66rem",
-                      fontWeight: 800,
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {race.badge}
-                  </span>
-                </div>
-                <div className="grid" style={{ padding: 24, gap: 16 }}>
-                  <div>
-                    <h3
-                      className="m-0"
-                      style={{
-                        color: "#002a15",
-                        fontSize: "1.6rem",
-                        fontWeight: 500,
-                        lineHeight: 1.15,
-                        fontFamily: '"EB Garamond", Georgia, serif',
-                      }}
-                    >
-                      {race.name}
-                    </h3>
-                    <p
-                      className="m-0"
-                      style={{
-                        marginTop: 6,
-                        color: "#5e655f",
-                        fontSize: "0.85rem",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                      }}
-                    >
-                      <svg width="12" height="12" viewBox="0 0 12 14" fill="none" aria-hidden="true" style={{ color: "#747b75" }}>
-                        <path d="M6 0a5 5 0 0 0-5 5c0 3.5 5 9 5 9s5-5.5 5-9a5 5 0 0 0-5-5Zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" fill="currentColor" />
-                      </svg>
-                      {race.location}
-                    </p>
-                  </div>
-
-                  <div
-                    className="grid"
-                    style={{
-                      gap: 10,
-                      paddingTop: 12,
-                      borderTop: "1px solid rgba(215,211,199,0.4)",
-                    }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span
-                        style={{
-                          color: "#747b75",
-                          fontSize: "0.7rem",
-                          fontWeight: 800,
-                          letterSpacing: "0.1em",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        Prize Pool
-                      </span>
-                      <strong
-                        style={{
-                          color: "#002a15",
-                          fontSize: "0.95rem",
-                          fontWeight: 600,
-                          fontFamily: '"EB Garamond", Georgia, serif',
-                        }}
-                      >
-                        {race.prizePool}
-                      </strong>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span
-                        style={{
-                          color: "#747b75",
-                          fontSize: "0.7rem",
-                          fontWeight: 800,
-                          letterSpacing: "0.1em",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        Distance
-                      </span>
-                      <strong
-                        style={{
-                          color: "#002a15",
-                          fontSize: "0.88rem",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {race.distance}
-                      </strong>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span
-                        style={{
-                          color: "#747b75",
-                          fontSize: "0.7rem",
-                          fontWeight: 800,
-                          letterSpacing: "0.1em",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        Runners
-                      </span>
-                      <strong
-                        style={{
-                          color: "#002a15",
-                          fontSize: "0.88rem",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {race.runners}
-                      </strong>
-                    </div>
-                  </div>
-
-                  <Link
-                    to={`/spectator/tournaments/${race.id}`}
-                    className="uppercase inline-flex items-center justify-center no-underline"
-                    style={{
-                      marginTop: 8,
-                      padding: "12px 18px",
-                      background: "#002a15",
-                      color: "#fff",
-                      borderRadius: 2,
-                      fontSize: "0.72rem",
-                      fontWeight: 800,
-                      letterSpacing: "0.12em",
-                      gap: 8,
-                    }}
-                  >
-                    View Details
-                    <ArrowRight />
-                  </Link>
-                </div>
-              </article>
-            ))}
+                Sort By
+              </span>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "8px 14px",
+                  borderRadius: 999,
+                  background: "#fff",
+                  border: "1px solid rgba(215,211,199,0.5)",
+                }}
+              >
+                <span style={{ color: "#002a15", fontSize: "0.82rem", fontWeight: 700 }}>By Race Date</span>
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true">
+                  <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+
+        {/* CARDS GRID */}
+        <section className="spectator__section" style={{ paddingTop: 0 }}>
+          <div className="shell">
+            <div className="spectator__cards">
+              {filtered.map((race) => (
+                <article key={race.id} className="spectator__card">
+                  <div className="spectator__card-media">
+                    <img src={race.image} alt={race.name} />
+                    <span className="spectator__card-status">{race.badge}</span>
+                  </div>
+                  <div className="spectator__card-body">
+                    <div>
+                      <h3>{race.name}</h3>
+                      <p>{race.location}</p>
+                    </div>
+                    <dl className="spectator__card-details">
+                      <div>
+                        <dt>Prize Pool</dt>
+                        <dd>{race.prizePool}</dd>
+                      </div>
+                      <div>
+                        <dt>Distance</dt>
+                        <dd>{race.distance}</dd>
+                      </div>
+                      <div>
+                        <dt>Runners</dt>
+                        <dd>{race.runners} horses</dd>
+                      </div>
+                    </dl>
+                    <Link
+                      to={`/spectator/tournaments/${race.id}`}
+                      className="spectator__card-button"
+                    >
+                      View Details
+                      <ArrowRight />
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
     </SpectatorLayout>
   );
 }

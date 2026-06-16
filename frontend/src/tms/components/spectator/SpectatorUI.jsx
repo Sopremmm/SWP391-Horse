@@ -1,4 +1,5 @@
 import React from 'react';
+import './SpectatorUI.css';
 
 // Shared color tokens aligned with the Stitch AI design language.
 export const COLORS = {
@@ -15,7 +16,7 @@ export const COLORS = {
 };
 
 export const FONT_SERIF = '"EB Garamond", Georgia, serif';
-export const FONT_SANS = 'Inter, ui-sans-serif, system-ui, sans-serif';
+export const FONT_SANS = 'Manrope, Inter, "Segoe UI", sans-serif';
 
 // Section eyebrow + headline.
 export function SectionHead({ eyebrow, title, subtitle, action }) {
