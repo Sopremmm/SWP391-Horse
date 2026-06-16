@@ -1,801 +1,528 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import SpectatorLayout from "../components/spectator/SpectatorLayout.jsx";
-import { useApp } from "../AppContext.jsx";
-import { RACES_SEED } from "../races.js";
-import { INITIAL_HORSES } from "../data.js";
+import {
+  Button,
+  SectionHead,
+  StatTile,
+  Pill,
+  ArrowRight,
+} from "../components/spectator/SpectatorUI.jsx";
+import {
+  FEATURED_RACES,
+  TOP_JOCKEYS,
+  LATEST_RESULTS,
+  SPECTATOR_STATS,
+} from "../data/spectatorData.js";
 
-const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1920&q=80&auto=format&fit=crop";
-
-const RACE_COVER_IMAGES = [
-  "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=900&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1534773728080-33d31da27ae5?w=900&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=900&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1551884170-09fb70a3a2ed?w=900&q=80&auto=format&fit=crop",
-];
-
-const INVITE_IMAGE =
-  "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=900&q=80&auto=format&fit=crop";
-
-function PlayIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-      <path d="M3 1.5 10 6 3 10.5v-9Z" fill="currentColor" />
-    </svg>
-  );
-}
-
-function ArrowRight() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-      <path d="M9.13 6.75H0v-1.5h9.13l-4.2-4.2L6 0l6 6-6 6-1.07-1.05 4.2-4.2Z" fill="currentColor" />
-    </svg>
-  );
-}
+const HERO_BG =
+  "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1920&q=85&auto=format&fit=crop";
 
 export default function SpectatorHome() {
-  const { user } = useApp();
-  const upcoming = RACES_SEED.filter((r) => r.status === "Upcoming").slice(0, 3);
-  const [subEmail, setSubEmail] = useState("");
-  const [subDone, setSubDone] = useState(false);
-  const [subscribedRaces, setSubscribedRaces] = useState({});
-
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    if (subEmail && /\S+@\S+\.\S+/.test(subEmail)) {
-      setSubDone(true);
-      setSubEmail("");
-    }
-  };
-
-  const toggleSub = (raceId) =>
-    setSubscribedRaces((s) => ({ ...s, [raceId]: !s[raceId] }));
+  const [featured] = useState(FEATURED_RACES.slice(0, 2));
 
   return (
     <SpectatorLayout>
       {/* HERO */}
       <section
-        className="relative flex items-center overflow-hidden"
-        style={{ minHeight: "clamp(560px, 78vh, 760px)" }}
+        className="relative flex items-end overflow-hidden"
+        style={{ minHeight: "clamp(580px, 82vh, 760px)" }}
       >
         <img
-          src={HERO_IMAGE}
-          alt="Heritage Racing hero"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ transform: "scale(1.02)" }}
+          src={HERO_BG}
+          alt="Tour de Hubs"
+          className="absolute inset-0 w-full h-full"
+          style={{ objectFit: "cover", transform: "scale(1.02)" }}
         />
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(90deg, rgba(0,42,21,0.92) 0%, rgba(0,42,21,0.55) 50%, rgba(0,42,21,0.08) 100%), linear-gradient(0deg, rgba(0,42,21,0.18), rgba(0,42,21,0.04))",
+              "linear-gradient(180deg, rgba(0,42,21,0.18) 0%, rgba(0,42,21,0.55) 55%, rgba(0,42,21,0.92) 100%)",
           }}
         />
         <div
           className="relative z-10 w-full mx-auto px-7 md:px-10 lg:px-16"
-          style={{ paddingBlock: "112px 72px" }}
+          style={{ paddingBlock: "112px 56px" }}
         >
-          <div className="flex flex-col items-start" style={{ width: "min(100%, 720px)", gap: 22 }}>
+          <p
+            className="m-0 inline-flex items-center"
+            style={{
+              color: "#ffdea5",
+              fontSize: "0.7rem",
+              fontWeight: 800,
+              letterSpacing: "0.22em",
+              textTransform: "uppercase",
+              gap: 14,
+              marginBottom: 20,
+            }}
+          >
+            <span style={{ width: 48, height: 1, background: "#ffdea5" }} />
+            Official Race Schedule — Sept 22, 2024
+          </p>
+          <h1
+            className="m-0"
+            style={{
+              color: "#fff",
+              fontSize: "clamp(3.4rem, 8vw, 6.4rem)",
+              fontWeight: 500,
+              lineHeight: 1,
+              letterSpacing: "-0.01em",
+              fontFamily: '"EB Garamond", Georgia, serif',
+              maxWidth: 900,
+            }}
+          >
+            Tour de Hubs
+          </h1>
+          <p
+            className="m-0"
+            style={{
+              marginTop: 22,
+              color: "rgba(255,255,255,0.88)",
+              fontSize: "1.05rem",
+              lineHeight: 1.6,
+              maxWidth: 560,
+            }}
+          >
+            Witness the pinnacle of flat racing across the world&apos;s most prestigious venues.
+            Place a bet, follow your favorites, and let the season unfold.
+          </p>
+          <div className="flex flex-wrap" style={{ gap: 14, marginTop: 32 }}>
+            <Button as={Link} to="/spectator/tournaments" variant="ghost" size="lg">
+              Place a Bet
+              <ArrowRight />
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* MAIN GRID — Featured Races / Top Jockeys / Latest Results */}
+      <section style={{ paddingBlock: "clamp(56px, 8vw, 88px)" }}>
+        <div className="w-full mx-auto px-7 md:px-10 lg:px-16">
+          <div
+            className="grid"
+            style={{
+              gridTemplateColumns: "1.5fr 1fr 1fr",
+              gap: 24,
+              alignItems: "stretch",
+            }}
+          >
+            {/* Featured Races (2 stacked) */}
+            <div className="grid" style={{ gap: 24 }}>
+              <div className="flex items-end justify-between">
+                <h2
+                  className="m-0"
+                  style={{
+                    color: "#002a15",
+                    fontSize: "1.6rem",
+                    fontWeight: 500,
+                    fontFamily: '"EB Garamond", Georgia, serif',
+                  }}
+                >
+                  Featured Races
+                </h2>
+                <Link
+                  to="/spectator/tournaments"
+                  className="no-underline"
+                  style={{
+                    color: "#004225",
+                    fontSize: "0.7rem",
+                    fontWeight: 800,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    paddingBottom: 4,
+                    borderBottom: "1px solid #004225",
+                  }}
+                >
+                  See All
+                </Link>
+              </div>
+              {featured.map((race, idx) => (
+                <article
+                  key={race.id}
+                  className="relative overflow-hidden"
+                  style={{
+                    borderRadius: 8,
+                    minHeight: 260,
+                    background: idx === 0 ? "#ffdea5" : "#002a15",
+                    color: idx === 0 ? "#002a15" : "#fff",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "flex-end",
+                    padding: 24,
+                  }}
+                >
+                  {idx === 0 ? (
+                    <div
+                      className="absolute"
+                      style={{
+                        inset: 0,
+                        background:
+                          "linear-gradient(180deg, rgba(255,222,165,0.4) 0%, rgba(255,222,165,0.95) 70%)",
+                      }}
+                    />
+                  ) : null}
+                  <div className="relative z-10">
+                    <Pill tone={idx === 0 ? "dark" : "gold"}>
+                      {race.badge}
+                    </Pill>
+                    <h3
+                      className="m-0"
+                      style={{
+                        marginTop: 12,
+                        fontSize: "1.6rem",
+                        fontWeight: 500,
+                        lineHeight: 1.15,
+                        fontFamily: '"EB Garamond", Georgia, serif',
+                      }}
+                    >
+                      {race.name}
+                    </h3>
+                    <p
+                      className="m-0"
+                      style={{
+                        marginTop: 6,
+                        fontSize: "0.82rem",
+                        opacity: 0.85,
+                      }}
+                    >
+                      {race.location} · {race.classLine}
+                    </p>
+                    <div className="flex items-center" style={{ gap: 12, marginTop: 14 }}>
+                      <span
+                        style={{
+                          fontSize: "0.7rem",
+                          fontWeight: 800,
+                          letterSpacing: "0.12em",
+                          textTransform: "uppercase",
+                          opacity: 0.75,
+                        }}
+                      >
+                        Prize
+                      </span>
+                      <strong
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: 600,
+                          fontFamily: '"EB Garamond", Georgia, serif',
+                        }}
+                      >
+                        {race.prizePool}
+                      </strong>
+                    </div>
+                    <Link
+                      to={`/spectator/tournaments/${race.id}`}
+                      className="no-underline inline-flex items-center"
+                      style={{
+                        marginTop: 18,
+                        color: idx === 0 ? "#002a15" : "#ffdea5",
+                        fontSize: "0.72rem",
+                        fontWeight: 800,
+                        letterSpacing: "0.12em",
+                        textTransform: "uppercase",
+                        paddingBottom: 4,
+                        borderBottom: `1px solid ${idx === 0 ? "#002a15" : "#ffdea5"}`,
+                        gap: 8,
+                      }}
+                    >
+                      Place a Bet
+                      <ArrowRight />
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            {/* Top Jockeys */}
+            <div>
+              <h2
+                className="m-0"
+                style={{
+                  color: "#002a15",
+                  fontSize: "1.6rem",
+                  fontWeight: 500,
+                  fontFamily: '"EB Garamond", Georgia, serif',
+                  marginBottom: 18,
+                }}
+              >
+                Top Jockeys
+              </h2>
+              <div className="grid" style={{ gap: 12 }}>
+                {TOP_JOCKEYS.map((j) => (
+                  <article
+                    key={j.name}
+                    className="bg-white flex items-center"
+                    style={{
+                      gap: 14,
+                      padding: 16,
+                      border: "1px solid rgba(215,211,199,0.5)",
+                      borderRadius: 8,
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: 999,
+                        overflow: "hidden",
+                        background: "#e4e1d7",
+                        flex: "0 0 auto",
+                      }}
+                    >
+                      <img
+                        src={j.image}
+                        alt={j.name}
+                        className="block w-full h-full"
+                        style={{ objectFit: "cover" }}
+                      />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <strong
+                        style={{
+                          display: "block",
+                          color: "#002a15",
+                          fontSize: "1rem",
+                          fontWeight: 500,
+                          fontFamily: '"EB Garamond", Georgia, serif',
+                        }}
+                      >
+                        {j.name}
+                      </strong>
+                      <p
+                        className="m-0"
+                        style={{
+                          color: "#747b75",
+                          fontSize: "0.72rem",
+                          fontWeight: 600,
+                          marginTop: 2,
+                        }}
+                      >
+                        Rank #{j.rank} · {j.winRate} Win Rate
+                      </p>
+                    </div>
+                    <div
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: 4,
+                        background: "#002a15",
+                        color: "#ffdea5",
+                        fontSize: "0.7rem",
+                        fontWeight: 800,
+                        letterSpacing: "0.1em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {j.rides}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            {/* Latest Results */}
+            <div>
+              <h2
+                className="m-0"
+                style={{
+                  color: "#002a15",
+                  fontSize: "1.6rem",
+                  fontWeight: 500,
+                  fontFamily: '"EB Garamond", Georgia, serif',
+                  marginBottom: 18,
+                }}
+              >
+                Latest Results
+              </h2>
+              <div
+                className="bg-white"
+                style={{
+                  border: "1px solid rgba(215,211,199,0.5)",
+                  borderRadius: 8,
+                  padding: 8,
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                }}
+              >
+                {LATEST_RESULTS.map((r, i) => (
+                  <div
+                    key={r.race}
+                    className="flex items-center"
+                    style={{
+                      gap: 12,
+                      padding: 14,
+                      borderBottom:
+                        i === LATEST_RESULTS.length - 1
+                          ? "none"
+                          : "1px solid rgba(215,211,199,0.45)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 999,
+                        background:
+                          i === 0 ? "#ffdea5" : i === 1 ? "#e7e5e4" : "#002a15",
+                        color: i === 2 ? "#ffdea5" : "#002a15",
+                        display: "grid",
+                        placeItems: "center",
+                        fontSize: "0.78rem",
+                        fontWeight: 800,
+                        flex: "0 0 auto",
+                      }}
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <strong
+                        style={{
+                          display: "block",
+                          color: "#002a15",
+                          fontSize: "0.88rem",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {r.race}
+                      </strong>
+                      <p
+                        className="m-0"
+                        style={{
+                          color: "#747b75",
+                          fontSize: "0.72rem",
+                          fontWeight: 600,
+                          marginTop: 2,
+                        }}
+                      >
+                        {r.winner} · {r.time}
+                      </p>
+                    </div>
+                    <span
+                      style={{
+                        color: "#002a15",
+                        fontSize: "0.78rem",
+                        fontWeight: 800,
+                      }}
+                    >
+                      {r.payout}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* DESTINED FOR GREATNESS — split dark CTA banner */}
+      <section
+        aria-label="Destined for greatness"
+        className="relative overflow-hidden"
+        style={{
+          background: "#002a15",
+          color: "#fff",
+        }}
+      >
+        <div
+          className="w-full mx-auto px-7 md:px-10 lg:px-16 grid"
+          style={{
+            gridTemplateColumns: "1fr 1fr",
+            gap: 0,
+            minHeight: 320,
+            alignItems: "stretch",
+          }}
+        >
+          <div
+            className="flex flex-col justify-center"
+            style={{ padding: "48px clamp(24px, 5vw, 56px)" }}
+          >
             <p
-              className="m-0 inline-flex items-center"
+              className="m-0"
               style={{
-                color: "#ffdea5",
+                color: "#ffbd6b",
                 fontSize: "0.72rem",
                 fontWeight: 800,
                 letterSpacing: "0.22em",
                 textTransform: "uppercase",
-                gap: 14,
+                marginBottom: 12,
               }}
             >
-              <span style={{ width: 48, height: 1, background: "#ffdea5" }} />
-              Premier Horse Racing Events
+              Destined for Greatness
             </p>
-            <h1
-              className="m-0 text-white"
+            <h2
+              className="m-0"
               style={{
-                fontFamily: '"EB Garamond", Georgia, serif',
-                fontSize: "clamp(2.8rem, 6.4vw, 5.2rem)",
+                color: "#fff",
+                fontSize: "clamp(2rem, 4vw, 3rem)",
                 fontWeight: 500,
                 lineHeight: 1.05,
-                letterSpacing: "-0.01em",
+                fontFamily: '"EB Garamond", Georgia, serif',
               }}
             >
-              Heritage Racing — Bet on the World&apos;s Finest Thoroughbreds
-            </h1>
+              The Prestige Cup awaits
+            </h2>
             <p
               className="m-0"
               style={{
-                width: "min(100%, 580px)",
-                color: "rgba(245,245,244,0.9)",
-                fontSize: "1rem",
-                lineHeight: 1.65,
+                marginTop: 14,
+                color: "rgba(255,255,255,0.78)",
+                fontSize: "0.95rem",
+                lineHeight: 1.6,
+                width: "min(100%, 480px)",
               }}
             >
-              Place a stake in seconds. Track your bets, follow live races, and watch the world&apos;s most prestigious tournaments unfold — all in one place.
+              Twelve of the finest three-year-olds gather at Epsom Downs. The £5M purse
+              and a permanent place in racing history are on the line.
             </p>
-            <div className="flex flex-wrap gap-4 pt-3">
+            <div style={{ marginTop: 28 }}>
               <Link
-                to="/spectator/tournaments"
-                className="uppercase inline-flex items-center justify-center no-underline"
+                to="/spectator/tournaments/derby-invitational"
+                className="uppercase inline-flex items-center no-underline"
                 style={{
-                  minWidth: 180,
-                  padding: "18px 36px",
-                  fontSize: "0.75rem",
+                  padding: "14px 28px",
+                  background: "#ffdea5",
+                  color: "#002a15",
+                  borderRadius: 2,
+                  fontSize: "0.72rem",
                   fontWeight: 800,
                   letterSpacing: "0.12em",
-                  color: "#fff",
-                  background: "#002a15",
+                  gap: 8,
                 }}
               >
-                Browse Tournaments
+                Discover the Field
+                <ArrowRight />
               </Link>
-              {user ? (
-                <Link
-                  to="/spectator/bets"
-                  className="uppercase inline-flex items-center justify-center no-underline"
-                  style={{
-                    minWidth: 180,
-                    padding: "18px 36px",
-                    fontSize: "0.75rem",
-                    fontWeight: 800,
-                    letterSpacing: "0.12em",
-                    color: "#fff",
-                    background: "transparent",
-                    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.32)",
-                  }}
-                >
-                  My Betting History
-                </Link>
-              ) : (
-                <Link
-                  to="/"
-                  className="uppercase inline-flex items-center justify-center no-underline"
-                  style={{
-                    minWidth: 180,
-                    padding: "18px 36px",
-                    fontSize: "0.75rem",
-                    fontWeight: 800,
-                    letterSpacing: "0.12em",
-                    color: "#fff",
-                    background: "transparent",
-                    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.32)",
-                  }}
-                >
-                  Sign In to Bet
-                </Link>
-              )}
             </div>
+          </div>
+          <div
+            className="relative"
+            style={{ minHeight: 320, background: "#0c0a08" }}
+          >
+            <img
+              src="https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&q=85&auto=format&fit=crop"
+              alt="The Prestige Cup"
+              className="absolute inset-0 w-full h-full"
+              style={{ objectFit: "cover", opacity: 0.85 }}
+            />
           </div>
         </div>
       </section>
 
       {/* STATS */}
       <section
-        aria-label="Platform statistics"
-        style={{ background: "#002a15", paddingBlock: 56 }}
+        aria-label="Heritage Racing statistics"
+        style={{ background: "#f0ede4", paddingBlock: "clamp(48px, 7vw, 72px)" }}
       >
         <div
-          className="w-full mx-auto px-7 md:px-10 lg:px-16 grid gap-9"
-          style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}
+          className="w-full mx-auto px-7 md:px-10 lg:px-16 grid"
+          style={{
+            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+            gap: 18,
+          }}
         >
-          {[
-            { value: "150+", label: "Tournaments Hosted" },
-            { value: "42", label: "Elite Jockeys" },
-            { value: "12", label: "Global Hubs" },
-            { value: "$24M+", label: "Annual Prize Pool" },
-          ].map((s) => (
-            <div key={s.label} className="grid justify-items-center gap-2 text-center">
-              <strong
-                style={{
-                  color: "#ffdea5",
-                  fontSize: "clamp(2.4rem, 4vw, 3.4rem)",
-                  fontWeight: 500,
-                  lineHeight: 1,
-                  fontFamily: '"EB Garamond", Georgia, serif',
-                }}
-              >
-                {s.value}
-              </strong>
-              <span
-                style={{
-                  color: "rgba(210,245,219,0.82)",
-                  fontSize: "0.72rem",
-                  fontWeight: 800,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                }}
-              >
-                {s.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* LIVE / UPCOMING RACES */}
-      <section
-        aria-labelledby="live-races-heading"
-        style={{ paddingBlock: "clamp(64px, 8vw, 96px)" }}
-      >
-        <div className="w-full mx-auto px-7 md:px-10 lg:px-16">
-          <div
-            className="flex justify-between items-end gap-8 flex-wrap"
-            style={{ marginBottom: 48 }}
-          >
-            <div>
-              <h2
-                id="live-races-heading"
-                className="m-0"
-                style={{
-                  color: "#002a15",
-                  fontSize: "clamp(2rem, 4vw, 3rem)",
-                  fontWeight: 500,
-                  lineHeight: 1.1,
-                  fontFamily: '"EB Garamond", Georgia, serif',
-                }}
-              >
-                Live &amp; Upcoming Races
-              </h2>
-              <p
-                className="m-0"
-                style={{ marginTop: 12, color: "#555e58", fontSize: "1rem", lineHeight: 1.55, width: "min(100%, 460px)" }}
-              >
-                Top tournaments, qualified fields, and live odds — all ready for you to place a bet.
-              </p>
-            </div>
-            <Link
-              to="/spectator/tournaments"
-              className="inline-flex items-center no-underline whitespace-nowrap"
-              style={{
-                paddingBottom: 5,
-                color: "#004225",
-                borderBottom: "1px solid #004225",
-                fontSize: "0.75rem",
-                fontWeight: 800,
-                letterSpacing: "0.08em",
-                gap: 8,
-              }}
-            >
-              View All Tournaments
-              <ArrowRight />
-            </Link>
-          </div>
-
-          <div
-            className="grid gap-6"
-            style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}
-          >
-            {upcoming.map((race, idx) => {
-              const horseCount = (race.registrations || []).filter((r) => r.status === "Approved").length;
-              const isSub = subscribedRaces[race.id];
-              return (
-                <article
-                  key={race.id}
-                  className="bg-white overflow-hidden"
-                  style={{
-                    border: "1px solid rgba(215,211,199,0.5)",
-                    borderRadius: 8,
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-                  }}
-                >
-                  <div
-                    className="relative overflow-hidden"
-                    style={{ height: 196, background: "#e4e1d7" }}
-                  >
-                    <img
-                      src={RACE_COVER_IMAGES[idx % RACE_COVER_IMAGES.length]}
-                      alt={race.name}
-                      className="block w-full h-full object-cover"
-                    />
-                    <span
-                      className="absolute"
-                      style={{
-                        top: 14, left: 14,
-                        padding: "6px 12px",
-                        borderRadius: 999,
-                        background: "rgba(0,42,21,0.92)",
-                        color: "#ffdea5",
-                        fontSize: "0.7rem",
-                        fontWeight: 800,
-                        letterSpacing: "0.1em",
-                        textTransform: "uppercase",
-                        display: "inline-flex", alignItems: "center", gap: 6,
-                      }}
-                    >
-                      <span style={{ width: 6, height: 6, borderRadius: 999, background: "#ffbd6b" }} />
-                      {idx === 0 ? "Live Soon" : "Upcoming"}
-                    </span>
-                    <span
-                      className="absolute"
-                      style={{
-                        top: 14, right: 14,
-                        padding: "6px 12px",
-                        borderRadius: 4,
-                        background: "rgba(255,255,255,0.95)",
-                        color: "#002a15",
-                        fontSize: "0.7rem",
-                        fontWeight: 800,
-                        letterSpacing: "0.06em",
-                      }}
-                    >
-                      {race.grade}
-                    </span>
-                  </div>
-                  <div className="grid gap-4" style={{ padding: 28 }}>
-                    <div>
-                      <h3
-                        className="m-0"
-                        style={{
-                          color: "#002a15",
-                          fontSize: "1.55rem",
-                          fontWeight: 500,
-                          lineHeight: 1.2,
-                          fontFamily: '"EB Garamond", Georgia, serif',
-                        }}
-                      >
-                        {race.name}
-                      </h3>
-                      <p
-                        className="m-0"
-                        style={{ marginTop: 6, color: "#5e655f", fontSize: "0.86rem", lineHeight: 1.5 }}
-                      >
-                        {race.venue} · {race.distance}m
-                      </p>
-                    </div>
-                    <dl className="m-0 grid gap-2.5" style={{ padding: "4px 0" }}>
-                      <div className="flex justify-between items-center">
-                        <dt
-                          style={{
-                            color: "#747b75",
-                            fontSize: "0.72rem",
-                            fontWeight: 800,
-                            letterSpacing: "0.08em",
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          Race Date
-                        </dt>
-                        <dd
-                          className="m-0"
-                          style={{
-                            color: "#1f231f",
-                            fontSize: "0.78rem",
-                            fontWeight: 700,
-                            letterSpacing: "0.04em",
-                          }}
-                        >
-                          {new Date(race.date).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })} · {race.time}
-                        </dd>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <dt
-                          style={{
-                            color: "#747b75",
-                            fontSize: "0.72rem",
-                            fontWeight: 800,
-                            letterSpacing: "0.08em",
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          Prize Pool
-                        </dt>
-                        <dd
-                          className="m-0"
-                          style={{
-                            color: "#002a15",
-                            fontSize: "0.85rem",
-                            fontWeight: 800,
-                            letterSpacing: "0.04em",
-                          }}
-                        >
-                          ${race.prizePool.toLocaleString()}
-                        </dd>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <dt
-                          style={{
-                            color: "#747b75",
-                            fontSize: "0.72rem",
-                            fontWeight: 800,
-                            letterSpacing: "0.08em",
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          Field
-                        </dt>
-                        <dd
-                          className="m-0"
-                          style={{
-                            color: "#1f231f",
-                            fontSize: "0.78rem",
-                            fontWeight: 700,
-                            letterSpacing: "0.04em",
-                          }}
-                        >
-                          {horseCount} horses
-                        </dd>
-                      </div>
-                    </dl>
-                    <div className="flex gap-2.5">
-                      <Link
-                        to={`/spectator/tournaments/${race.id}`}
-                        className="flex-1 inline-flex items-center justify-center no-underline transition-colors"
-                        style={{
-                          padding: "13px 16px",
-                          color: "#fff",
-                          background: "#002a15",
-                          borderRadius: 2,
-                          fontSize: "0.72rem",
-                          fontWeight: 800,
-                          letterSpacing: "0.12em",
-                          textTransform: "uppercase",
-                          gap: 8,
-                        }}
-                      >
-                        Place Bet
-                        <ArrowRight />
-                      </Link>
-                      <button
-                        type="button"
-                        aria-label="Subscribe to race alerts"
-                        onClick={() => toggleSub(race.id)}
-                        className="cursor-pointer border-0"
-                        style={{
-                          width: 48,
-                          background: isSub ? "#ffdea5" : "#fff",
-                          color: "#002a15",
-                          boxShadow: "inset 0 0 0 1px " + (isSub ? "transparent" : "#002a15"),
-                          borderRadius: 2,
-                          fontSize: "1rem",
-                        }}
-                      >
-                        {isSub ? "★" : "☆"}
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-
-            {/* VIP INVITE CARD */}
-            <article
-              className="relative overflow-hidden flex flex-col justify-end"
-              style={{
-                borderRadius: 8,
-                minHeight: 520,
-                background: "#002a15",
-                color: "#fff",
-                gridColumn: "span 1",
-              }}
-            >
-              <img
-                src={INVITE_IMAGE}
-                alt="VIP invitation"
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ opacity: 0.4 }}
-              />
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(180deg, rgba(0,42,21,0.4) 0%, rgba(0,42,21,0.92) 100%)",
-                }}
-              />
-              <div
-                className="relative z-10 grid gap-5"
-                style={{ padding: 36 }}
-              >
-                <span
-                  className="inline-flex items-center"
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: 4,
-                    background: "rgba(255,222,165,0.16)",
-                    color: "#ffdea5",
-                    fontSize: "0.7rem",
-                    fontWeight: 800,
-                    letterSpacing: "0.16em",
-                    textTransform: "uppercase",
-                    alignSelf: "flex-start",
-                    gap: 6,
-                  }}
-                >
-                  <span style={{ width: 6, height: 6, borderRadius: 999, background: "#ffbd6b" }} />
-                  VIP Invite
-                </span>
-                <h3
-                  className="m-0"
-                  style={{
-                    color: "#fff",
-                    fontSize: "2rem",
-                    fontWeight: 500,
-                    lineHeight: 1.15,
-                    fontFamily: '"EB Garamond", Georgia, serif',
-                  }}
-                >
-                  Crown Championship 2025
-                </h3>
-                <p
-                  className="m-0"
-                  style={{
-                    color: "rgba(245,245,244,0.85)",
-                    fontSize: "0.95rem",
-                    lineHeight: 1.55,
-                  }}
-                >
-                  An exclusive, members-only invitational featuring the top eight stables in the world.
-                </p>
-                <button
-                  type="button"
-                  className="uppercase cursor-pointer border-0 inline-flex items-center"
-                  style={{
-                    alignSelf: "flex-start",
-                    padding: "14px 28px",
-                    color: "#002a15",
-                    background: "#ffdea5",
-                    borderRadius: 2,
-                    fontSize: "0.72rem",
-                    fontWeight: 800,
-                    letterSpacing: "0.12em",
-                    gap: 10,
-                  }}
-                >
-                  Request Invitation
-                  <ArrowRight />
-                </button>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURED HORSES */}
-      <section
-        aria-labelledby="featured-horses-heading"
-        style={{ background: "#f0ede4", paddingBlock: "clamp(64px, 8vw, 96px)" }}
-      >
-        <div className="w-full mx-auto px-7 md:px-10 lg:px-16">
-          <div
-            className="flex justify-between items-end gap-8 flex-wrap"
-            style={{ marginBottom: 48 }}
-          >
-            <div>
-              <h2
-                id="featured-horses-heading"
-                className="m-0"
-                style={{
-                  color: "#002a15",
-                  fontSize: "clamp(2rem, 4vw, 3rem)",
-                  fontWeight: 500,
-                  lineHeight: 1.1,
-                  fontFamily: '"EB Garamond", Georgia, serif',
-                }}
-              >
-                Featured Horses
-              </h2>
-              <p
-                className="m-0"
-                style={{ marginTop: 12, color: "#555e58", fontSize: "1rem", lineHeight: 1.55, width: "min(100%, 460px)" }}
-              >
-                The thoroughbreds shaping the season — top of the form charts and ready to run.
-              </p>
-            </div>
-            <Link
-              to="/spectator/horses"
-              className="inline-flex items-center no-underline whitespace-nowrap"
-              style={{
-                paddingBottom: 5,
-                color: "#004225",
-                borderBottom: "1px solid #004225",
-                fontSize: "0.75rem",
-                fontWeight: 800,
-                letterSpacing: "0.08em",
-                gap: 8,
-              }}
-            >
-              Browse Registry
-              <ArrowRight />
-            </Link>
-          </div>
-
-          <div
-            className="grid gap-5"
-            style={{ gridTemplateColumns: "repeat(5, minmax(0, 1fr))" }}
-          >
-            {INITIAL_HORSES.slice(0, 5).map((h) => (
-              <Link
-                key={h.id}
-                to={`/spectator/horses/${h.id}`}
-                className="no-underline"
-              >
-                <article
-                  className="bg-white overflow-hidden"
-                  style={{
-                    border: "1px solid rgba(215,211,199,0.5)",
-                    borderRadius: 8,
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-                  }}
-                >
-                  <div
-                    className="relative overflow-hidden"
-                    style={{ height: 168, background: "#e4e1d7" }}
-                  >
-                    <img
-                      src={h.imgUrl}
-                      alt={h.name}
-                      className="block w-full h-full object-cover"
-                    />
-                    <span
-                      className="absolute"
-                      style={{
-                        top: 10, right: 10,
-                        padding: "4px 10px",
-                        borderRadius: 4,
-                        background: "#002a15",
-                        color: "#ffdea5",
-                        fontSize: "0.66rem",
-                        fontWeight: 800,
-                        letterSpacing: "0.08em",
-                      }}
-                    >
-                      {h.rating} PTS
-                    </span>
-                  </div>
-                  <div className="grid gap-2" style={{ padding: 18 }}>
-                    <h3
-                      className="m-0"
-                      style={{
-                        color: "#002a15",
-                        fontSize: "1.08rem",
-                        fontWeight: 500,
-                        lineHeight: 1.2,
-                        fontFamily: '"EB Garamond", Georgia, serif',
-                      }}
-                    >
-                      {h.name}
-                    </h3>
-                    <p
-                      className="m-0"
-                      style={{ color: "#5e655f", fontSize: "0.74rem", lineHeight: 1.4 }}
-                    >
-                      {h.breed} · {h.color}
-                    </p>
-                    <div className="flex" style={{ marginTop: 6, gap: 4 }}>
-                      {h.form.slice(0, 4).map((p, i) => (
-                        <span
-                          key={i}
-                          className="grid place-items-center"
-                          style={{
-                            width: 22, height: 22, borderRadius: 999,
-                            fontSize: "0.66rem", fontWeight: 800,
-                            background: p === 1 ? "#ffdea5" : p <= 3 ? "#f4f1e8" : "#f4f1e8",
-                            color: p === 1 ? "#002a15" : "#555e58",
-                          }}
-                        >
-                          {p}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </article>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* SUBSCRIBE */}
-      <section
-        aria-labelledby="subscribe-heading"
-        style={{ paddingBlock: "clamp(64px, 8vw, 96px)" }}
-      >
-        <div className="w-full mx-auto px-7 md:px-10 lg:px-16">
-          <div
-            className="grid items-center gap-10"
-            style={{ gridTemplateColumns: "1.1fr 1fr" }}
-          >
-            <div>
-              <h2
-                id="subscribe-heading"
-                className="m-0"
-                style={{
-                  color: "#002a15",
-                  fontSize: "clamp(2rem, 4vw, 3rem)",
-                  fontWeight: 500,
-                  lineHeight: 1.1,
-                  fontFamily: '"EB Garamond", Georgia, serif',
-                }}
-              >
-                Get the Race-Day Brief
-              </h2>
-              <p
-                className="m-0"
-                style={{ marginTop: 14, color: "#555e58", fontSize: "1rem", lineHeight: 1.6, width: "min(100%, 480px)" }}
-              >
-                Once a week, receive the fixtures, top contenders, and value odds straight to your inbox. No spam, just the essentials.
-              </p>
-            </div>
-            <form
-              onSubmit={handleSubscribe}
-              className="flex flex-col gap-3"
-              style={{
-                background: "#fff",
-                padding: 32,
-                borderRadius: 8,
-                border: "1px solid rgba(215,211,199,0.5)",
-                boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-              }}
-            >
-              <label
-                htmlFor="sub-email"
-                style={{
-                  fontSize: "0.72rem",
-                  fontWeight: 800,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  color: "#747b75",
-                }}
-              >
-                Email Address
-              </label>
-              <div className="flex gap-3" style={{ flexWrap: "wrap" }}>
-                <input
-                  id="sub-email"
-                  type="email"
-                  value={subEmail}
-                  onChange={(e) => setSubEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  required
-                  className="flex-1 px-4 py-3 text-sm border-0 outline-none font-sans"
-                  style={{
-                    background: "#f7f6f1",
-                    color: "#002a15",
-                    borderRadius: 2,
-                    minWidth: 200,
-                  }}
-                />
-                <button
-                  type="submit"
-                  className="uppercase cursor-pointer border-0 inline-flex items-center"
-                  style={{
-                    padding: "12px 28px",
-                    color: "#fff",
-                    background: "#002a15",
-                    borderRadius: 2,
-                    fontSize: "0.72rem",
-                    fontWeight: 800,
-                    letterSpacing: "0.12em",
-                    gap: 8,
-                  }}
-                >
-                  Subscribe
-                  <ArrowRight />
-                </button>
-              </div>
-              {subDone && (
-                <p
-                  className="m-0"
-                  style={{
-                    color: "#166534",
-                    fontSize: "0.78rem",
-                    fontWeight: 600,
-                    padding: 10,
-                    background: "#dcfce7",
-                    borderRadius: 4,
-                  }}
-                >
-                  ✓ You&apos;re on the list. Check your inbox for the next race-day brief.
-                </p>
-              )}
-              <p
-                className="m-0"
-                style={{ color: "#747b75", fontSize: "0.72rem", lineHeight: 1.4 }}
-              >
-                By subscribing, you agree to receive race-related updates. Unsubscribe any time.
-              </p>
-            </form>
-          </div>
+          <StatTile value="1,248" label="Registered Horses" sub="Across all disciplines" />
+          <StatTile value="42" label="Elite Jockeys" sub="Master & Champion tier" />
+          <StatTile value="150+" label="Tournaments Hosted" sub="This decade" />
+          <StatTile value="$24M" label="Annual Prize Pool" sub="Across all series" />
         </div>
       </section>
     </SpectatorLayout>
