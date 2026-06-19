@@ -7,8 +7,11 @@ import JockeyDashboard from './tms/pages/JockeyDashboard.jsx';
 import RefereeDashboard from './tms/pages/RefereeDashboard.jsx';
 import SpectatorDashboard from './tms/pages/SpectatorDashboard.jsx';
 import SpectatorBets from './tms/pages/SpectatorBets.jsx';
+import LiveRaces from './tms/pages/LiveRaces.jsx';
 import ProfilePage from './tms/pages/ProfilePage.jsx';
 import SpectatorHome from './tms/pages/SpectatorHome.jsx';
+import SpectatorProfile from './tms/pages/SpectatorProfile.jsx';
+import SpectatorNotifications from './tms/pages/SpectatorNotifications.jsx';
 import TournamentsList from './tms/pages/TournamentsList.jsx';
 import TournamentDetail from './tms/pages/TournamentDetail.jsx';
 import HorseRegistry from './tms/pages/HorseRegistry.jsx';
@@ -27,6 +30,8 @@ import RegistrationsPage from './pages/RegistrationsPage.jsx';
 import RaceResultPage from './pages/RaceResultPage.jsx';
 import PredictionsPage from './pages/PredictionsPage.jsx';
 import UsersPage from './pages/UsersPage.jsx';
+
+import SpectatorMockupTest from './screenshots/SpectatorMockupTest.jsx';
 
 // Leader's pages (Heritage Racing design — exact replica of leader's codebase)
 import LeaderHomepage from './tms/pages/leader/Homepage.jsx';
@@ -83,6 +88,9 @@ function AppRoutes() {
       <Route path="/spectator/jockeys" element={<JockeysList />} />
       <Route path="/spectator/jockeys/:jockeyId" element={<JockeyProfile />} />
       <Route path="/spectator/bets" element={<BettingHistory />} />
+      <Route path="/spectator/live" element={<LiveRaces />} />
+      <Route path="/spectator/notifications" element={<SpectatorNotifications />} />
+      <Route path="/spectator/profile" element={<SpectatorProfile />} />
 
       {/* ── Legacy TMS role pages (AppShell layout) ── */}
       <Route path="/host" element={<RequireAuth><HostHome /></RequireAuth>} />
@@ -98,6 +106,8 @@ function AppRoutes() {
 
       {/* ── Catch-all ── */}
       <Route path="*" element={<Navigate to="/" replace />} />
+      {/* ── Mockup Test Page ── */}
+      <Route path="/test/mockup" element={<SpectatorMockupTest />} />
     </Routes>
   );
 }

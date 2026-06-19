@@ -21,10 +21,13 @@ function SearchIcon() {
 const NAV_BY_ROLE = {
   spectator: [
     { to: "/spectator/home", label: "Home" },
+    { to: "/spectator/live", label: "Live Racing" },
     { to: "/spectator/tournaments", label: "Tournaments" },
     { to: "/spectator/horses", label: "Horse Registry" },
     { to: "/spectator/jockeys", label: "Jockeys" },
     { to: "/spectator/bets", label: "My Bets" },
+    { to: "/spectator/notifications", label: "Notifications" },
+    { to: "/spectator/profile", label: "Profile" },
   ],
   host: [
     { to: "/host", label: "Overview" },
@@ -91,7 +94,7 @@ export default function HeritageLayout({ children, role, subtitle }) {
   const homeLink = DASHBOARD_BY_ROLE[effectiveRole] || "/";
 
   return (
-    <div className="min-h-screen font-sans" style={{ background: "#f7f6f1", color: "#002a15" }}>
+    <div className="min-h-screen font-sans" style={{ background: "#f7f6f1", color: "#002a15", position: "relative", zIndex: 1 }}>
       <header
         className="fixed inset-x-0 top-0 z-40 bg-white"
         style={{

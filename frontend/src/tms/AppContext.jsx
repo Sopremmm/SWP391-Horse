@@ -1,14 +1,15 @@
 import React, { createContext, useContext, useState } from "react";
 import { TOURNAMENT_SEED } from "./tournament.js";
-import { RACES_SEED } from "./races.js";
+import { RACES_SEED } from "../data/races.js";
 import { USERS } from "./users.js";
 import { NOTIFICATIONS_SEED } from "./notifications.js";
 import { getOddsForHorse } from "./data.js";
+import { BETS_SEED } from "../data/bets.js";
 
 const AppContext = createContext(null);
 
-// Spectator bet storage (mock — persists in memory only)
-const INITIAL_BETS = [];
+// Use BETS_SEED for initial spectator bets (mock data for testing)
+const INITIAL_BETS = BETS_SEED;
 
 export function AppProvider({ children }) {
   const [user, setUser] = useState(null);

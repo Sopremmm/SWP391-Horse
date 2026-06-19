@@ -35,6 +35,7 @@
   align-items: center;
   overflow: hidden;
   min-height: clamp(680px, 92vh, 980px);
+  isolation: isolate;
 }
 
 .spectator__hero-image,
@@ -43,6 +44,7 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  z-index: -1;
 }
 
 .spectator__hero-image {
@@ -1842,6 +1844,902 @@
 }
 
 /* ─── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .spectator__home-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .spectator__bento,
+  .spectator__bet-stats,
+  .spectator__stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .spectator__detail,
+  .spectator__horse-detail,
+  .spectator__jockey-overview {
+    grid-template-columns: 1fr;
+  }
+  .spectator__split-banner__inner {
+    grid-template-columns: 1fr;
+  }
+  .spectator__split-banner__image {
+    min-height: 240px;
+  }
+}
+
+@media (max-width: 720px) {
+  .spectator__hero {
+    min-height: 640px;
+  }
+  .spectator__hero-inner {
+    padding-block: 108px 48px;
+  }
+  .spectator__cards {
+    grid-template-columns: 1fr;
+  }
+  .spectator__home-grid,
+  .spectator__bento,
+  .spectator__bet-stats,
+  .spectator__stats-grid,
+  .spectator__jockey-stats-grid,
+  .spectator__horse-detail__stats {
+    grid-template-columns: 1fr;
+  }
+  .spectator__stat-grid {
+    grid-template-columns: 1fr;
+  }
+  .spectator__horse-detail__buttons {
+    grid-template-columns: 1fr;
+  }
+  .spectator__hero-actions .spectator__btn {
+    width: 100%;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PREMIUM ANIMATIONS & EFFECTS
+   ══════════════════════════════════════════════════════════ */
+
+/* ─── KEYFRAMES ─────────────────────────────────────────── */
+@keyframes spectHeroParallax {
+  0%   { transform: scale(1.12) translateY(0); }
+  100% { transform: scale(1.12) translateY(-40px); }
+}
+
+@keyframes spectFadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spectFadeSlideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes spectFadeSlideRight {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes spectScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spectSlideUpPanel {
+  from {
+    opacity: 0;
+    transform: translateY(60px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes spectStaggerReveal {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spectPillPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 189, 107, 0.6); }
+  50%       { box-shadow: 0 0 0 8px rgba(255, 189, 107, 0); }
+}
+
+@keyframes spectLivePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.85); }
+}
+
+@keyframes spectLiveRing {
+  0%   { transform: scale(1);   opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@keyframes spectCounterUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spectGoldShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes spectToastSlide {
+  from {
+    opacity: 0;
+    transform: translateX(110%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes spectToastDismiss {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+    max-height: 120px;
+    margin-bottom: 12px;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(110%);
+    max-height: 0;
+    margin-bottom: 0;
+  }
+}
+
+@keyframes spectModalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes spectModalBackdropFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes spectCardHoverGlow {
+  0%   { box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 0 0 rgba(0,42,21,0); }
+  50%  { box-shadow: 0 8px 32px rgba(0,42,21,0.12), 0 0 0 2px rgba(0,42,21,0.08); }
+  100% { box-shadow: 0 4px 16px rgba(0,42,21,0.08), 0 0 0 1px rgba(0,42,21,0.05); }
+}
+
+@keyframes spectRaceProgress {
+  from { width: 0%; }
+  to   { width: var(--progress, 0%); }
+}
+
+@keyframes spectOddsFlow {
+  0%   { transform: translateY(0); opacity: 1; }
+  40%  { transform: translateY(-8px); opacity: 0.6; }
+  60%  { transform: translateY(8px); opacity: 0.6; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes spectBetSuccess {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(0.95); }
+  60%  { transform: scale(1.05); }
+  80%  { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+@keyframes spectParticleFloat {
+  0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.7; }
+  90%  { opacity: 0.3; }
+  100% { transform: translateY(-200px) translateX(60px) rotate(180deg); opacity: 0; }
+}
+
+@keyframes spectRaceHorseRun {
+  0%   { transform: translateX(0) translateY(0); }
+  25%  { transform: translateX(6px) translateY(-3px); }
+  50%  { transform: translateX(12px) translateY(0); }
+  75%  { transform: translateX(6px) translateY(3px); }
+  100% { transform: translateX(0) translateY(0); }
+}
+
+/* ─── SCROLL REVEAL (Intersection Observer driven) ─────── */
+.spect-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.spect-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.spect-reveal-left {
+  opacity: 0;
+  transform: translateX(-28px);
+  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.spect-reveal-left.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.spect-reveal-right {
+  opacity: 0;
+  transform: translateX(28px);
+  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.spect-reveal-right.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.spect-reveal-scale {
+  opacity: 0;
+  transform: scale(0.93);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.spect-reveal-scale.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Stagger delays */
+.spect-delay-1 { transition-delay: 0.08s !important; }
+.spect-delay-2 { transition-delay: 0.16s !important; }
+.spect-delay-3 { transition-delay: 0.24s !important; }
+.spect-delay-4 { transition-delay: 0.32s !important; }
+.spect-delay-5 { transition-delay: 0.40s !important; }
+.spect-delay-6 { transition-delay: 0.48s !important; }
+
+/* ─── HERO ANIMATIONS ──────────────────────────────────── */
+.spectator__hero-image {
+  animation: spectHeroParallax 20s ease-in-out forwards;
+}
+
+.spectator__hero-inner > * {
+  animation: spectFadeSlideUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.spectator__hero-inner > *:nth-child(1) { animation-delay: 0.1s; }
+.spectator__hero-inner > *:nth-child(2) { animation-delay: 0.25s; }
+.spectator__hero-inner > *:nth-child(3) { animation-delay: 0.4s; }
+.spectator__hero-inner > *:nth-child(4) { animation-delay: 0.55s; }
+.spectator__hero-inner > *:nth-child(5) { animation-delay: 0.7s; }
+.spectator__hero-inner > *:nth-child(6) { animation-delay: 0.85s; }
+
+/* Hero CTA buttons */
+.spectator__hero-actions .spectator__btn {
+  animation: spectFadeSlideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.95s both;
+}
+
+/* ─── SECTION ──────────────────────────────────────────────── */
+.spectator__section {
+  padding-block: clamp(56px, 8vw, 96px);
+  position: relative;
+}
+
+/* Separator between sections */
+.spectator__section + .spectator__split-banner::before,
+.spectator__split-banner + .spectator__section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(215,211,199,0.5), transparent);
+  pointer-events: none;
+}
+
+/* ─── CARD HOVER EFFECTS ───────────────────────────────── */
+.spectator__card {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.3s ease;
+  will-change: transform;
+}
+
+.spectator__card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px rgba(0, 42, 21, 0.14), 0 0 0 1px rgba(0, 42, 21, 0.08);
+  border-color: rgba(0, 42, 21, 0.15);
+}
+
+.spectator__card:hover .spectator__card-media img {
+  transform: scale(1.07);
+}
+
+/* Horse card hover */
+.spectator__horse-card {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.spectator__horse-card:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 20px 48px rgba(0, 42, 21, 0.15);
+}
+
+.spectator__horse-card:hover .spectator__horse-card__media img {
+  transform: scale(1.06);
+}
+
+/* ─── LIVE RACE INDICATOR ──────────────────────────────── */
+.spect-live-dot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  height: 10px;
+}
+
+.spect-live-dot::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: #ef4444;
+  animation: spectLivePulse 1.4s ease-in-out infinite;
+}
+
+.spect-live-dot::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: #ef4444;
+  animation: spectLiveRing 1.4s ease-out infinite;
+}
+
+/* ─── BET MODAL ANIMATIONS ─────────────────────────────── */
+.spect-bet-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 42, 21, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9990;
+  animation: spectModalBackdropFade 0.3s ease both;
+}
+
+.spect-bet-modal-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9991;
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 32px 24px 40px;
+  box-shadow: 0 -12px 48px rgba(0, 42, 21, 0.2);
+  animation: spectModalSlideUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (min-width: 640px) {
+  .spect-bet-modal-panel {
+    bottom: auto;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    max-width: 520px;
+    width: 100%;
+    border-radius: 24px;
+    max-height: 90vh;
+    animation: spectModalSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+/* Horse selection card in bet modal */
+.spect-bet-horse-card {
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.spect-bet-horse-card:hover {
+  background: rgba(255, 222, 165, 0.25) !important;
+  transform: translateX(4px);
+}
+
+.spect-bet-horse-card.spect-bet-horse-selected {
+  background: rgba(0, 66, 37, 0.08) !important;
+  border-color: var(--figma-green) !important;
+}
+
+/* Bet amount preset buttons */
+.spect-amount-preset {
+  transition: all 0.2s ease;
+}
+
+.spect-amount-preset:hover {
+  background: rgba(0, 42, 21, 0.08) !important;
+  border-color: var(--figma-green) !important;
+  color: var(--figma-green) !important;
+  transform: scale(1.05);
+}
+
+/* Payout display animation */
+.spect-payout-display {
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.spect-payout-updating {
+  animation: spectOddsFlow 0.5s ease;
+}
+
+/* Bet success state */
+.spect-bet-success {
+  animation: spectBetSuccess 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ─── TOAST NOTIFICATIONS ──────────────────────────────── */
+.spect-toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 380px;
+  width: calc(100vw - 48px);
+  pointer-events: none;
+}
+
+.spect-toast {
+  pointer-events: auto;
+  background: var(--figma-green);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(255, 222, 165, 0.15);
+  animation: spectToastSlide 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  overflow: hidden;
+  position: relative;
+}
+
+.spect-toast::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--figma-gold-strong), var(--figma-gold));
+  animation: spectToastProgress 2.6s linear forwards;
+}
+
+@keyframes spectToastProgress {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+
+.spect-toast.dismissing {
+  animation: spectToastDismiss 0.4s ease forwards;
+}
+
+.spect-toast__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--figma-gold);
+  color: var(--figma-green);
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+  font-weight: 800;
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 4px rgba(255, 222, 165, 0.25);
+}
+
+.spect-toast__icon.spect-toast__icon--win {
+  background: #22c55e;
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+}
+
+.spect-toast__icon.spect-toast__icon--lose {
+  background: #ef4444;
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2);
+}
+
+.spect-toast__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.spect-toast__title {
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.3;
+  display: block;
+}
+
+.spect-toast__message {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.8rem;
+  margin-top: 3px;
+  display: block;
+}
+
+.spect-toast__close {
+  background: transparent;
+  border: 0;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 2px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  transition: color 0.2s;
+}
+
+.spect-toast__close:hover {
+  color: #fff;
+}
+
+/* ─── STAT COUNTER ANIMATION ───────────────────────────── */
+.spect-stat-animated {
+  animation: spectCounterUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.spect-stat-animated:nth-child(1) { animation-delay: 0.0s; }
+.spect-stat-animated:nth-child(2) { animation-delay: 0.08s; }
+.spect-stat-animated:nth-child(3) { animation-delay: 0.16s; }
+.spect-stat-animated:nth-child(4) { animation-delay: 0.24s; }
+.spect-stat-animated:nth-child(5) { animation-delay: 0.32s; }
+
+/* ─── FEATURED CARD FLIP ───────────────────────────────── */
+.spectator__featured-card {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.5s ease;
+}
+
+.spectator__featured-card:hover {
+  transform: translateY(-4px) scale(1.01);
+}
+
+/* ─── SPLIT BANNER PARALLAX ────────────────────────────── */
+.spectator__split-banner__image img {
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.spectator__split-banner:hover .spectator__split-banner__image img {
+  transform: scale(1.04);
+}
+
+/* ─── JOCKEY CARD HOVER ───────────────────────────────── */
+.spectator__jockey-cover__socials a {
+  transition: all 0.25s ease;
+}
+
+.spectator__jockey-cover__socials a:hover {
+  background: rgba(255, 255, 255, 0.32);
+  transform: translateY(-2px);
+}
+
+/* ─── ENTRY ROW SELECTION ──────────────────────────────── */
+.spectator__entry {
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.spectator__entry:hover {
+  background: rgba(255, 222, 165, 0.2);
+}
+
+.spectator__entry--selected {
+  animation: spectScaleIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ─── BETSLIP STICKY GLOW ──────────────────────────────── */
+.spectator__betslip {
+  transition: box-shadow 0.3s ease;
+}
+
+.spectator__betslip:hover {
+  box-shadow: 0 8px 32px rgba(0, 42, 21, 0.1), 0 0 0 1px rgba(255, 222, 165, 0.3);
+}
+
+/* ─── TABS ANIMATION ───────────────────────────────────── */
+.spectator__tab {
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.spectator__tab::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--figma-gold-strong);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateX(-50%);
+  border-radius: 999px;
+}
+
+.spectator__tab--active::after {
+  width: 60%;
+}
+
+/* ─── BET STATUS BADGE ──────────────────────────────────── */
+.spectator__status {
+  position: relative;
+  overflow: hidden;
+}
+
+.spectator__status--win {
+  animation: spectPillPulse 2s ease-in-out infinite;
+}
+
+/* ─── LIVE RACE TRACK ──────────────────────────────────── */
+.spect-race-track {
+  background: #c8b98a;
+  border-radius: 8px;
+  height: 48px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.spect-race-track__lane {
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.spect-race-horse-icon {
+  position: absolute;
+  left: 0;
+  font-size: 1.4rem;
+  animation: spectRaceHorseRun 0.8s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  transition: left 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 2;
+}
+
+.spect-race-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--figma-gold-strong), var(--figma-gold));
+  border-radius: 0 999px 0 0;
+  animation: spectRaceProgress 1s ease-out both;
+}
+
+/* Particle overlay — behind content */
+.spect-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.spect-particle {
+  position: absolute;
+  bottom: -20px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--figma-gold);
+  opacity: 0;
+  animation: spectParticleFloat linear infinite;
+}
+
+/* ─── GOLD TEXT SHIMMER ────────────────────────────────── */
+.spect-gold-shimmer {
+  background: linear-gradient(
+    105deg,
+    var(--figma-gold) 25%,
+    var(--figma-gold-strong) 37%,
+    #fff5cc 50%,
+    var(--figma-gold-strong) 63%,
+    var(--figma-gold) 75%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: spectGoldShimmer 3s linear infinite;
+}
+
+/* ─── HIGHLIGHT CARD OVERLAY ──────────────────────────── */
+.spectator__highlight-card {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.spectator__highlight-card:hover {
+  transform: scale(1.02);
+}
+
+.spectator__highlight-card:hover img {
+  transform: scale(1.06);
+}
+
+/* ─── BUTTON PRESS EFFECT ─────────────────────────────── */
+.spectator__btn:active {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+.spectator__btn {
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ─── PAGE TRANSITION ──────────────────────────────────── */
+.spect-page-enter {
+  animation: spectFadeSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ─── BET SLIP STAKE INPUT ─────────────────────────────── */
+.spectator__betslip__input:focus-within {
+  box-shadow: 0 0 0 3px rgba(0, 42, 21, 0.12);
+  border-color: var(--figma-green);
+}
+
+/* ─── HORSE DETAIL HERO ───────────────────────────────── */
+.spectator__horse-hero img {
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.spectator__horse-hero:hover img {
+  transform: scale(1.04);
+}
+
+/* ─── RESULT POSITION BADGE ────────────────────────────── */
+.spectator__position {
+  transition: transform 0.2s ease;
+}
+
+.spectator__position:hover {
+  transform: scale(1.1);
+}
+
+/* ─── AVATAR HOVER ────────────────────────────────────── */
+.spectator__avatar,
+.spectator__jockey-avatar,
+.spectator__top-jockey__avatar {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s ease;
+}
+
+.spectator__avatar:hover,
+.spectator__jockey-avatar:hover,
+.spectator__top-jockey__avatar:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(0, 42, 21, 0.2);
+}
+
+/* ─── TOP JOCKEY ROW HOVER ─────────────────────────────── */
+.spectator__top-jockey {
+  transition: all 0.25s ease;
+}
+
+.spectator__top-jockey:hover {
+  background: rgba(255, 222, 165, 0.15);
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(0, 42, 21, 0.08);
+}
+
+/* ─── RESULT ROW HOVER ────────────────────────────────── */
+.spectator__result-row {
+  transition: background 0.2s ease;
+}
+
+.spectator__result-row:hover {
+  background: rgba(255, 222, 165, 0.1);
+}
+
+/* ─── PAGINATION HOVER ────────────────────────────────── */
+.spectator__pagination button:not(.spectator__pagination--active):hover {
+  background: rgba(0, 42, 21, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(0, 42, 21, 0.15);
+  transform: scale(1.05);
+}
+
+/* ─── BET TABLE ROW HOVER ──────────────────────────────── */
+.spectator__bet-row {
+  transition: background 0.2s ease;
+}
+
+.spectator__bet-row:hover {
+  background: rgba(255, 222, 165, 0.08);
+}
+
+/* ─── BENTO CELL HOVER ────────────────────────────────── */
+.spectator__bento__cell {
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.spectator__bento__cell:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* ─── JOCKEY TABS ─────────────────────────────────────── */
+.spectator__jockey-tabs .spectator__tab {
+  transition: all 0.25s ease;
+}
+
+/* ─── SEARCH BAR FOCUS ────────────────────────────────── */
+.spectator__search:focus-within {
+  border-color: var(--figma-green);
+  box-shadow: 0 0 0 3px rgba(0, 42, 21, 0.08);
+}
+
+/* ─── BREADCRUMB LINK ──────────────────────────────────── */
+.spectator__breadcrumb a {
+  transition: color 0.2s ease;
+}
+
+/* ─── STICKY NAV SHADOW ON SCROLL ─────────────────────── */
+.spect-nav-sticky {
+  transition: box-shadow 0.3s ease;
+}
+
+.spect-nav-sticky.spect-nav-scrolled {
+  box-shadow: 0 4px 20px rgba(0, 42, 21, 0.1);
+}
+
+/* ─── RESPONSIVE ──────────────────────────────────────── */
 @media (max-width: 1100px) {
   .spectator__home-grid {
     grid-template-columns: 1fr 1fr;

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import SpectatorLayout from "../components/spectator/SpectatorLayout.jsx";
 import { DERBY_INVITATIONAL, FEATURED_RACES } from "../data/spectatorData.js";
+import { TEST_FEATURED_RACES, TEST_HORSES } from "../data/spectatorTestData.js";
 
 function ArrowRight({ size = 12 }) {
   return (
@@ -18,10 +19,39 @@ const FIELD_TABS = [
 
 export default function TournamentDetail() {
   const { raceId } = useParams();
-  const tournament =
-    raceId === "derby-invitational"
-      ? DERBY_INVITATIONAL
-      : FEATURED_RACES.find((r) => r.id === raceId) || DERBY_INVITATIONAL;
+
+  // Try to find race in test data first, then fallback to original data
+  const testRace = TEST_FEATURED_RACES.find((r) => r.id === raceId);
+  const originalRace = FEATURED_RACES.find((r) => r.id === raceId);
+
+  // Build tournament object with compatible structure
+  const baseRace = testRace || originalRace || DERBY_INVITATIONAL;
+
+  const tournament = {
+    id: baseRace.id,
+    name: baseRace.name,
+    classLine: baseRace.classLine || 'Group 1',
+    badge: baseRace.badge || 'UPCOMING',
+    status: baseRace.status || 'upcoming',
+    location: baseRace.location,
+    date: baseRace.date,
+    time: baseRace.time,
+    prizePool: baseRace.prizePool,
+    raceDate: baseRace.date,
+    runners: baseRace.runners,
+    surface: baseRace.surface,
+    distance: baseRace.distance,
+    description: baseRace.description || `The ${baseRace.name} is one of the most prestigious thoroughbred events in the world.`,
+    heroImage: baseRace.image,
+    // Generate entries from test horses if not available
+    entries: TEST_HORSES.slice(0, 4).map((h, i) => ({
+      id: h.id,
+      name: h.name,
+      jockey: ['Liam Hamilton', 'Carlos Ruiz', 'Sophie Whitmore', 'Yuki Tanaka'][i] || 'TBD',
+      odds: h.odds,
+      avatar: h.image,
+    })),
+  };
 
   const [activeField, setActiveField] = useState("a");
   const [selectedEntry, setSelectedEntry] = useState(tournament.entries[0].id);

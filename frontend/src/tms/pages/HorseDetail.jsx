@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import SpectatorLayout from "../components/spectator/SpectatorLayout.jsx";
-import { HORSE_REGISTRY } from "../data/spectatorData.js";
+import { TEST_HORSES } from "../data/spectatorTestData.js";
 
 function ArrowRight({ size = 12 }) {
   return (
@@ -13,7 +13,7 @@ function ArrowRight({ size = 12 }) {
 
 export default function HorseDetail() {
   const { horseId } = useParams();
-  const horse = HORSE_REGISTRY.find((h) => h.id === horseId) || HORSE_REGISTRY[0];
+  const horse = TEST_HORSES.find((h) => h.id === horseId) || TEST_HORSES[0];
   const [stake, setStake] = useState(50);
   const [toast, setToast] = useState(null);
   const payout = Math.round(stake * horse.odds * 100) / 100;

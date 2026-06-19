@@ -1,29 +1,41 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { useApp } from "../AppContext.jsx";
+import { BETS_SEED, calculateBettingStats } from "../../data/bets.js";
+import { fmtCurrency } from "../format.js";
 import SpectatorLayout from "../components/spectator/SpectatorLayout.jsx";
-import { BETTING_HISTORY_SEED, SPECTATOR_STATS } from "../data/spectatorData.js";
 
 const FILTER_TABS = [
   { value: "all", label: "All Bets" },
   { value: "pending", label: "Active" },
-  { value: "win", label: "Settled" },
+  { value: "settled", label: "Settled" },
 ];
 
 const STATUS_TONE = {
   Pending: "pending",
   Win: "win",
-  Settled: "settled",
+  Settled: "win",
   Lost: "lost",
 };
 
 export default function BettingHistory() {
+  const { user, bets: contextBets } = useApp();
   const [activeTab, setActiveTab] = useState("all");
-  const bets = BETTING_HISTORY_SEED;
+
+  // Use context bets if available, otherwise use seed data for demo
+  const allBets = contextBets && contextBets.length > 0 ? contextBets : BETS_SEED;
+
+  // Filter bets by user if logged in, otherwise show sample
+  const bets = user
+    ? allBets.filter((b) => b.userId === user.id)
+    : allBets;
+
+  const stats = user ? calculateBettingStats(user.id) : null;
 
   const filtered = useMemo(() => {
     if (activeTab === "all") return bets;
     if (activeTab === "pending") return bets.filter((b) => b.status === "Pending");
-    if (activeTab === "win") return bets.filter((b) => b.status === "Win" || b.status === "Settled");
+    if (activeTab === "settled") return bets.filter((b) => b.status === "Win" || b.status === "Lost");
     return bets;
   }, [activeTab, bets]);
 
@@ -70,12 +82,12 @@ export default function BettingHistory() {
         {/* STATS */}
         <div className="shell" style={{ paddingBlock: "0 24px" }}>
           <div className="spectator__bet-stats">
-            <BetStat label="Total Bets" value={SPECTATOR_STATS.totalBets} />
-            <BetStat label="Active Bets" value={SPECTATOR_STATS.activeBets} />
-            <BetStat label="Settled Bets" value={SPECTATOR_STATS.settledBets} />
+            <BetStat label="Total Bets" value={stats?.totalBets || bets.length} />
+            <BetStat label="Active Bets" value={stats?.activeBets || bets.filter(b => b.status === 'Pending').length} />
+            <BetStat label="Settled Bets" value={stats?.settledBets || bets.filter(b => b.status !== 'Pending').length} />
             <BetStat
               label="Lifetime Payouts"
-              value={SPECTATOR_STATS.lifetimePayouts}
+              value={stats ? fmtCurrency(stats.totalWon) : fmtCurrency(bets.filter(b => b.status === 'Won').reduce((sum, b) => sum + (b.actualPayout || 0), 0))}
               accent
             />
           </div>
@@ -157,7 +169,7 @@ export default function BettingHistory() {
                           fontFamily: '"EB Garamond", Georgia, serif',
                         }}
                       >
-                        {bet.race}
+                        {bet.raceName}
                       </p>
                       <p
                         style={{
@@ -182,7 +194,7 @@ export default function BettingHistory() {
                       fontWeight: 600,
                     }}
                   >
-                    {bet.horse}
+                    {bet.horseName}
                   </p>
                   <p
                     style={{
@@ -212,7 +224,7 @@ export default function BettingHistory() {
                       fontWeight: 700,
                     }}
                   >
-                    ${bet.payout.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                    ${(bet.potentialPayout || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                   </p>
                   <div>
                     <span className={`spectator__status spectator__status--${STATUS_TONE[bet.status]}`}>

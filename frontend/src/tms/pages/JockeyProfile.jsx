@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import SpectatorLayout from "../components/spectator/SpectatorLayout.jsx";
-import { LEO_VANE } from "../data/spectatorData.js";
+import { TEST_JOCKEYS } from "../data/spectatorTestData.js";
 
 const PROFILE_TABS = [
   { value: "overview", label: "Overview" },
@@ -25,7 +25,7 @@ const PERFORMANCE_SEASONS = [
 
 export default function JockeyProfile() {
   const { jockeyId } = useParams();
-  const jockey = LEO_VANE;
+  const jockey = TEST_JOCKEYS.find((j) => j.id === jockeyId) || TEST_JOCKEYS[0];
   const [activeTab, setActiveTab] = useState("overview");
 
   return (

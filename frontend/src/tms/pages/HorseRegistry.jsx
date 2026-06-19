@@ -1,6 +1,7 @@
+import { useState, useMemo } from "react";
 import SpectatorLayout from "../components/spectator/SpectatorLayout.jsx";
 import { Link } from "react-router-dom";
-import { HORSE_REGISTRY, SPECTATOR_STATS } from "../data/spectatorData.js";
+import { TEST_HORSES, TEST_SPECTATOR_STATS } from "../data/spectatorTestData.js";
 
 function ArrowRight({ size = 12 }) {
   return (
@@ -18,6 +19,16 @@ const FILTERS = [
 ];
 
 export default function HorseRegistry() {
+  const [activeFilter, setActiveFilter] = useState("all");
+
+  const filteredHorses = useMemo(() => {
+    if (activeFilter === "all") return TEST_HORSES;
+    if (activeFilter === "thoroughbred") return TEST_HORSES.filter(h => h.breed === "Thoroughbred");
+    if (activeFilter === "arabian") return TEST_HORSES.filter(h => h.breed === "Arabian Cross");
+    if (activeFilter === "elite") return TEST_HORSES.filter(h => h.performance === "Elite");
+    return TEST_HORSES;
+  }, [activeFilter]);
+
   return (
     <SpectatorLayout>
       <div className="spectator">
@@ -64,19 +75,19 @@ export default function HorseRegistry() {
             <BentoCell
               tone="dark"
               label="Total Registered Horses"
-              value={SPECTATOR_STATS.totalHorses}
+              value={TEST_SPECTATOR_STATS.totalHorses}
               note="Across all disciplines and tiers — Thoroughbred, Arabian, Quarter Horse, and Standardbred."
             />
             <BentoCell
               tone="light"
               label="Active Disciplines"
-              value={SPECTATOR_STATS.activeDisciplines}
+              value={TEST_SPECTATOR_STATS.activeDisciplines}
               note="Flat · Steeplechase · Sprint"
             />
             <BentoCell
               tone="light"
               label="New This Season"
-              value={SPECTATOR_STATS.newSeason}
+              value={TEST_SPECTATOR_STATS.newSeason}
               note="First-time registrations 2024"
             />
           </div>
@@ -89,8 +100,9 @@ export default function HorseRegistry() {
               <button
                 key={f.value}
                 type="button"
+                onClick={() => setActiveFilter(f.value)}
                 className={
-                  f.value === "all"
+                  activeFilter === f.value
                     ? "spectator__tab spectator__tab--active"
                     : "spectator__tab"
                 }
@@ -105,7 +117,7 @@ export default function HorseRegistry() {
         <section className="spectator__section" style={{ paddingTop: 0 }}>
           <div className="shell">
             <div className="spectator__cards">
-              {HORSE_REGISTRY.map((h) => (
+              {filteredHorses.map((h) => (
                 <article key={h.id} className="spectator__horse-card">
                   <div className="spectator__horse-card__media">
                     <img src={h.image} alt={h.name} />

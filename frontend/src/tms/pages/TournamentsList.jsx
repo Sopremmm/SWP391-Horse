@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import SpectatorLayout from "../components/spectator/SpectatorLayout.jsx";
-import { FEATURED_RACES } from "../data/spectatorData.js";
+import { TEST_FEATURED_RACES } from "../data/spectatorTestData.js";
 
 function ArrowRight({ size = 12 }) {
   return (
@@ -27,7 +27,7 @@ const FILTER_TABS = [
 
 export default function TournamentsList() {
   const [activeTab, setActiveTab] = useState("all");
-  const races = FEATURED_RACES;
+  const races = TEST_FEATURED_RACES;
 
   const filtered = useMemo(() => {
     if (activeTab === "all") return races;
