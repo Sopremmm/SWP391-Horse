@@ -31,6 +31,7 @@
 
 .brand-name {
   color: #064e3b;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 1.45rem;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -51,6 +52,7 @@
   padding: 0.9rem 1.4rem;
   border-radius: 9999px;
   color: #334155;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 0.95rem;
   font-weight: 600;
   text-decoration: none;

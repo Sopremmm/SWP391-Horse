@@ -1,7 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Header } from '../components/common/Header.tsx';
 import { Footer } from '../components/common/Footer.tsx';
+import { OwnerPortalHeader } from '../components/horseOwner/OwnerPortalChrome.tsx';
 import { getPageData, MyHorse } from '../data/pageData.ts';
 import './MyHorses.css';
 
@@ -76,6 +77,8 @@ const readMyHorsesFromApi = async (): Promise<MyHorsesData | null> => {
 };
 
 export const MyHorses: React.FC = () => {
+  const location = useLocation();
+  const useOwnerPortalHeader = Boolean((location.state as { ownerPortalHeader?: boolean } | null)?.ownerPortalHeader);
   const [state, setState] = React.useState<{
     horses: Horse[];
     stats: MyHorsesStats;
@@ -116,8 +119,8 @@ export const MyHorses: React.FC = () => {
   ];
 
   return (
-    <div className="my-horses">
-      <Header />
+    <div className={`my-horses ${useOwnerPortalHeader ? 'my-horses--owner-portal' : ''}`}>
+      {useOwnerPortalHeader ? <OwnerPortalHeader /> : <Header />}
 
       <main className="my-horses__main" aria-label="My Horses page">
         <section className="my-horses__hero">

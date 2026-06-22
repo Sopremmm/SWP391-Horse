@@ -13,6 +13,10 @@
   gap: 56px;
 }
 
+.my-horses--owner-portal .my-horses__main {
+  padding-top: 48px;
+}
+
 .my-horses__hero {
   display: flex;
   justify-content: space-between;
@@ -232,6 +236,10 @@
     padding: 104px 24px 40px;
   }
 
+  .my-horses--owner-portal .my-horses__main {
+    padding-top: 40px;
+  }
+
   .my-horses__hero {
     align-items: flex-start;
     flex-direction: column;
@@ -256,6 +264,10 @@
   .my-horses__main {
     gap: 40px;
     padding: 96px 16px 32px;
+  }
+
+  .my-horses--owner-portal .my-horses__main {
+    padding-top: 32px;
   }
 
   .my-horses__title {

@@ -64,10 +64,10 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
           <Link
             className="profile-dropdown__item"
             role="menuitem"
-            to="/HorseOwner/HireJockeys"
+            to="/HorseOwner/MyJockeys"
             onClick={() => setOpen(false)}
           >
-            Hire Jockeys
+            My Jockeys
           </Link>
           <Link
             className="profile-dropdown__item"

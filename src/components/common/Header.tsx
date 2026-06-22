@@ -41,7 +41,7 @@ export const Header: React.FC = () => {
 
         {/* Notifications + Profile */}
         <div className="header-actions">
-          <button type="button" className="icon-button" aria-label="Notifications">
+          <Link className="icon-button" to="/HorseOwner/Notifications" aria-label="Notifications">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M10 18.3333C11.0133 18.3333 11.8333 17.5133 11.8333 16.5H8.16667C8.16667 17.5133 8.98667 18.3333 10 18.3333Z"
@@ -52,7 +52,7 @@ export const Header: React.FC = () => {
                 fill="#717971"
               />
             </svg>
-          </button>
+          </Link>
 
           <ProfileDropdown />
         </div>
