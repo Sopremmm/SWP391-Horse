@@ -1,6 +1,10 @@
 package com.swp391.horseracing.controller;
 
 import com.swp391.horseracing.entity.Race;
+import com.swp391.horseracing.dto.response.PrizeResponse;
+import com.swp391.horseracing.dto.response.RaceResultResponse;
+import com.swp391.horseracing.service.PrizeService;
+import com.swp391.horseracing.service.RaceResultQueryService;
 import com.swp391.horseracing.service.RaceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +18,12 @@ import java.util.List;
 public class RaceController {
     @Autowired
     private RaceService raceService;
+
+    @Autowired
+    private RaceResultQueryService raceResultQueryService;
+
+    @Autowired
+    private PrizeService prizeService;
 
     @PostMapping("/tournament/{tournamentId}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -35,5 +45,15 @@ public class RaceController {
     @GetMapping("/{id}")
     public ResponseEntity<Race> getRaceById(@PathVariable Long id) {
         return ResponseEntity.ok(raceService.getRaceById(id));
+    }
+
+    @GetMapping("/{id}/results")
+    public ResponseEntity<List<RaceResultResponse>> getRaceResults(@PathVariable Long id) {
+        return ResponseEntity.ok(raceResultQueryService.getRaceResults(id));
+    }
+
+    @GetMapping("/{id}/prizes")
+    public ResponseEntity<List<PrizeResponse>> getRacePrizes(@PathVariable Long id) {
+        return ResponseEntity.ok(prizeService.getPrizesByRace(id));
     }
 }

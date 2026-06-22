@@ -28,6 +28,9 @@ public class RaceEntryService {
     @Autowired
     private RaceRepository raceRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public RaceEntry registerHorseToTournament(Long horseId, Long tournamentId, Long ownerId) {
         Horse horse = horseRepository.findById(horseId)
                 .orElseThrow(() -> new RuntimeException("Error: Horse not found!"));
@@ -74,7 +77,18 @@ public class RaceEntryService {
         entry.setRace(race);
         entry.setStatus("APPROVED");
         entry.setApprovedAt(LocalDateTime.now());
-        return raceEntryRepository.save(entry);
+        RaceEntry saved = raceEntryRepository.save(entry);
+        if (saved.getHorse() != null && saved.getHorse().getOwner() != null && saved.getHorse().getOwner().getId() != null) {
+            notificationService.sendNotification(
+                    saved.getHorse().getOwner().getId(),
+                    "Registration Approved",
+                    "Your horse \"" + saved.getHorse().getName() + "\" has been approved for race \"" + race.getName() + "\".",
+                    "REG_APPROVED",
+                    saved.getId(),
+                    "RACE_ENTRY"
+            );
+        }
+        return saved;
     }
 
     public RaceEntry rejectRegistration(Long entryId) {

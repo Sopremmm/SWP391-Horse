@@ -253,13 +253,14 @@ public class RefereeService {
         report.setConfirmedAt(LocalDateTime.now());
         refereeReportRepository.save(report);
 
-        race.setStatus("COMPLETED");
+        race.setStatus("FINISHED");
         raceRepository.save(race);
 
         return report;
     }
 
     public record ResultInput(Long entryId, Integer finishRank, Long finishTimeMs) {}
+
 
     private Race getRaceAndAuthorizeReferee(Long raceId, Long refereeUserId) {
         Race race = raceRepository.findById(raceId)

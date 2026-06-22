@@ -25,6 +25,9 @@ public class JockeyInvitationService {
     @Autowired
     private RaceEntryRepository raceEntryRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public JockeyInvitation inviteJockey(Long horseId, Long jockeyId, Long raceId, Long ownerId, String message) {
         Horse horse = horseRepository.findById(horseId)
                 .orElseThrow(() -> new RuntimeException("Error: Horse not found!"));
@@ -57,7 +60,16 @@ public class JockeyInvitationService {
                 .expiresAt(LocalDateTime.now().plusHours(24)) // JKY-02
                 .build();
 
-        return invitationRepository.save(invitation);
+        JockeyInvitation saved = invitationRepository.save(invitation);
+        notificationService.sendNotification(
+                jockey.getId(),
+                "Jockey Invitation",
+                "You have been invited to join race \"" + race.getName() + "\" with horse \"" + horse.getName() + "\".",
+                "JOCKEY_INVITE",
+                saved.getId(),
+                "JOCKEY_INVITATION"
+        );
+        return saved;
     }
 
     public JockeyInvitation respondToInvitation(Long id, String status, Long jockeyId) {

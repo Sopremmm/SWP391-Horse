@@ -10,6 +10,9 @@ import java.util.Optional;
 @Repository
 public interface RaceResultRepository extends JpaRepository<RaceResult, Long> {
     List<RaceResult> findByRaceId(Long raceId);
+    List<RaceResult> findByRaceIdOrderByFinishRankAsc(Long raceId);
+    List<RaceResult> findByRaceTournamentId(Long tournamentId);
     Optional<RaceResult> findByRaceIdAndEntryId(Long raceId, Long entryId);
+    Optional<RaceResult> findFirstByRaceIdAndFinishRank(Long raceId, Integer finishRank);
     boolean existsByRaceIdAndFinishRank(Long raceId, Integer finishRank);
 }

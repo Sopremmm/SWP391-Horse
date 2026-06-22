@@ -17,6 +17,9 @@ public class NotificationService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     public void sendNotification(Long userId, String title, String message, String type, Long refId, String refType) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: User not found!"));
@@ -31,7 +34,17 @@ public class NotificationService {
                 .isRead(false)
                 .build();
 
-        notificationRepository.save(notification);
+        Notification saved = notificationRepository.save(notification);
+
+        boolean emailSent = emailService.sendText(
+                user.getEmail(),
+                title,
+                message
+        );
+        if (emailSent) {
+            saved.setEmailSent(true);
+            notificationRepository.save(saved);
+        }
     }
 
     public List<Notification> getMyNotifications(Long userId) {

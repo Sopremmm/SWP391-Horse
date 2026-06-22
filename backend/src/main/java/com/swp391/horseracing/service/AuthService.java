@@ -10,7 +10,6 @@ import com.swp391.horseracing.repository.UserRepository;
 import com.swp391.horseracing.security.jwt.JwtUtils;
 import com.swp391.horseracing.security.user.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,9 +26,6 @@ public class AuthService {
     private static final Set<Role> SELF_REGISTER_ROLES = Set.of(Role.HORSE_OWNER, Role.JOCKEY, Role.SPECTATOR);
 
     @Autowired
-    AuthenticationManager authenticationManager;
-
-    @Autowired
     UserRepository userRepository;
 
     @Autowired
@@ -40,13 +36,33 @@ public class AuthService {
 
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
         String normalizedEmail = loginRequest.getEmail() == null ? null : loginRequest.getEmail().trim().toLowerCase(Locale.ROOT);
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(normalizedEmail, loginRequest.getPassword()));
+        String rawPassword = loginRequest.getPassword();
+        User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
+                .orElseThrow(() -> new RuntimeException("Error: Invalid email or password!"));
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new RuntimeException("Error: Account is not active!");
+        }
+
+        String storedPassword = user.getPassword() == null ? null : user.getPassword().trim();
+        if (!encoder.matches(rawPassword, storedPassword)) {
+            throw new RuntimeException("Error: Invalid email or password!");
+        }
+
+        if (encoder.upgradeEncoding(storedPassword)) {
+            user.setPassword(encoder.encode(rawPassword));
+            user = userRepository.save(user);
+        }
+
+        UserDetailsImpl userDetails = UserDetailsImpl.build(user);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities());
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
 
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());

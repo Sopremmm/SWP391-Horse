@@ -25,6 +25,7 @@ CREATE TABLE [user] (
     role VARCHAR(20) NOT NULL CHECK (role IN ('HORSE_OWNER', 'JOCKEY', 'REFEREE', 'SPECTATOR', 'ADMIN')),
     status VARCHAR(10) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'INACTIVE', 'BANNED')),
     avatar_url VARCHAR(255),
+    balance DECIMAL(15,2) NOT NULL DEFAULT 0.00,
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE()
 );
@@ -41,6 +42,31 @@ BEGIN
     FROM [user] u
     INNER JOIN inserted i ON u.id = i.id;
 END;
+GO
+
+CREATE TABLE topup_request (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'PAID', 'EXPIRED', 'CANCELLED')),
+    reference VARCHAR(64) NOT NULL UNIQUE,
+    bank_txn_id VARCHAR(64) NULL UNIQUE,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    paid_at DATETIME2 NULL,
+    FOREIGN KEY (user_id) REFERENCES [user](id) ON DELETE NO ACTION
+);
+GO
+
+CREATE TABLE audit_log (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    actor_user_id BIGINT NOT NULL,
+    action VARCHAR(50) NOT NULL,
+    ref_type VARCHAR(50) NULL,
+    ref_id BIGINT NULL,
+    details NVARCHAR(MAX) NULL,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (actor_user_id) REFERENCES [user](id) ON DELETE NO ACTION
+);
 GO
 
 CREATE TABLE jockey_profile (
