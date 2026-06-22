@@ -18,9 +18,9 @@
 }
 
 .admin-layout__icon {
-  width: 20px;
-  height: 20px;
-  fill: currentColor;
+  width: 22px;
+  height: 22px;
+  overflow: visible;
   flex: 0 0 auto;
 }
 
@@ -85,6 +85,11 @@
   border-right: 4px solid var(--admin-layout-green);
   color: var(--admin-layout-green);
   font-weight: 700;
+}
+
+.admin-layout__side-nav a:hover {
+  background: rgba(229, 231, 235, 0.55);
+  color: var(--admin-layout-green);
 }
 
 .admin-layout__side-bottom {

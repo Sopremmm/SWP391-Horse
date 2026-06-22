@@ -1,9 +1,9 @@
 :root{
-  --hj-teal-950:#004225;
-  --hj-amber-200:#FDE68A;
+  --ij-teal-950:#004225;
+  --ij-amber-200:#FDE68A;
 }
 
-.hire-jockey{
+.invite-jockeys{
   width:100%;
   min-height:100vh;
   background:#f5f5f4;
@@ -11,17 +11,17 @@
   color:#111827;
 }
 
-.hire-jockey__wrap{
+.invite-jockeys__wrap{
   max-width:1280px;
   margin:0 auto;
   padding:96px 64px 96px;
 }
 
-.hire-jockey__header{
+.invite-jockeys__header{
   padding-top:0;
 }
 
-.hire-jockey__hero-title{
+.invite-jockeys__hero-title{
   font-family: EB_Garamond, Georgia, 'Times New Roman', serif;
   font-size:3rem;
   line-height:3.5rem;
@@ -29,7 +29,7 @@
   color:#004225;
 }
 
-.hire-jockey__hero-sub{
+.invite-jockeys__hero-sub{
   margin-top:18px;
   max-width:768px;
   font-size:1rem;
@@ -37,7 +37,7 @@
   color:#525252;
 }
 
-.hire-jockey__controls{
+.invite-jockeys__controls{
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -45,7 +45,7 @@
   margin-top:40px;
 }
 
-.hire-jockey__search{
+.invite-jockeys__search{
   flex:1;
   max-width:672px;
   display:flex;
@@ -53,7 +53,7 @@
   gap:12px;
 }
 
-.hire-jockey__input{
+.invite-jockeys__input{
   flex:1;
   background:#f5f5f4;
   border:1px solid #d6d3d1;
@@ -63,7 +63,7 @@
   outline:none;
 }
 
-.hire-jockey__input-icon{
+.invite-jockeys__input-icon{
   position:absolute;
   left:16px;
   top:50%;
@@ -71,12 +71,12 @@
   opacity:0.8;
 }
 
-.hire-jockey__search-placeholder{
+.invite-jockeys__search-placeholder{
   color:#717971;
   font-size:0.875rem;
 }
 
-.hire-jockey__btn{
+.invite-jockeys__btn{
   background:#004225;
   color:#fff;
   border-radius:0;
@@ -87,7 +87,7 @@
   gap:8px;
 }
 
-.hire-jockey__btn-secondary{
+.invite-jockeys__btn-secondary{
   border:2px solid #004225;
   background:transparent;
   color:#004225;
@@ -99,7 +99,7 @@
   gap:10px;
 }
 
-.hire-jockey__grid{
+.invite-jockeys__grid{
   margin-top:16px;
   display:grid;
   grid-template-columns:repeat(3, minmax(0, 1fr));
@@ -107,16 +107,16 @@
 }
 
 @media (max-width: 1200px){
-  .hire-jockey__wrap{padding-left:24px;padding-right:24px;}
-  .hire-jockey__grid{grid-template-columns:repeat(2, minmax(0,1fr));}
+  .invite-jockeys__wrap{padding-left:24px;padding-right:24px;}
+  .invite-jockeys__grid{grid-template-columns:repeat(2, minmax(0,1fr));}
 }
 @media (max-width: 800px){
-  .hire-jockey__wrap{padding:72px 16px 72px;}
-  .hire-jockey__grid{grid-template-columns:1fr;}
-  .hire-jockey__controls{flex-direction:column;align-items:stretch;}
+  .invite-jockeys__wrap{padding:72px 16px 72px;}
+  .invite-jockeys__grid{grid-template-columns:1fr;}
+  .invite-jockeys__controls{flex-direction:column;align-items:stretch;}
 }
 
-.hire-jockey__card{
+.invite-jockeys__card{
   background:#f5f5f4;
   border:1px solid #d6d3d1;
   border-radius:0;
@@ -125,19 +125,19 @@
   flex-direction:column;
 }
 
-.hire-jockey__card-media{
+.invite-jockeys__card-media{
   background:#e5e7eb;
   position:relative;
 }
 
-.hire-jockey__card-img{
+.invite-jockeys__card-img{
   width:100%;
   height:384px;
   object-fit:cover;
   display:block;
 }
 
-.hire-jockey__card-body{
+.invite-jockeys__card-body{
   padding:32px;
   display:flex;
   flex-direction:column;
@@ -145,7 +145,7 @@
   flex:1;
 }
 
-.hire-jockey__card-name{
+.invite-jockeys__card-name{
   font-family: EB_Garamond, Georgia, 'Times New Roman', serif;
   color:#004225;
   font-size:1.5rem;
@@ -153,7 +153,7 @@
   font-weight:500;
 }
 
-.hire-jockey__pill{
+.invite-jockeys__pill{
   padding:2px 10px;
   border-radius:999px;
   background:#fde68a;
@@ -164,16 +164,16 @@
   text-transform:uppercase;
 }
 
-.hire-jockey__meta-row{
+.invite-jockeys__meta-row{
   display:flex;
   align-items:center;
   gap:12px;
   margin-top:8px;
 }
 
-.hire-jockey__meta-text{color:#525252;font-size:0.875rem;}
+.invite-jockeys__meta-text{color:#525252;font-size:0.875rem;}
 
-.hire-jockey__profile-link{
+.invite-jockeys__profile-link{
   text-align:center;
   text-transform:uppercase;
   letter-spacing:0.12em;
@@ -183,7 +183,7 @@
   padding-bottom:24px;
 }
 
-.hire-jockey__hire-btn{
+.invite-jockeys__invite-btn{
   background:#004225;
   color:#fff;
   font-weight:800;
@@ -193,10 +193,11 @@
   align-items:center;
   justify-content:center;
   text-align:center;
+  text-decoration:none;
 }
 
 
-.hire-jockey__already-hired{
+.invite-jockeys__already-invited{
   background:#e7e5e4;
   color:#6b7280;
   font-weight:800;

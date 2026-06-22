@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import AdminLayout from '../components/admin/AdminLayout.tsx';
+import HomeBanner from '../assets/images/HomeBanner.png';
 
 import './AdminManageTournamentDetail.css';
 
@@ -16,34 +17,52 @@ type HeatHorse = {
 
 type RaceHeat = {
   id: number;
+  type: HeatType;
   title: string;
   referee: string;
   horseCount: number;
+  date: string;
+  startTime: string;
   horses: HeatHorse[];
 };
 
+type HeatType = 'Qualifier' | 'Quarterfinal' | 'Semifinal' | 'Final';
+
 const registeredHorses = [
-  { name: 'Sovereign Victory', owner: 'Lord Winston Churchill' },
-  { name: 'Emerald Legacy', owner: 'Duke of Wellington' },
-  { name: 'Gilded Thunder', owner: 'Eleanor Rigby' },
-  { name: 'Midnight Rose', owner: 'Sir Arthur Dayne' },
-  { name: 'Royal Radiance', owner: 'Lady Katherine' },
-  { name: 'Velvet Gallop', owner: 'Baron von Richter' },
-  { name: 'Majestic Wind', owner: 'Countess of Kent' },
-  { name: 'Golden Mane', owner: 'General Montgomery' },
+  { name: 'Sovereign Victory', breedAge: 'Thoroughbred · 5yo Stallion', jockey: 'James Whitaker', owner: 'Lord Winston Churchill', status: 'Approved' },
+  { name: 'Emerald Legacy', breedAge: 'Thoroughbred · 4yo Mare', jockey: 'Elena Rossi', owner: 'Duke of Wellington', status: 'Approved' },
+  { name: 'Gilded Thunder', breedAge: 'Arabian Cross · 6yo Stallion', jockey: 'Marcus Thorne', owner: 'Eleanor Rigby', status: 'Approved' },
+  { name: 'Midnight Rose', breedAge: 'Thoroughbred · 3yo Mare', jockey: 'Julian Vane', owner: 'Sir Arthur Dayne', status: 'Approved' },
+  { name: 'Royal Radiance', breedAge: 'Warmblood · 5yo Mare', jockey: 'Sarah Jenkins', owner: 'Lady Katherine', status: 'Approved' },
+  { name: 'Velvet Gallop', breedAge: 'Thoroughbred · 4yo Gelding', jockey: 'Oliver Reed', owner: 'Baron von Richter', status: 'Approved' },
+  { name: 'Majestic Wind', breedAge: 'Arabian · 5yo Stallion', jockey: 'Leo Sterling', owner: 'Countess of Kent', status: 'Approved' },
+  { name: 'Golden Mane', breedAge: 'Thoroughbred · 6yo Stallion', jockey: 'Thomas Wright', owner: 'General Montgomery', status: 'Approved' },
+  { name: 'Autumn Regent', breedAge: 'Thoroughbred · 4yo Gelding', jockey: 'Amelia Hart', owner: 'Helena Ward', status: 'Pending' },
+  { name: 'Ivory Monarch', breedAge: 'Arabian Cross · 3yo Stallion', jockey: 'Noah Bennett', owner: 'Edward Sinclair', status: 'Approved' },
 ];
 
 const referees = ['Michael Harrington', 'Amelia Clarke', 'Victor Nguyen', 'Sophia Bennett'];
 
-function buildHeat(id: number, horseCount: number, referee: string): RaceHeat {
+function buildHeat(
+  id: number,
+  horseCount: number,
+  referee: string,
+  type: HeatType,
+  date: string,
+  startTime: string,
+  prefill = false,
+): RaceHeat {
   return {
     id,
-    title: `Qualifier ${String.fromCharCode(64 + id)}`,
+    type,
+    title: `${type} ${type === 'Final' ? '' : String.fromCharCode(64 + id)}`.trim(),
     referee,
     horseCount,
+    date,
+    startTime,
     horses: Array.from({ length: horseCount }, (_, index) => ({
       gate: index + 1,
-      horseName: '',
+      horseName: prefill ? registeredHorses[index]?.name ?? '' : '',
       rank: '',
     })),
   };
@@ -56,41 +75,62 @@ function formatRank(rank: number) {
   return `${rank}th`;
 }
 
+function hasCompleteRefereeResults(heat: RaceHeat) {
+  const enteredHorses = heat.horses.filter((horse) => horse.horseName);
+  return enteredHorses.length === heat.horseCount && enteredHorses.every((horse) => horse.rank !== '');
+}
+
 export default function AdminManageTournamentDetail() {
   const { name } = useParams<RouteParams>();
-  const [heats, setHeats] = React.useState<RaceHeat[]>([buildHeat(1, 8, referees[0])]);
+  const [heats, setHeats] = React.useState<RaceHeat[]>([
+    buildHeat(1, 8, 'Not Assigned', 'Qualifier', '2024-11-12', '14:00', true),
+  ]);
   const [createOpen, setCreateOpen] = React.useState(false);
+  const [entriesOpen, setEntriesOpen] = React.useState(false);
   const [horseCount, setHorseCount] = React.useState(8);
-  const [referee, setReferee] = React.useState(referees[0]);
-  const [saved, setSaved] = React.useState(false);
+  const [heatType, setHeatType] = React.useState<HeatType>('Qualifier');
+  const [heatDate, setHeatDate] = React.useState('2024-11-12');
+  const [startTime, setStartTime] = React.useState('14:00');
+  const [referee, setReferee] = React.useState('Not Assigned');
+  const [officialHeatId, setOfficialHeatId] = React.useState<number | null>(null);
+  const [officialName, setOfficialName] = React.useState(referees[0]);
+  const [actionMessage, setActionMessage] = React.useState('');
+  const actionMessageTimer = React.useRef<number | null>(null);
 
   const totalRegistrations = registeredHorses.length;
+
+  React.useEffect(() => () => {
+    if (actionMessageTimer.current !== null) {
+      window.clearTimeout(actionMessageTimer.current);
+    }
+  }, []);
+
+  const showActionMessage = (message: string) => {
+    setActionMessage(message);
+
+    if (actionMessageTimer.current !== null) {
+      window.clearTimeout(actionMessageTimer.current);
+    }
+
+    actionMessageTimer.current = window.setTimeout(() => {
+      setActionMessage('');
+      actionMessageTimer.current = null;
+    }, 2800);
+  };
 
   const handleCreateHeat = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextId = heats.length ? Math.max(...heats.map((heat) => heat.id)) + 1 : 1;
 
-    setHeats((current) => [...current, buildHeat(nextId, horseCount, referee)]);
+    setHeats((current) => [
+      ...current,
+      buildHeat(nextId, horseCount, referee, heatType, heatDate, startTime),
+    ]);
     setCreateOpen(false);
   };
 
   const handleDeleteHeat = (heatId: number) => {
     setHeats((current) => current.filter((heat) => heat.id !== heatId));
-  };
-
-  const handleRankChange = (heatId: number, gate: number, value: string) => {
-    const nextRank = value === '' ? '' : Number(value);
-
-    setHeats((current) =>
-      current.map((heat) => {
-        if (heat.id !== heatId) return heat;
-
-        return {
-          ...heat,
-          horses: heat.horses.map((horse) => (horse.gate === gate ? { ...horse, rank: nextRank } : horse)),
-        };
-      }),
-    );
   };
 
   const handleHorseChange = (heatId: number, gate: number, value: string) => {
@@ -114,9 +154,40 @@ export default function AdminManageTournamentDetail() {
     );
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 2500);
+  const openAssignOfficial = (heat: RaceHeat) => {
+    setOfficialHeatId(heat.id);
+    setOfficialName(heat.referee === 'Not Assigned' ? referees[0] : heat.referee);
+  };
+
+  const handleAssignOfficial = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (officialHeatId === null) return;
+
+    handleRefereeChange(officialHeatId, officialName);
+    setOfficialHeatId(null);
+    showActionMessage(`${officialName} has been assigned to this heat.`);
+  };
+
+  const handleSendStartList = (heat: RaceHeat) => {
+    if (heat.referee === 'Not Assigned') {
+      showActionMessage('Assign an official before sending the start list.');
+      return;
+    }
+
+    showActionMessage(`Start list sent to ${heat.referee}.`);
+  };
+
+  const handleSaveDraft = (heat: RaceHeat) => {
+    showActionMessage(`${heat.title} was saved as a draft.`);
+  };
+
+  const handlePublishRankings = (heat: RaceHeat) => {
+    if (!hasCompleteRefereeResults(heat)) {
+      showActionMessage('Rankings are pending until the referee submits the complete result.');
+      return;
+    }
+
+    showActionMessage(`Rankings for ${heat.title} have been published.`);
   };
 
   return (
@@ -132,7 +203,7 @@ export default function AdminManageTournamentDetail() {
         <main className="amtDetailMain">
           <section className="amtDetailHero">
             <div className="amtDetailHeroBg">
-              <img alt="tournament hero" className="amtDetailHeroImg" src="https://placehold.co/896x320" />
+              <img alt="Royal Ascot racecourse" className="amtDetailHeroImg" src={HomeBanner} />
               <div className="amtDetailHeroGradient" />
             </div>
 
@@ -189,10 +260,16 @@ export default function AdminManageTournamentDetail() {
                 </div>
               </div>
 
-              <button className="amtDetailCreateHeat" type="button" onClick={() => setCreateOpen(true)}>
-                <span aria-hidden="true">+</span>
-                <span>Create Race Heat</span>
-              </button>
+              <div className="amtDetailSectionActions">
+                <button className="amtDetailViewEntries" type="button" onClick={() => setEntriesOpen(true)}>
+                  <span aria-hidden="true">▦</span>
+                  <span>View Entries</span>
+                </button>
+                <button className="amtDetailCreateHeat" type="button" onClick={() => setCreateOpen(true)}>
+                  <span aria-hidden="true">+</span>
+                  <span>Create Race Heat</span>
+                </button>
+              </div>
             </div>
 
             {heats.length === 0 ? (
@@ -205,8 +282,14 @@ export default function AdminManageTournamentDetail() {
                       <div className="amtHeatHeaderBar" aria-hidden="true" />
                       <div>
                         <div className="amtHeatTitle">Heat: {heat.title}</div>
-                        <div className="amtHeatSlots">
-                          {heat.horses.filter((horse) => horse.horseName).length} / {heat.horseCount} SLOTS FILLED
+                        <div className="amtHeatMeta">
+                          <span className="amtHeatSlots">
+                            {heat.horses.filter((horse) => horse.horseName).length} / {heat.horseCount} SLOTS FILLED
+                          </span>
+                          <span>{heat.date} · {heat.startTime}</span>
+                          <span className={hasCompleteRefereeResults(heat) ? 'amtHeatResultState amtHeatResultStateReady' : 'amtHeatResultState'}>
+                            {hasCompleteRefereeResults(heat) ? 'RESULTS RECEIVED' : 'AWAITING REFEREE RESULTS'}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -222,6 +305,7 @@ export default function AdminManageTournamentDetail() {
                       <div className="amtHeatRowHead">
                         <div className="amtHeatCellHead">GATE</div>
                         <div className="amtHeatCellHead">HORSE NAME</div>
+                        <div className="amtHeatCellHead">JOCKEY</div>
                         <div className="amtHeatCellHead">OWNER</div>
                         <div className="amtHeatCellHead amtHeatCellHeadRight">FINAL RANK</div>
                       </div>
@@ -230,7 +314,6 @@ export default function AdminManageTournamentDetail() {
                     <div className="amtHeatBody">
                       {heat.horses.map((horse) => {
                         const selectedHorseNames = heat.horses.filter((item) => item.gate !== horse.gate).map((item) => item.horseName);
-                        const usedRanks = heat.horses.filter((item) => item.gate !== horse.gate).map((item) => item.rank);
                         const selectedHorse = registeredHorses.find((item) => item.name === horse.horseName);
 
                         return (
@@ -247,34 +330,48 @@ export default function AdminManageTournamentDetail() {
                               </select>
                             </div>
                             <div className="amtHeatCell amtHeatCellOwner">
+                              <div className="amtHeatOwnerName">{selectedHorse?.jockey ?? '-'}</div>
+                            </div>
+                            <div className="amtHeatCell amtHeatCellOwner">
                               <div className="amtHeatOwnerName">{selectedHorse?.owner ?? '-'}</div>
                             </div>
                             <div className="amtHeatCell amtHeatCellRank">
-                              <select className="amtAssignRankSelect" value={horse.rank} disabled={!horse.horseName} onChange={(event) => handleRankChange(heat.id, horse.gate, event.target.value)}>
-                                <option value="">Assign Rank</option>
-                                {Array.from({ length: heat.horseCount }, (_, index) => index + 1).map((rank) => (
-                                  <option key={rank} value={rank} disabled={usedRanks.includes(rank)}>
-                                    {formatRank(rank)}
-                                  </option>
-                                ))}
-                              </select>
+                              {hasCompleteRefereeResults(heat) && horse.rank !== '' ? (
+                                <span className="amtRankBadge amtRankBadgeReady">{formatRank(horse.rank)}</span>
+                              ) : (
+                                <span className="amtRankBadge">Pending</span>
+                              )}
                             </div>
                           </div>
                         );
                       })}
                     </div>
 
-                    <div className="amtHeatFooter">
-                      <label className="amtHeatRefereeControl">
-                        <span>Referee</span>
-                        <select value={heat.referee} onChange={(event) => handleRefereeChange(heat.id, event.target.value)}>
-                          {referees.map((refereeName) => (
-                            <option key={refereeName} value={refereeName}>{refereeName}</option>
-                          ))}
-                        </select>
-                      </label>
-                      {saved ? <span className="amtSavedState">Saved</span> : null}
-                      <button type="button" className="amtSaveRankBtn" onClick={handleSave}>Save</button>
+                    <div className="amtHeatOfficialRow">
+                      <div className="amtHeatOfficialInfo">
+                        <span className="amtHeatOfficialIcon" aria-hidden="true">♙</span>
+                        <span>
+                          <small>ASSIGNED REFEREE</small>
+                          <strong>{heat.referee}</strong>
+                        </span>
+                      </div>
+                      <button type="button" className="amtAssignOfficialBtn" onClick={() => openAssignOfficial(heat)}>
+                        Assign Official
+                      </button>
+                    </div>
+
+                    <div className="amtHeatActionBar">
+                      <button type="button" className="amtHeatFooterBtn amtSendStartBtn" onClick={() => handleSendStartList(heat)}>
+                        <span aria-hidden="true">▷</span>
+                        Send Start List to Referee
+                      </button>
+                      <button type="button" className="amtHeatFooterBtn amtDraftBtn" onClick={() => handleSaveDraft(heat)}>
+                        Save Draft
+                      </button>
+                      <button type="button" className="amtHeatFooterBtn amtPublishBtn" onClick={() => handlePublishRankings(heat)}>
+                        <span aria-hidden="true">↥</span>
+                        Publish Rankings
+                      </button>
                     </div>
                   </div>
                 </article>
@@ -290,23 +387,45 @@ export default function AdminManageTournamentDetail() {
             <div className="amtModalHeader">
               <div>
                 <div className="amtModalTitle">Create Race Heat</div>
-                <div className="amtModalDesc">Choose the number of horses and assign a referee for this heat.</div>
+                <div className="amtModalDesc">Configure the race round, horse capacity, date, and starting time.</div>
               </div>
               <button className="amtModalClose" type="button" aria-label="Close" onClick={() => setCreateOpen(false)}>x</button>
             </div>
 
             <label className="amtModalField">
+              <span>Race round</span>
+              <select value={heatType} onChange={(event) => setHeatType(event.target.value as HeatType)}>
+                <option value="Qualifier">Qualifier</option>
+                <option value="Quarterfinal">Quarterfinal</option>
+                <option value="Semifinal">Semifinal</option>
+                <option value="Final">Final</option>
+              </select>
+            </label>
+
+            <label className="amtModalField">
               <span>Number of horses</span>
               <select value={horseCount} onChange={(event) => setHorseCount(Number(event.target.value))}>
-                {Array.from({ length: 8 }, (_, index) => index + 1).map((count) => (
+                {Array.from({ length: 10 }, (_, index) => index + 1).map((count) => (
                   <option key={count} value={count}>{count}</option>
                 ))}
               </select>
             </label>
 
+            <div className="amtModalFieldGrid">
+              <label className="amtModalField">
+                <span>Race date</span>
+                <input type="date" required value={heatDate} onChange={(event) => setHeatDate(event.target.value)} />
+              </label>
+              <label className="amtModalField">
+                <span>Start time</span>
+                <input type="time" required value={startTime} onChange={(event) => setStartTime(event.target.value)} />
+              </label>
+            </div>
+
             <label className="amtModalField">
-              <span>Assign referee</span>
+              <span>Assign referee (optional)</span>
               <select value={referee} onChange={(event) => setReferee(event.target.value)}>
+                <option value="Not Assigned">Not Assigned</option>
                 {referees.map((refereeName) => (
                   <option key={refereeName} value={refereeName}>{refereeName}</option>
                 ))}
@@ -319,6 +438,69 @@ export default function AdminManageTournamentDetail() {
             </div>
           </form>
         </div>
+      ) : null}
+
+      {entriesOpen ? (
+        <div className="amtModalOverlay" role="presentation" onMouseDown={() => setEntriesOpen(false)}>
+          <section className="amtEntriesModal" role="dialog" aria-modal="true" aria-labelledby="entries-modal-title" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="amtModalHeader">
+              <div>
+                <div className="amtModalTitle" id="entries-modal-title">Tournament Entries</div>
+                <div className="amtModalDesc">{registeredHorses.length} horses registered for {name ?? 'Royal Ascot Autumn Derby'}.</div>
+              </div>
+              <button className="amtModalClose" type="button" aria-label="Close entries" onClick={() => setEntriesOpen(false)}>×</button>
+            </div>
+            <div className="amtEntriesTableScroll">
+              <div className="amtEntriesTable">
+                <div className="amtEntriesTableHead">
+                  <span>#</span><span>Horse</span><span>Breed / Age</span><span>Jockey</span><span>Owner</span><span>Status</span>
+                </div>
+                {registeredHorses.map((horse, index) => (
+                  <article key={horse.name}>
+                    <span>{index + 1}</span>
+                    <strong>{horse.name}</strong>
+                    <span>{horse.breedAge}</span>
+                    <span>{horse.jockey}</span>
+                    <span>{horse.owner}</span>
+                    <i className={horse.status.toLowerCase()}>{horse.status}</i>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {officialHeatId !== null ? (
+        <div className="amtModalOverlay" role="presentation" onMouseDown={() => setOfficialHeatId(null)}>
+          <form className="amtCreateHeatModal" onSubmit={handleAssignOfficial} onMouseDown={(event) => event.stopPropagation()}>
+            <div className="amtModalHeader">
+              <div>
+                <div className="amtModalTitle">Assign Official</div>
+                <div className="amtModalDesc">Select the referee responsible for this race heat.</div>
+              </div>
+              <button className="amtModalClose" type="button" aria-label="Close official assignment" onClick={() => setOfficialHeatId(null)}>×</button>
+            </div>
+
+            <label className="amtModalField">
+              <span>Referee</span>
+              <select value={officialName} onChange={(event) => setOfficialName(event.target.value)}>
+                {referees.map((refereeName) => (
+                  <option key={refereeName} value={refereeName}>{refereeName}</option>
+                ))}
+              </select>
+            </label>
+
+            <div className="amtModalActions">
+              <button className="amtModalSecondary" type="button" onClick={() => setOfficialHeatId(null)}>Cancel</button>
+              <button className="amtModalPrimary" type="submit">Assign Official</button>
+            </div>
+          </form>
+        </div>
+      ) : null}
+
+      {actionMessage ? (
+        <div className="amtActionToast" role="status" aria-live="polite">{actionMessage}</div>
       ) : null}
     </div>
     </AdminLayout>

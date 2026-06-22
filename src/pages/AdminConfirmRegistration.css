@@ -51,7 +51,8 @@
 }
 
 .admin-confirm-registration__stats article {
-  min-width: 288px;
+  min-width: 250px;
+  flex: 1 1 250px;
   padding: 22px 26px;
   border: 1px solid rgba(192, 201, 192, 0.28);
   border-radius: 9px;
@@ -60,6 +61,11 @@
   display: flex;
   align-items: center;
   gap: 20px;
+}
+
+.admin-confirm-registration__stats article.is-declined .admin-confirm-registration__stat-icon {
+  background: #fecdd3;
+  color: #ba1a1a;
 }
 
 .admin-confirm-registration__stat-icon {
@@ -170,7 +176,7 @@
 .admin-confirm-registration__row > div { padding: 22px 28px; }
 
 .admin-confirm-registration__tournament,
-.admin-confirm-registration__jockey,
+.admin-confirm-registration__owner,
 .admin-confirm-registration__row-actions {
   display: flex;
   align-items: center;
@@ -183,8 +189,8 @@
 .admin-confirm-registration__horse small { display: block; }
 .admin-confirm-registration__horse strong { color: var(--acr-green); font-size: 16px; }
 .admin-confirm-registration__horse small { margin-top: 3px; font-size: 11px; font-weight: 800; letter-spacing: .04em; }
-.admin-confirm-registration__jockey { gap: 9px; font-size: 14px; }
-.admin-confirm-registration__jockey i { width: 8px; height: 8px; border-radius: 50%; }
+.admin-confirm-registration__owner { gap: 9px; font-size: 14px; }
+.admin-confirm-registration__owner i { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
 .admin-confirm-registration__row-actions { gap: 8px; }
 
 .admin-confirm-registration__row-actions button,
@@ -230,7 +236,7 @@
 }
 
 .admin-confirm-registration__status.is-approved { background: var(--acr-teal); color: #d1e7d6; }
-.admin-confirm-registration__status.is-rejected { background: #fecdd3; color: #991b1b; }
+.admin-confirm-registration__status.is-declined { background: #fecdd3; color: #991b1b; }
 .admin-confirm-registration__status.is-pending { background: #fef3c7; color: #92400e; }
 
 .admin-confirm-registration__empty {

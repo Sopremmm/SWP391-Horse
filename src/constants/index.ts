@@ -9,7 +9,7 @@ export const NAV_LINKS: NavLink[] = [
   { label: 'Home', href: '/HorseOwnerHome', active: true },
   { label: 'Tournament', href: '/HorseOwner/Tournaments', active: false },
   { label: 'My Horses', href: '/HorseOwner/MyHorses', active: false },
-  { label: 'Hire Jockey', href: '/HorseOwner/HireJockeys', active: false },
+  { label: 'Invite Jockeys', href: '/HorseOwner/InviteJockeys', active: false },
 ];
 
 export const FOOTER_LINKS: FooterLink[] = [

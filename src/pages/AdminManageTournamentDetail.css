@@ -115,8 +115,9 @@
 }
 
 .amtDetailHeroImg {
-  width: 896px;
-  height: 320px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   opacity: 0.6;
 }
 
@@ -322,17 +323,40 @@
   font-weight: 700;
 }
 
+.amtDetailSectionActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.amtDetailViewEntries {
+  min-height: 44px;
+  padding: 11px 24px;
+  border: 1px solid #004225;
+  border-radius: 2px;
+  background: #fff;
+  color: #004225;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+}
+
 .amtHeatCard {
   margin-top: 32px;
   background: #fff;
-  border-radius: 10px;
-  outline: 1px solid rgba(214, 211, 209, 0.6);
+  border: 1px solid rgba(197, 203, 198, 0.85);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 42, 21, 0.05);
   overflow: hidden;
 }
 
 .amtHeatCardHeader {
-  padding: 20px 24px;
-  background: #f5f5f4;
+  padding: 16px 20px;
+  background: linear-gradient(90deg, #f7f8f6 0%, #fbfbfa 100%);
   border-bottom: 1px solid rgba(214, 211, 209, 0.9);
   display: flex;
   justify-content: space-between;
@@ -346,21 +370,20 @@
 }
 
 .amtHeatHeaderBar {
-  width: 8px;
-  height: 32px;
+  width: 6px;
+  height: 38px;
   border-radius: 999px;
   background: #002a15;
   flex: 0 0 auto;
 }
 
 .amtHeatTitle {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: #1c1917;
 }
 
 .amtHeatSlots {
-  margin-top: 6px;
   background: rgba(214, 211, 209, 0.3);
   border-radius: 3px;
   padding: 2px 10px;
@@ -369,6 +392,28 @@
   font-weight: 800;
   color: #4b5563;
   width: fit-content;
+}
+
+.amtHeatMeta {
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #717971;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.amtHeatResultState {
+  padding-left: 12px;
+  border-left: 1px solid #d6d3d1;
+  color: #98701c;
+}
+
+.amtHeatResultStateReady {
+  color: #047857;
 }
 
 .amtHeatReferee {
@@ -409,13 +454,13 @@
 
 .amtHeatRowHead {
   display: grid;
-  grid-template-columns: 128px 256px 288px 224px;
+  grid-template-columns: 64px minmax(190px, 1.35fr) minmax(135px, 1fr) minmax(180px, 1.2fr) 120px;
   align-items: center;
   border-bottom: 0;
 }
 
 .amtHeatCellHead {
-  padding: 16px 32px;
+  padding: 13px 20px;
   color: #717971;
   font-size: 12px;
   font-weight: 900;
@@ -435,19 +480,25 @@
 
 .amtHeatRow {
   display: grid;
-  grid-template-columns: 128px 256px 288px 224px;
+  grid-template-columns: 64px minmax(190px, 1.35fr) minmax(135px, 1fr) minmax(180px, 1.2fr) 120px;
   align-items: center;
   border-top: 1px solid rgba(214, 211, 209, 0.2);
+  transition: background-color 160ms ease;
+}
+
+.amtHeatRow:hover {
+  background: #fbfcfa;
 }
 
 .amtHeatCell {
-  padding: 22px 32px;
+  min-width: 0;
+  padding: 14px 20px;
 }
 
 .amtHeatCellGate {
-  padding: 22px 32px;
+  padding: 14px 20px;
   font-weight: 800;
-  color: #1c1917;
+  color: #004225;
 }
 
 .amtHeatHorseName {
@@ -457,12 +508,16 @@
 }
 
 .amtHeatOwnerName {
-  font-size: 16px;
-  color: #717971;
+  overflow: hidden;
+  color: #626b64;
+  font-size: 14px;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .amtHeatCellRank {
-  padding: 0 32px;
+  padding: 14px 20px;
   display: flex;
   justify-content: flex-end;
 }
@@ -478,88 +533,163 @@
   color: #1c1917;
 }
 
-.amtAssignRankSelect {
-  min-width: 136px;
-  min-height: 40px;
-  padding: 9px 12px;
-  border-radius: 2px;
-  border: 1px solid rgba(214, 211, 209, 0.8);
-  background: #fafaf9;
-  color: #1c1917;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-}
-
 .amtAssignHorseSelect {
   width: 100%;
-  min-height: 40px;
-  padding: 9px 12px;
-  border-radius: 2px;
-  border: 1px solid rgba(214, 211, 209, 0.8);
-  background: #fafaf9;
+  min-height: 36px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid #d9ddda;
+  background: #fff;
   color: #1c1917;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
 }
 
-.amtAssignRankSelect:disabled {
-  color: rgba(64, 73, 66, 0.45);
-  cursor: not-allowed;
+.amtAssignHorseSelect:focus {
+  border-color: #39745a;
+  box-shadow: 0 0 0 3px rgba(0, 66, 37, 0.08);
+  outline: none;
 }
 
-.amtHeatFooter {
-  padding: 16px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 14px;
-  border-top: 1px solid rgba(214, 211, 209, 0.3);
-}
-
-.amtHeatRefereeControl {
-  margin-right: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.amtHeatRefereeControl span {
-  color: #717971;
-  font-size: 11px;
+.amtRankBadge {
+  min-width: 76px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f0f0ee;
+  color: #747b75;
+  text-align: center;
+  font-size: 10px;
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.amtHeatRefereeControl select {
-  min-height: 36px;
-  padding: 8px 34px 8px 12px;
-  border: 1px solid rgba(214, 211, 209, 0.8);
-  border-radius: 2px;
-  background: #fafaf9;
-  color: #004225;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.amtSavedState {
+.amtRankBadgeReady {
+  background: #dcfce7;
   color: #166534;
+}
+
+.amtHeatOfficialRow {
+  min-height: 72px;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid rgba(214, 211, 209, 0.3);
+  background: #fff;
+}
+
+.amtHeatOfficialInfo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.amtHeatOfficialIcon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: #a8afa9;
+  font-size: 22px;
+}
+
+.amtHeatOfficialInfo > span:last-child {
+  display: grid;
+  gap: 3px;
+}
+
+.amtHeatOfficialInfo small {
+  color: #717971;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.amtHeatOfficialInfo strong {
+  color: #1c1917;
   font-size: 13px;
+  font-weight: 700;
+}
+
+.amtAssignOfficialBtn {
+  min-height: 34px;
+  padding: 8px 20px;
+  border: 0;
+  border-radius: 2px;
+  background: #004225;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
   font-weight: 800;
 }
 
-.amtSaveRankBtn {
+.amtHeatActionBar {
+  min-height: 68px;
+  padding: 14px 24px;
+  border-top: 1px solid rgba(214, 211, 209, 0.3);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.amtHeatFooterBtn {
+  min-height: 38px;
+  padding: 9px 22px;
   border: 0;
-  background: rgba(245, 158, 11, 0.2);
-  color: #b45309;
   border-radius: 2px;
-  padding: 10px 24px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.amtHeatFooterBtn span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.amtSendStartBtn {
+  min-width: 230px;
+  background: #8b6817;
+  color: #fff;
+}
+
+.amtDraftBtn {
+  min-width: 132px;
+  background: #efefed;
+  color: #1c1917;
+}
+
+.amtPublishBtn {
+  min-width: 205px;
+  background: #004225;
+  color: #fff;
+}
+
+.amtActionToast {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 80;
+  max-width: min(420px, calc(100vw - 40px));
+  padding: 14px 18px;
+  border-left: 4px solid #c7982e;
+  border-radius: 4px;
+  background: #002f1c;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.24);
+  color: #fff;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -777,6 +907,25 @@
   padding: 0 12px;
 }
 
+.amtModalField input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(214, 211, 209, 0.9);
+  border-radius: 4px;
+  background: #fafaf9;
+  color: #1c1917;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 0 12px;
+}
+
+.amtModalFieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
 .amtModalActions {
   margin-top: 28px;
   display: flex;
@@ -804,5 +953,144 @@
 .amtModalSecondary {
   background: #f5f5f4;
   color: #404942;
+}
+
+.amtEntriesModal {
+  width: min(100%, 980px);
+  max-height: calc(100vh - 48px);
+  overflow: hidden;
+  padding: 24px;
+  border: 1px solid rgba(214, 211, 209, 0.9);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 22px;
+}
+
+.amtEntriesTableScroll {
+  overflow: auto;
+  border: 1px solid rgba(214, 211, 209, 0.75);
+  border-radius: 6px;
+}
+
+.amtEntriesTable {
+  min-width: 880px;
+}
+
+.amtEntriesTableHead,
+.amtEntriesTable article {
+  display: grid;
+  grid-template-columns: 50px 1fr 1.2fr 1fr 1.4fr 90px;
+  align-items: center;
+}
+
+.amtEntriesTableHead {
+  min-height: 48px;
+  border-bottom: 1px solid rgba(214, 211, 209, 0.8);
+  background: #f5f5f4;
+}
+
+.amtEntriesTableHead span {
+  padding: 14px 16px;
+  color: #717971;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.amtEntriesTable article {
+  min-height: 68px;
+  border-top: 1px solid rgba(214, 211, 209, 0.4);
+}
+
+.amtEntriesTable article:first-of-type {
+  border-top: 0;
+}
+
+.amtEntriesTable article > * {
+  min-width: 0;
+  padding: 14px 16px;
+  font-size: 13px;
+}
+
+.amtEntriesTable article strong {
+  color: #004225;
+  font-size: 14px;
+}
+
+.amtEntriesTable article i {
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.amtEntriesTable article i.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+@media (max-width: 900px) {
+  .amtDetailMain {
+    padding: 28px 24px;
+  }
+
+  .amtDetailGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .amtDetailSectionHeader,
+  .amtDetailHeroContent {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .amtDetailSectionActions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .amtHeatCard {
+    overflow-x: auto;
+  }
+
+  .amtHeatCardHeader,
+  .amtHeatTable {
+    min-width: 870px;
+  }
+
+  .amtHeatActionBar {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 620px) {
+  .amtDetailGrid,
+  .amtModalFieldGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .amtDetailHero {
+    height: auto;
+    min-height: 360px;
+    padding: 28px;
+  }
+
+  .amtDetailHeroLeft {
+    width: 100%;
+  }
+
+  .amtDetailHeroTitle {
+    font-size: 38px;
+    line-height: 44px;
+  }
 }
 

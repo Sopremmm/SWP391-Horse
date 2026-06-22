@@ -78,7 +78,9 @@ const readMyHorsesFromApi = async (): Promise<MyHorsesData | null> => {
 
 export const MyHorses: React.FC = () => {
   const location = useLocation();
-  const useOwnerPortalHeader = Boolean((location.state as { ownerPortalHeader?: boolean } | null)?.ownerPortalHeader);
+  const useOwnerPortalHeader = Boolean(
+    (location.state as { ownerPortalHeader?: boolean } | null)?.ownerPortalHeader,
+  );
   const [state, setState] = React.useState<{
     horses: Horse[];
     stats: MyHorsesStats;

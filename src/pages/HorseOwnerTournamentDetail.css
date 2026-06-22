@@ -1,768 +1,384 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
 .ho-tournament-detail {
+  --green: #002a15;
+  --teal: #00502d;
+  --gold: #8a681f;
+  --paper: #fbf9f6;
+  --stone: #f5f4f1;
+  --text: #4b514c;
   min-height: 100vh;
-  background: #fafaf9;
-  color: #1c1917;
-  font-family: Manrope, Inter, Arial, sans-serif;
+  background: var(--paper);
+  color: var(--text);
+  font-family: Manrope, Arial, sans-serif;
 }
 
 .ho-tournament-detail *,
 .ho-tournament-detail *::before,
-.ho-tournament-detail *::after {
-  box-sizing: border-box;
+.ho-tournament-detail *::after { box-sizing: border-box; }
+.ho-tournament-detail svg { width: 1em; height: 1em; fill: currentColor; display: block; }
+
+.ho-tournament-detail__header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 80px;
+  border-bottom: 1px solid rgba(192, 201, 192, .36);
+  background: rgba(251, 249, 246, .98);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
 }
 
-.ho-tournament-detail__main {
-  padding-top: 80px;
-}
-
-.ho-tournament-detail__hero {
-  position: relative;
-  min-height: 400px;
-  overflow: hidden;
-  background: #111;
-}
-
-.ho-tournament-detail__hero-bg {
-  position: absolute;
-  inset: 0;
-}
-
-.ho-tournament-detail__hero-bg img {
-  width: 100%;
+.ho-tournament-detail__header-inner {
+  width: min(100%, 1280px);
   height: 100%;
-  object-fit: cover;
-  opacity: 0.48;
-  filter: saturate(0.78);
-}
-
-.ho-tournament-detail__hero-bg div {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, rgba(0, 42, 21, 0.92), rgba(0, 42, 21, 0.5) 52%, rgba(0, 0, 0, 0.25)),
-    linear-gradient(0deg, rgba(0, 0, 0, 0.32), transparent 45%);
-}
-
-.ho-tournament-detail__hero-inner {
-  position: relative;
-  max-width: 1280px;
-  min-height: 400px;
   margin: 0 auto;
-  padding: 88px 64px;
+  padding: 0 64px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.ho-tournament-detail__brand {
+  color: var(--green);
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ho-tournament-detail__header nav { display: flex; align-items: center; gap: 32px; }
+.ho-tournament-detail__header nav a {
+  padding: 7px 0 5px;
+  border-bottom: 2px solid transparent;
+  color: #565c57;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .03em;
+  text-decoration: none;
+}
+.ho-tournament-detail__header nav a.is-active { border-color: var(--green); color: var(--green); font-weight: 800; }
+
+.ho-tournament-detail__header-actions {
+  justify-self: end;
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 56px;
+  align-items: center;
+  gap: 16px;
+}
+.ho-tournament-detail__header-actions > a {
+  width: 38px;
+  height: 38px;
+  color: var(--green);
+  display: grid;
+  place-items: center;
+}
+.ho-tournament-detail__header-actions > a svg { width: 16px; height: 20px; }
+
+.ho-tournament-detail__hero { background: #002619; color: #fff; }
+.ho-tournament-detail__hero-inner {
+  width: min(100%, 1280px);
+  min-height: 444px;
+  margin: 0 auto;
+  padding: 88px 64px 92px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 557px;
+  align-items: end;
+  gap: 42px;
 }
 
-.ho-tournament-detail__hero-copy {
-  max-width: 672px;
-}
-
-.ho-tournament-detail__hero-copy span {
-  color: #bbf7d0;
+.ho-tournament-detail__hero-copy { max-width: 560px; }
+.ho-tournament-detail__hero-copy > span {
+  color: #87c69c;
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: .12em;
   text-transform: uppercase;
 }
-
 .ho-tournament-detail__hero-copy h1 {
-  margin: 16px 0 0;
+  margin: 24px 0 0;
   color: #fff;
   font-family: 'EB Garamond', Georgia, serif;
-  font-size: 64px;
+  font-size: clamp(52px, 5vw, 64px);
   font-weight: 600;
-  line-height: 1.08;
+  line-height: 1.2;
 }
-
 .ho-tournament-detail__hero-copy p {
-  max-width: 576px;
-  margin: 22px 0 0;
-  color: rgba(187, 247, 208, 0.9);
+  max-width: 560px;
+  margin: 24px 0 0;
+  color: rgba(135, 198, 156, .88);
   font-size: 16px;
-  line-height: 1.55;
+  line-height: 24px;
 }
 
 .ho-tournament-detail__hero-stats {
-  width: min(100%, 480px);
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 36px 32px;
+  grid-template-columns: 1.05fr 1fr .85fr .7fr;
+  gap: 48px 28px;
+  align-self: end;
 }
-
-.ho-tournament-detail__hero-stats div:nth-child(4) {
-  grid-column: 1;
-}
-
+.ho-tournament-detail__hero-stats div:last-child { grid-column: 1; }
 .ho-tournament-detail__hero-stats dt {
-  color: rgba(212, 212, 212, 0.65);
-  font-size: 12px;
+  color: rgba(135, 198, 156, .48);
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: .08em;
   text-transform: uppercase;
 }
-
 .ho-tournament-detail__hero-stats dd {
   margin: 6px 0 0;
   color: #fff;
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1.35;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 28px;
+  white-space: nowrap;
 }
+.ho-tournament-detail__hero-stats div:nth-child(2) dd,
+.ho-tournament-detail__hero-stats div:last-child dd { color: #ffdda1; }
 
-.ho-tournament-detail__hero-stats div:nth-child(2) dd {
-  color: #fed7aa;
-}
-
-.ho-tournament-detail__shell {
-  max-width: 1280px;
+.ho-tournament-detail__body {
+  width: min(100%, 1280px);
+  min-height: 1256px;
   margin: 0 auto;
-  padding: 48px 64px 96px;
+  padding: 64px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 384px;
-  gap: 48px;
-  align-items: start;
-}
-
-.ho-tournament-detail__content {
-  display: grid;
+  align-content: start;
   gap: 64px;
 }
-
-.ho-tournament-detail__section {
-  display: grid;
-  gap: 32px;
-}
-
-.ho-tournament-detail__section-head {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.ho-tournament-detail__section-head h2 {
+.ho-tournament-detail__section { display: grid; gap: 32px; }
+.ho-tournament-detail__section-title { display: flex; align-items: center; gap: 18px; }
+.ho-tournament-detail__section-title h2 {
   margin: 0;
-  color: #002a15;
+  color: var(--green);
   font-family: 'EB Garamond', Georgia, serif;
-  font-size: 34px;
+  font-size: 32px;
   font-weight: 600;
-  line-height: 1.15;
+  line-height: 40px;
 }
+.ho-tournament-detail__section-title span { height: 1px; flex: 1; background: rgba(192, 201, 192, .35); }
 
-.ho-tournament-detail__section-head span {
-  height: 1px;
-  flex: 1;
-  background: rgba(214, 211, 209, 0.7);
-}
-
-.ho-tournament-detail__rules {
-  display: grid;
-  gap: 0;
-}
-
-.ho-tournament-detail__rule {
-  padding: 24px;
-  border: 1px solid rgba(214, 211, 209, 0.55);
-  background: #f5f5f4;
+.ho-tournament-detail__rules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.ho-tournament-detail__rules article {
+  min-height: 248px;
+  padding: 28px 24px;
+  border: 1px solid rgba(192, 201, 192, .38);
+  border-radius: 5px;
+  background: var(--stone);
   display: flex;
+  align-items: flex-start;
   gap: 16px;
 }
+.ho-tournament-detail__rule-icon { padding-top: 2px; color: var(--gold); flex: 0 0 18px; }
+.ho-tournament-detail__rule-icon svg { width: 18px; height: 22px; }
+.ho-tournament-detail__rules h3 { margin: 0; color: #272a28; font-size: 20px; font-weight: 700; line-height: 28px; }
+.ho-tournament-detail__rules ul { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 12px; }
+.ho-tournament-detail__rules li { padding-left: 2px; font-size: 15px; line-height: 24px; }
+.ho-tournament-detail__rules li::marker { font-size: 9px; }
+.ho-tournament-detail__rules li.is-gold::marker { color: #f0b950; }
 
-.ho-tournament-detail__rule:first-child {
-  border-radius: 6px 6px 0 0;
-}
-
-.ho-tournament-detail__rule:last-child {
-  border-top: 0;
-  border-radius: 0 0 6px 6px;
-}
-
-.ho-tournament-detail__rule-icon {
-  width: 28px;
-  color: #775a19;
-  flex: 0 0 auto;
-}
-
-.ho-tournament-detail svg {
-  width: 1em;
-  height: 1em;
-  fill: currentColor;
-  display: block;
-}
-
-.ho-tournament-detail__rule-icon svg {
-  width: 22px;
-  height: 22px;
-}
-
-.ho-tournament-detail__rule h3 {
-  margin: 0;
-  color: #1c1917;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.ho-tournament-detail__rule ul {
-  margin: 12px 0 0;
-  padding-left: 18px;
-  color: #404942;
+.ho-tournament-detail__entry { gap: 44px; }
+.ho-tournament-detail__entry-layout {
   display: grid;
-  gap: 10px;
-  font-size: 16px;
-  line-height: 1.5;
+  grid-template-columns: minmax(0, 1fr) 370px;
+  align-items: start;
+  gap: 48px;
 }
-
-.ho-tournament-detail__entry-block {
-  display: grid;
-  gap: 24px;
-}
-
-.ho-tournament-detail__entry-block + .ho-tournament-detail__entry-block {
-  margin-top: 12px;
-}
-
-.ho-tournament-detail__entry-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-}
-
-.ho-tournament-detail__entry-head h3 {
-  margin: 0;
-  color: #002a15;
-  font-family: 'EB Garamond', Georgia, serif;
-  font-size: 26px;
-  font-weight: 500;
-}
-
-.ho-tournament-detail__entry-head button {
-  border: 0;
-  background: transparent;
-  color: #9a6a12;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.ho-tournament-detail__horse-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-
-.ho-tournament-detail__horse {
-  position: relative;
-  padding: 0 0 32px;
-  border: 1px solid rgba(214, 211, 209, 0.75);
-  border-radius: 6px;
-  background: #fafaf9;
-  color: inherit;
-  cursor: pointer;
-  overflow: hidden;
-  text-align: left;
-  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
-}
-
-.ho-tournament-detail__horse:hover,
-.ho-tournament-detail__horse.is-selected {
-  border-color: #002a15;
-  box-shadow: 0 14px 32px rgba(0, 42, 21, 0.12);
-  transform: translateY(-1px);
-}
-
-.ho-tournament-detail__horse img {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  display: block;
-}
-
-.ho-tournament-detail__horse span {
-  display: grid;
-  gap: 4px;
-  padding: 24px 28px 0;
-}
-
-.ho-tournament-detail__horse strong {
-  color: #002a15;
-  font-size: 20px;
-  line-height: 1.3;
-}
-
-.ho-tournament-detail__horse small {
-  color: rgba(64, 73, 66, 0.72);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-}
-
-.ho-tournament-detail__jockey-list {
-  display: grid;
-  gap: 16px;
-}
-
-.ho-tournament-detail__jockey {
-  width: 100%;
-  min-height: 96px;
-  padding: 16px;
-  border: 1px solid rgba(214, 211, 209, 0.65);
-  border-radius: 6px;
-  background: #fafaf9;
-  display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) auto 32px;
-  gap: 16px;
-  align-items: center;
-  color: inherit;
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
-}
-
-.ho-tournament-detail__jockey:hover,
-.ho-tournament-detail__jockey.is-selected {
-  border-color: #002a15;
-  background: #fff;
-  box-shadow: 0 12px 28px rgba(0, 42, 21, 0.09);
-}
-
-.ho-tournament-detail__jockey img {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
-  object-fit: cover;
-  filter: saturate(0.65);
-}
-
-.ho-tournament-detail__jockey span {
-  display: grid;
-  gap: 4px;
-}
-
-.ho-tournament-detail__jockey strong {
-  color: #002a15;
-  font-size: 20px;
-  line-height: 1.2;
-}
-
-.ho-tournament-detail__jockey small {
-  color: rgba(64, 73, 66, 0.82);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.ho-tournament-detail__jockey em {
-  padding: 0 20px;
-  border-right: 1px solid rgba(214, 211, 209, 0.75);
-  color: #002a15;
-  display: grid;
-  justify-items: end;
-  font-style: normal;
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.ho-tournament-detail__jockey em small {
-  color: rgba(64, 73, 66, 0.62);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.ho-tournament-detail__jockey i {
-  width: 32px;
-  height: 32px;
-  border: 2px solid rgba(214, 211, 209, 0.9);
-  border-radius: 12px;
-  color: transparent;
-  display: grid;
-  place-items: center;
-  font-style: normal;
-}
-
-.ho-tournament-detail__jockey.is-selected i {
-  border-color: #002a15;
-  background: #002a15;
-  color: #fff;
-}
-
-.ho-tournament-detail__summary {
-  position: sticky;
-  top: 104px;
-  padding: 32px;
-  border: 1px solid rgba(214, 211, 209, 0.75);
-  border-radius: 8px;
-  background: #fafaf9;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
+.ho-tournament-detail__horse-picker { display: grid; gap: 24px; }
+.ho-tournament-detail__horse-picker-head { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.ho-tournament-detail__horse-picker-head h3,
 .ho-tournament-detail__summary h3 {
   margin: 0;
-  padding-bottom: 18px;
-  border-bottom: 1px solid rgba(214, 211, 209, 0.55);
-  color: #002a15;
+  color: var(--green);
   font-family: 'EB Garamond', Georgia, serif;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 500;
+  line-height: 32px;
 }
-
-.ho-tournament-detail__summary-lines {
-  padding: 28px 0;
-  display: grid;
-  gap: 16px;
-}
-
-.ho-tournament-detail__summary-lines div {
-  display: flex;
-  justify-content: space-between;
+.ho-tournament-detail__horse-picker-head button {
+  border: 0;
+  background: transparent;
+  color: var(--green);
+  cursor: pointer;
+  display: inline-flex;
   align-items: center;
+  gap: 5px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .03em;
+}
+.ho-tournament-detail__horse-picker-head button svg { width: 12px; height: 12px; }
+.ho-tournament-detail__horse-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.ho-tournament-detail__horse-card {
+  min-width: 0;
+  padding: 0 0 36px;
+  overflow: hidden;
+  border: 1px solid rgba(192, 201, 192, .55);
+  border-radius: 4px;
+  background: var(--paper);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.ho-tournament-detail__horse-card:hover,
+.ho-tournament-detail__horse-card.is-selected {
+  border: 2px solid var(--green);
+  box-shadow: 0 12px 28px rgba(0, 42, 21, .11);
+  transform: translateY(-2px);
+}
+.ho-tournament-detail__horse-card img { width: 100%; height: 192px; object-fit: cover; display: block; }
+.ho-tournament-detail__horse-card span { padding: 24px 24px 0; display: grid; gap: 5px; }
+.ho-tournament-detail__horse-card strong { color: var(--green); font-size: 19px; line-height: 28px; }
+.ho-tournament-detail__horse-card small { color: rgba(64, 73, 66, .58); font-size: 12px; font-weight: 800; letter-spacing: .04em; }
+
+.ho-tournament-detail__summary {
+  padding: 32px;
+  border: 1px solid rgba(192, 201, 192, .55);
+  border-radius: 8px;
+  background: var(--paper);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+}
+.ho-tournament-detail__summary h3 { padding-bottom: 16px; border-bottom: 1px solid rgba(192, 201, 192, .28); }
+.ho-tournament-detail__selected-row {
+  min-height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 18px;
 }
-
-.ho-tournament-detail__summary-lines span {
-  color: #404942;
-  font-size: 16px;
-}
-
-.ho-tournament-detail__summary-lines strong {
-  color: #002a15;
-  font-size: 15px;
-  font-weight: 700;
-  text-align: right;
-}
-
+.ho-tournament-detail__selected-row span { font-size: 15px; }
+.ho-tournament-detail__selected-row strong { color: var(--green); font-size: 14px; font-weight: 600; text-align: right; }
 .ho-tournament-detail__summary-action {
   padding-top: 24px;
-  border-top: 1px solid rgba(0, 42, 21, 0.12);
+  border-top: 1px solid rgba(0, 42, 21, .12);
   display: grid;
   gap: 16px;
   text-align: center;
 }
-
 .ho-tournament-detail__summary-action button {
-  width: 100%;
   min-height: 56px;
   border: 0;
   border-radius: 4px;
-  background: #002a15;
+  background: var(--teal);
   color: #fff;
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 900;
-}
-
-.ho-tournament-detail__summary-action button:disabled {
-  background: rgba(0, 42, 21, 0.42);
-  cursor: not-allowed;
-}
-
-.ho-tournament-detail__summary-action button svg {
-  width: 14px;
-  height: 14px;
-}
-
-.ho-tournament-detail__summary-action p {
-  margin: 0;
-  color: #002a15;
+  gap: 9px;
+  font: inherit;
   font-size: 15px;
-  font-weight: 700;
-  line-height: 1.5;
+  font-weight: 800;
 }
+.ho-tournament-detail__summary-action button svg { width: 14px; height: 14px; }
+.ho-tournament-detail__summary-action p { margin: 0; color: var(--green); font-size: 15px; font-weight: 600; line-height: 24px; }
+.ho-tournament-detail__summary-action small { padding-top: 6px; color: rgba(64, 73, 66, .45); font-size: 14px; line-height: 24px; }
+.ho-tournament-detail__summary-action a { color: inherit; }
 
-.ho-tournament-detail__summary-action small {
-  color: rgba(64, 73, 66, 0.58);
-  font-size: 14px;
-  line-height: 1.5;
+.ho-tournament-detail__footer { min-height: 184px; background: #202522; color: #e7e5e4; }
+.ho-tournament-detail__footer-inner {
+  width: min(100%, 1280px);
+  min-height: 184px;
+  margin: 0 auto;
+  padding: 48px 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
 }
-
-.ho-tournament-detail__summary-action a {
-  color: inherit;
-}
-
-.ho-tournament-detail__saved {
-  border-radius: 4px;
-  background: rgba(22, 101, 52, 0.1);
-  color: #166534;
-  padding: 10px 12px;
-  font-size: 13px;
-  font-weight: 900;
-}
+.ho-tournament-detail__footer h2 { margin: 0 0 16px; font-family: 'EB Garamond', Georgia, serif; font-size: 24px; font-weight: 500; }
+.ho-tournament-detail__footer p { margin: 0; color: rgba(214, 211, 209, .55); font-size: 13px; line-height: 20px; }
+.ho-tournament-detail__footer-inner > div:last-child { display: grid; justify-items: end; gap: 24px; }
+.ho-tournament-detail__footer nav { display: flex; gap: 32px; }
+.ho-tournament-detail__footer a { color: rgba(214, 211, 209, .62); font-size: 11px; font-weight: 800; letter-spacing: .04em; text-decoration: none; }
 
 .ho-tournament-detail__modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 80;
-  padding: 28px;
-  background: rgba(15, 23, 42, 0.52);
+  z-index: 90;
+  padding: 24px;
+  background: rgba(0, 24, 14, .58);
   display: grid;
   place-items: center;
 }
-
 .ho-tournament-detail__modal {
-  width: min(100%, 760px);
-  max-height: min(760px, calc(100vh - 56px));
+  width: min(760px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
   padding: 28px;
-  border: 1px solid rgba(214, 211, 209, 0.9);
-  border-radius: 8px;
-  background: #fafaf9;
-  box-shadow: 0 28px 72px rgba(0, 0, 0, 0.28);
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, .25);
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
   gap: 22px;
 }
-
-.ho-tournament-detail__modal-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-}
-
-.ho-tournament-detail__modal-head h2 {
-  margin: 0;
-  color: #002a15;
-  font-family: 'EB Garamond', Georgia, serif;
-  font-size: 34px;
-  font-weight: 600;
-  line-height: 1.1;
-}
-
-.ho-tournament-detail__modal-head p {
-  margin: 8px 0 0;
-  color: #404942;
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.ho-tournament-detail__modal-head button {
-  width: 36px;
-  height: 36px;
-  border: 0;
-  border-radius: 8px;
-  background: #e7e5e4;
-  color: #404942;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 18px;
-  font-weight: 900;
-}
-
-.ho-tournament-detail__modal-search {
-  display: grid;
-  gap: 8px;
-}
-
-.ho-tournament-detail__modal-search span {
-  color: #404942;
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.ho-tournament-detail__modal-search input {
-  width: 100%;
-  min-height: 46px;
-  border: 1px solid rgba(214, 211, 209, 0.95);
-  border-radius: 4px;
-  background: #fff;
-  color: #1c1917;
-  font-family: inherit;
-  font-size: 15px;
-  padding: 0 14px;
-  outline: none;
-}
-
-.ho-tournament-detail__modal-search input:focus {
-  border-color: #002a15;
-  box-shadow: 0 0 0 3px rgba(0, 42, 21, 0.1);
-}
-
-.ho-tournament-detail__modal-grid,
-.ho-tournament-detail__modal-list {
-  min-height: 180px;
-  overflow: auto;
-  padding-right: 4px;
-}
-
-.ho-tournament-detail__modal-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.ho-tournament-detail__modal-list {
-  display: grid;
-  gap: 12px;
-  align-content: start;
-}
-
-.ho-tournament-detail__modal-horse,
-.ho-tournament-detail__modal-jockey {
-  border: 1px solid rgba(214, 211, 209, 0.8);
-  border-radius: 6px;
-  background: #fff;
-  color: inherit;
-  cursor: pointer;
-  font-family: inherit;
-  text-align: left;
+.ho-tournament-detail__modal-head { display: flex; justify-content: space-between; gap: 24px; }
+.ho-tournament-detail__modal-head h2 { margin: 0; color: var(--green); font-family: 'EB Garamond', Georgia, serif; font-size: 32px; }
+.ho-tournament-detail__modal-head p { margin: 6px 0 0; font-size: 14px; }
+.ho-tournament-detail__modal-head button { width: 38px; height: 38px; border: 0; border-radius: 50%; background: #e7e5e4; cursor: pointer; display: grid; place-items: center; }
+.ho-tournament-detail__modal-head button svg { width: 20px; height: 20px; }
+.ho-tournament-detail__modal > input { min-height: 46px; padding: 0 14px; border: 1px solid rgba(192, 201, 192, .8); border-radius: 4px; background: #fff; font: inherit; outline: 0; }
+.ho-tournament-detail__modal > input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(0, 42, 21, .1); }
+.ho-tournament-detail__modal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.ho-tournament-detail__modal-grid button {
+  padding: 0 0 18px;
   overflow: hidden;
+  border: 1px solid rgba(192, 201, 192, .58);
+  border-radius: 5px;
+  background: #fff;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
 }
+.ho-tournament-detail__modal-grid button.is-selected { border: 2px solid var(--green); }
+.ho-tournament-detail__modal-grid img { width: 100%; height: 150px; object-fit: cover; display: block; }
+.ho-tournament-detail__modal-grid span { padding: 16px 18px 0; display: grid; gap: 4px; }
+.ho-tournament-detail__modal-grid strong { color: var(--green); font-size: 17px; }
+.ho-tournament-detail__modal-grid small { color: rgba(64, 73, 66, .65); font-size: 12px; }
+.ho-tournament-detail__empty { grid-column: 1 / -1; min-height: 140px; display: grid; place-items: center; }
 
-.ho-tournament-detail__modal-horse:hover,
-.ho-tournament-detail__modal-horse.is-selected,
-.ho-tournament-detail__modal-jockey:hover,
-.ho-tournament-detail__modal-jockey.is-selected {
-  border-color: #002a15;
-  box-shadow: 0 12px 26px rgba(0, 42, 21, 0.1);
-}
-
-.ho-tournament-detail__modal-horse img {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  display: block;
-}
-
-.ho-tournament-detail__modal-horse span {
-  padding: 16px;
-  display: grid;
-  gap: 4px;
-}
-
-.ho-tournament-detail__modal-horse strong,
-.ho-tournament-detail__modal-jockey strong {
-  color: #002a15;
-  font-size: 17px;
-  line-height: 1.3;
-}
-
-.ho-tournament-detail__modal-horse small,
-.ho-tournament-detail__modal-jockey small {
-  color: rgba(64, 73, 66, 0.72);
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-.ho-tournament-detail__modal-jockey {
-  min-height: 82px;
-  padding: 12px;
-  display: grid;
-  grid-template-columns: 58px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 14px;
-}
-
-.ho-tournament-detail__modal-jockey img {
-  width: 58px;
-  height: 58px;
-  border-radius: 10px;
-  object-fit: cover;
-  filter: saturate(0.72);
-}
-
-.ho-tournament-detail__modal-jockey span {
-  display: grid;
-  gap: 4px;
-}
-
-.ho-tournament-detail__modal-jockey em {
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(0, 42, 21, 0.1);
-  color: #002a15;
-  font-size: 11px;
-  font-style: normal;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.ho-tournament-detail__empty {
-  min-height: 160px;
-  border: 1px dashed rgba(113, 121, 113, 0.45);
-  border-radius: 8px;
-  color: #717971;
-  display: grid;
-  place-items: center;
+.ho-tournament-detail__notice {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 100;
+  max-width: min(420px, calc(100vw - 40px));
+  padding: 16px 20px;
+  border-radius: 5px;
+  background: var(--green);
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .22);
   font-size: 14px;
-  font-weight: 800;
-  grid-column: 1 / -1;
+  font-weight: 700;
 }
 
 @media (max-width: 1080px) {
-  .ho-tournament-detail__hero-inner {
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-end;
-  }
-
-  .ho-tournament-detail__shell {
-    grid-template-columns: 1fr;
-  }
-
-  .ho-tournament-detail__summary {
-    position: static;
-  }
+  .ho-tournament-detail__header-inner { padding-inline: 32px; grid-template-columns: 1fr auto; }
+  .ho-tournament-detail__header nav { display: none; }
+  .ho-tournament-detail__hero-inner { grid-template-columns: 1fr; align-items: start; }
+  .ho-tournament-detail__hero-stats { width: min(100%, 600px); }
+  .ho-tournament-detail__entry-layout { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 780px) {
+  .ho-tournament-detail__header-inner,
   .ho-tournament-detail__hero-inner,
-  .ho-tournament-detail__shell {
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-
-  .ho-tournament-detail__hero-copy h1 {
-    font-size: 44px;
-  }
-
-  .ho-tournament-detail__hero-stats,
-  .ho-tournament-detail__horse-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .ho-tournament-detail__jockey {
-    grid-template-columns: 56px 1fr 32px;
-  }
-
-  .ho-tournament-detail__jockey img {
-    width: 56px;
-    height: 56px;
-  }
-
-  .ho-tournament-detail__jockey em {
-    display: none;
-  }
-
-  .ho-tournament-detail__modal-overlay {
-    padding: 16px;
-  }
-
-  .ho-tournament-detail__modal {
-    padding: 20px;
-  }
-
-  .ho-tournament-detail__modal-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .ho-tournament-detail__modal-jockey {
-    grid-template-columns: 52px 1fr;
-  }
-
-  .ho-tournament-detail__modal-jockey em {
-    display: none;
-  }
+  .ho-tournament-detail__body,
+  .ho-tournament-detail__footer-inner { padding-left: 20px; padding-right: 20px; }
+  .ho-tournament-detail__brand { font-size: 30px; }
+  .ho-tournament-detail__hero-inner { min-height: auto; padding-top: 64px; padding-bottom: 64px; }
+  .ho-tournament-detail__hero-copy h1 { font-size: 46px; }
+  .ho-tournament-detail__hero-stats { grid-template-columns: repeat(2, 1fr); gap: 28px; }
+  .ho-tournament-detail__hero-stats div:last-child { grid-column: auto; }
+  .ho-tournament-detail__body { min-height: 0; padding-top: 44px; padding-bottom: 64px; }
+  .ho-tournament-detail__rules,
+  .ho-tournament-detail__horse-grid,
+  .ho-tournament-detail__modal-grid { grid-template-columns: 1fr; }
+  .ho-tournament-detail__rules article { min-height: auto; }
+  .ho-tournament-detail__footer-inner { align-items: flex-start; flex-direction: column; }
+  .ho-tournament-detail__footer-inner > div:last-child { justify-items: start; }
+  .ho-tournament-detail__footer nav { flex-wrap: wrap; gap: 16px 24px; }
 }

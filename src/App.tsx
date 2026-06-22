@@ -9,12 +9,14 @@ import HorseOwnerHome from "./pages/HorseOwnerHome.tsx";
 import Tournament from "./pages/Tournament.tsx";
 import MyHorses from "./pages/MyHorses.tsx";
 import AddHorse from "./pages/AddHorse.tsx";
-import HireJockey from "./pages/HireJockey.tsx";
+import InviteJockeys from "./pages/InviteJockeys.tsx";
+import InviteJockeyForm from "./pages/InviteJockeyForm.tsx";
 import AdminHome from "./pages/AdminHome.tsx";
 import AdminManageTournaments from "./pages/AdminManageTournaments.tsx";
 import AdminCreateTournament from "./pages/AdminCreateTournament.tsx";
 import AdminManageTournamentDetail from "./pages/AdminManageTournamentDetail.tsx";
 import AdminConfirmRegistration from "./pages/AdminConfirmRegistration.tsx";
+import AdminUsers from "./pages/AdminUsers.tsx";
 import JockeyProfile from "./pages/JockeyProfile.tsx";
 import HorseOwnerTournamentDetail from "./pages/HorseOwnerTournamentDetail.tsx";
 import HorseOwnerHorseDetail from "./pages/HorseOwnerHorseDetail.tsx";
@@ -53,18 +55,19 @@ export default function App() {
         <Route path="/HorseOwner/Tournaments" element={<Tournament />} />
         <Route path="/HorseOwner/Tournaments/:name" element={<HorseOwnerTournamentDetail />} />
         <Route path="/HorseOwner/MyTournament" element={<HorseOwnerMyTournament />} />
-        <Route path="/HorseOwner/MyJockeys" element={<HorseOwnerMyJockeys />} />
+        <Route path="/HorseOwner/MyJockeyinvitations" element={<HorseOwnerMyJockeys />} />
         <Route path="/HorseOwner/Notifications" element={<HorseOwnerNotifications />} />
-        <Route path="/HorseOwner/HireJockeys" element={<HireJockey />} />
-        <Route path="/horseowner/hirejockey" element={<JockeyProfile />} />
-        <Route path="/horseowner/hirejockey/:name" element={<JockeyProfile />} />
+        <Route path="/HorseOwner/InviteJockeys" element={<InviteJockeys />} />
+        <Route path="/HorseOwner/InviteJockeys/:name" element={<JockeyProfile />} />
+        <Route path="/HorseOwner/InviteJockeys/:name/invite" element={<InviteJockeyForm />} />
         <Route path="/Jockey/Home" element={<JockeyHome />} />
         <Route path="/Jockey/Profile" element={<JockeyProfilePage />} />
         <Route path="/Jockey/Invitation" element={<JockeyInvitationPage />} />
         <Route path="/Jockey/Invitations" element={<JockeyInvitationPage />} />
         <Route path="/admin" element={<AdminHome />} />
         <Route path="/Admin/Profile" element={<AdminHome />} />
-        <Route path="/Admin/ManageUsers" element={<AdminHome />} />
+        <Route path="/Admin/User" element={<AdminUsers />} />
+        <Route path="/Admin/ManageUsers" element={<AdminUsers />} />
         <Route path="/Admin/ManageTournaments" element={<AdminManageTournaments />} />
         <Route path="/Admin/ManageTournaments/Create" element={<AdminCreateTournament />} />
         <Route path="/Admin/ManageTournaments/edit/:name" element={<AdminCreateTournament mode="edit" />} />

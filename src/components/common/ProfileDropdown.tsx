@@ -64,7 +64,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
           <Link
             className="profile-dropdown__item"
             role="menuitem"
-            to="/HorseOwner/MyJockeys"
+            to="/HorseOwner/MyJockeyinvitations"
             onClick={() => setOpen(false)}
           >
             My Jockeys

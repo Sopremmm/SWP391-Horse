@@ -20,7 +20,7 @@ export type OwnerPortalIconName =
 const OWNER_NAV = [
   { label: 'Profile', href: '/HorseOwner/Profile' },
   { label: 'My Tournaments', href: '/HorseOwner/MyTournament' },
-  { label: 'My Jockeys', href: '/HorseOwner/MyJockeys' },
+  { label: 'My Jockeys', href: '/HorseOwner/MyJockeyinvitations' },
   { label: 'My Stable', href: '/HorseOwner/MyHorses' },
   { label: 'Notifications', href: '/HorseOwner/Notifications' },
 ];

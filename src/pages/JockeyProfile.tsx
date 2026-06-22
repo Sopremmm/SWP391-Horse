@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Header } from '../components/common/Header.tsx';
 import { getPageData, Jockey } from '../data/pageData.ts';
 import './JockeyProfile.css';
@@ -57,10 +57,10 @@ function priceFrom(text: string) {
 function buildFallbackProfile(jockey: Jockey) {
   return {
     classLabel: jockey.level.includes('ELITE') || jockey.level.includes('MASTER') ? 'ELITE CLASS' : 'PROFESSIONAL CLASS',
-    tierLabel: jockey.hired ? 'Contracted Professional' : 'Available Professional',
+    tierLabel: jockey.invited ? 'Invited Professional' : 'Available Professional',
     bio: `${jockey.name} brings disciplined racecraft, reliable pacing, and strong tactical instincts to competitive events across the Heritage Racing circuit.`,
-    totalWins: jockey.hired ? '118' : '86',
-    winRate: jockey.hired ? '22.4%' : '18.6%',
+    totalWins: jockey.invited ? '118' : '86',
+    winRate: jockey.invited ? '22.4%' : '18.6%',
     performanceSeason: 'SEASON 2024',
     performance: [
       { raceName: 'Epsom Invitational', horse: 'Ivory Sovereign', position: '1st', earnings: '$45,000', trackCondition: 'Firm' },
@@ -77,13 +77,13 @@ function buildFallbackProfile(jockey: Jockey) {
 
 export default function JockeyProfile() {
   const params = useParams<{ name?: string }>();
-  const { hireJockey } = getPageData();
+  const { inviteJockeys } = getPageData();
   const decodedName = decodeURIComponent(params.name ?? '').trim();
   const selectedJockey =
-    hireJockey.jockeys.find((jockey) => jockey.name.toLowerCase() === decodedName.toLowerCase()) ??
-    hireJockey.jockeys[0];
+    inviteJockeys.jockeys.find((jockey) => jockey.name.toLowerCase() === decodedName.toLowerCase()) ??
+    inviteJockeys.jockeys[0];
   const profile = selectedJockey.profile ?? buildFallbackProfile(selectedJockey);
-  const isAvailable = !selectedJockey.hired && selectedJockey.variant !== 'hired';
+  const isAvailable = !selectedJockey.invited && selectedJockey.variant !== 'invited';
 
   return (
     <div className="jockey-profile">
@@ -124,15 +124,19 @@ export default function JockeyProfile() {
                 <TrendIcon />
               </article>
               <article className="jockey-profile__stat">
-                <span>Hiring Price</span>
+                <span>Invitation Rate</span>
                 <strong>{priceFrom(selectedJockey.priceText)}</strong>
                 <small>/ race</small>
               </article>
             </div>
 
-            <button className="jockey-profile__hire" type="button" disabled={!isAvailable}>
-              {isAvailable ? 'Hire' : 'Already Hired'}
-            </button>
+            {isAvailable ? (
+              <Link className="jockey-profile__invite" to={`/HorseOwner/InviteJockeys/${encodeURIComponent(selectedJockey.name)}/invite`}>
+                Invite
+              </Link>
+            ) : (
+              <button className="jockey-profile__invite" type="button" disabled>Already Invited</button>
+            )}
           </div>
         </section>
 

@@ -73,9 +73,9 @@ export type Jockey = {
   ageText: string;
   experienceText: string;
   priceText: string;
-  hired: boolean;
+  invited: boolean;
   imageSrc?: string;
-  variant: 'hire' | 'hired';
+  variant: 'invite' | 'invited';
   profile?: {
     classLabel: string;
     tierLabel: string;
@@ -98,7 +98,7 @@ export type Jockey = {
   };
 };
 
-export type HireJockeyData = {
+export type InviteJockeysData = {
   title: string;
   subtitle: string;
   jockeys: Jockey[];
@@ -147,7 +147,7 @@ export type MyHorsesPageData = {
 export type PageData = {
   homepage: HomepageData;
   tournamentPage: TournamentListData;
-  hireJockey: HireJockeyData;
+  inviteJockeys: InviteJockeysData;
   admin: AdminData;
   myHorses: MyHorsesPageData;
 };
@@ -292,31 +292,31 @@ export const DEFAULT_PAGE_DATA: PageData = {
       ],
     },
   },
-  hireJockey: {
+  inviteJockeys: {
     title: 'Professional Jockeys',
     subtitle:
       "Secure the industry's most disciplined riders for your stable. Our curated selection of elite racing partners brings precision, heritage, and a track record of excellence to every finish line.",
     jockeys: [
       {
         name: 'Liam Hamilton',
-        hired: false,
+        invited: false,
         level: 'LEVEL 3',
         gender: 'Male',
         ageText: '28 years old',
         experienceText: '10 years experience',
-        priceText: 'Hiring Price: $5,000 / race',
-        variant: 'hire',
+        priceText: 'Invitation Rate: $5,000 / race',
+        variant: 'invite',
         imageSrc: PLACEHOLDER_IMG,
       },
       {
         name: 'Sophie Whitmore',
-        hired: true,
+        invited: true,
         level: 'MASTER',
         gender: 'Female',
         ageText: '26 years old',
         experienceText: '8 years experience',
-        priceText: 'Hiring Price: $8,500 / race',
-        variant: 'hired',
+        priceText: 'Invitation Rate: $8,500 / race',
+        variant: 'invited',
         imageSrc: PLACEHOLDER_IMG,
         profile: {
           classLabel: 'ELITE CLASS',
@@ -364,46 +364,46 @@ export const DEFAULT_PAGE_DATA: PageData = {
       },
       {
         name: 'Arthur Thorne',
-        hired: false,
+        invited: false,
         level: 'ELITE',
         gender: 'Male',
         ageText: '42 years old',
         experienceText: '22 years experience',
-        priceText: 'Hiring Price: $12,000 / race',
-        variant: 'hire',
+        priceText: 'Invitation Rate: $12,000 / race',
+        variant: 'invite',
         imageSrc: PLACEHOLDER_IMG,
       },
       {
         name: 'Elena Vance',
-        hired: false,
+        invited: false,
         level: 'RISING STAR',
         gender: 'Female',
         ageText: '24 years old',
         experienceText: '4 years experience',
-        priceText: 'Hiring Price: $3,500 / race',
-        variant: 'hire',
+        priceText: 'Invitation Rate: $3,500 / race',
+        variant: 'invite',
         imageSrc: PLACEHOLDER_IMG,
       },
       {
         name: 'Marcus Reed',
-        hired: true,
+        invited: true,
         level: 'VETERAN',
         gender: 'Male',
         ageText: '35 years old',
         experienceText: '15 years experience',
-        priceText: 'Hiring Price: $7,200 / race',
-        variant: 'hired',
+        priceText: 'Invitation Rate: $7,200 / race',
+        variant: 'invited',
         imageSrc: PLACEHOLDER_IMG,
       },
       {
         name: 'Diana Prince',
-        hired: false,
+        invited: false,
         level: 'ELITE',
         gender: 'Female',
         ageText: '31 years old',
         experienceText: '12 years experience',
-        priceText: 'Hiring Price: $11,500 / race',
-        variant: 'hire',
+        priceText: 'Invitation Rate: $11,500 / race',
+        variant: 'invite',
         imageSrc: PLACEHOLDER_IMG,
       },
     ],
@@ -495,7 +495,7 @@ export function getPageData(): PageData {
       ...custom,
       homepage: { ...DEFAULT_PAGE_DATA.homepage, ...custom.homepage },
       tournamentPage: { ...DEFAULT_PAGE_DATA.tournamentPage, ...custom.tournamentPage },
-      hireJockey: { ...DEFAULT_PAGE_DATA.hireJockey, ...custom.hireJockey },
+      inviteJockeys: { ...DEFAULT_PAGE_DATA.inviteJockeys, ...custom.inviteJockeys },
       admin: { ...DEFAULT_PAGE_DATA.admin, ...custom.admin },
       myHorses: { ...DEFAULT_PAGE_DATA.myHorses, ...custom.myHorses },
     };

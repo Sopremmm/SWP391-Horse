@@ -33,9 +33,21 @@ function AdminIcon({ name }: { name: AdminIconName }) {
       'M2 19v-2.1c0-.7.2-1.3.6-1.8.4-.5.9-.9 1.5-1.2 1.1-.5 2.2-.9 3.4-1.2 1.1-.3 2.3-.4 3.5-.4s2.4.1 3.5.4c1.2.3 2.3.7 3.4 1.2.6.3 1.1.7 1.5 1.2.4.5.6 1.1.6 1.8V19H2Zm5-9.5c-.9 0-1.7-.3-2.3-1C4.1 7.9 3.8 7.1 3.8 6.2s.3-1.7.9-2.3c.6-.7 1.4-1 2.3-1s1.7.3 2.3 1c.6.6.9 1.4.9 2.3s-.3 1.7-.9 2.3c-.6.7-1.4 1-2.3 1Z',
   };
 
+  Object.assign(paths, {
+    bell: 'M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4',
+    check: 'M4 20v-2.5A4.5 4.5 0 0 1 8.5 13H12M8.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm7 6 2 2 4-5',
+    grid: 'M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z',
+    help: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm-2.2-13a2.4 2.4 0 1 1 3.7 2c-1 .7-1.5 1.2-1.5 2.5M12 17h.01',
+    logout: 'M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5m5-4 4-4-4-4m4 4H9',
+    settings: 'M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm7.4-3.5c0-.5-.1-1-.2-1.5l2-1.6-2-3.4-2.5 1A8 8 0 0 0 14.1 5L13.7 2h-4l-.4 3a8 8 0 0 0-2.6 1.5l-2.5-1-2 3.4 2 1.6A8 8 0 0 0 4 12c0 .5.1 1 .2 1.5l-2 1.6 2 3.4 2.5-1A8 8 0 0 0 9.3 19l.4 3h4l.4-3a8 8 0 0 0 2.6-1.5l2.5 1 2-3.4-2-1.6c.1-.5.2-1 .2-1.5Z',
+    trophy: 'M8 4h8v5a4 4 0 0 1-8 0V4Zm0 2H5a2 2 0 0 0 2 4h1m8-4h3a2 2 0 0 1-2 4h-1m-4 3v5m-4 2h8',
+    user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM5 21v-2a7 7 0 0 1 14 0v2',
+    users: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 9v-1a7 7 0 0 1 14 0v1m1-16a3.5 3.5 0 0 1 0 7m1.5 3a6 6 0 0 1 3.5 5.5',
+  });
+
   return (
     <svg className="admin-layout__icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d={paths[name]} />
+      <path d={paths[name]} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
     </svg>
   );
 }
@@ -56,7 +68,7 @@ function ProfileMenu() {
       {open ? (
         <div className="admin-layout__profile-menu" role="menu">
           <Link to="/Admin/Profile" role="menuitem" onClick={() => setOpen(false)}>Profile</Link>
-          <Link to="/Admin/ManageUsers" role="menuitem" onClick={() => setOpen(false)}>Manage User</Link>
+          <Link to="/Admin/User" role="menuitem" onClick={() => setOpen(false)}>Manage User</Link>
           <Link to="/Admin/ManageTournaments" role="menuitem" onClick={() => setOpen(false)}>Manage Tournament</Link>
           <Link to="/Admin/ConfirmRegistration" role="menuitem" onClick={() => setOpen(false)}>Confirm Registration</Link>
           <button type="button" role="menuitem" onClick={() => navigate('/')}>Log Out</button>
@@ -69,7 +81,7 @@ function ProfileMenu() {
 export default function AdminLayout({ active, children, title, breadcrumb, topNavActive = 'overview' }: AdminLayoutProps) {
   const sideLinks = [
     { key: 'dashboard', label: 'Dashboard', to: '/admin', icon: 'grid' },
-    { key: 'users', label: 'Users', to: '/Admin/ManageUsers', icon: 'users' },
+    { key: 'users', label: 'Users', to: '/Admin/User', icon: 'users' },
     { key: 'tournaments', label: 'Tournaments', to: '/Admin/ManageTournaments', icon: 'trophy' },
     { key: 'registrations', label: 'Registrations', to: '/Admin/ConfirmRegistration', icon: 'check' },
     { key: 'settings', label: 'Settings', to: '/Admin/Profile', icon: 'settings' },

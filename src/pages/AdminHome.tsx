@@ -7,20 +7,21 @@ import './AdminHome.css';
 type AdminIconName = 'bell' | 'check' | 'grid' | 'help' | 'logout' | 'settings' | 'trophy' | 'user' | 'users';
 
 const stats = [
-  { label: 'Total Active Users', value: '12,482', icon: 'users', tone: 'teal', badge: '+12% Monthly' },
-  { label: 'Upcoming Tournaments', value: '24', icon: 'trophy', tone: 'amber', badge: 'Next 48h' },
-  { label: 'Pending Registrations', value: '186', icon: 'check', tone: 'red', badge: 'Action Req.' },
+  { label: 'Registered Users', value: '166', icon: 'users', tone: 'teal', badge: '4 User Roles', to: '/Admin/User' },
+  { label: 'Managed Tournaments', value: '4', icon: 'trophy', tone: 'amber', badge: '2 Accepting Entries', to: '/Admin/ManageTournaments' },
+  { label: 'Pending Registrations', value: '8', icon: 'check', tone: 'red', badge: 'Review Required', to: '/Admin/ConfirmRegistration' },
 ] as const;
 
 const tournaments = [
-  { name: 'Royal Ascot Gold Cup', grade: 'Grade I Stakes', capacity: '18 / 20 registered' },
-  { name: 'Emerald Derby Classic', grade: 'Grade II Turf', capacity: '11 / 16 registered' },
+  { name: 'Royal Ascot Gold Cup', grade: 'Grade I Stakes', capacity: '18 / 20 registered', status: 'Registration Open', prize: '$2,500,000' },
+  { name: 'Emerald Derby Classic', grade: 'Grade II Turf', capacity: '11 / 16 registered', status: 'Closing Soon', prize: '$1,200,000' },
 ];
 
 const registrations = [
-  { stable: 'Highclere', rep: 'Rep: A. Spencer', tournament: 'Royal Ascot Gold Cup', status: 'Pending' },
-  { stable: 'Godolphin', rep: 'Rep: L. Hayes', tournament: 'Emerald Derby Classic', status: 'Confirmed' },
-  { stable: 'Coolmore', rep: 'Rep: J. Doyle', tournament: 'Oaks Invitational', status: 'Confirmed' },
+  { horse: 'Midnight Sovereign', owner: 'Alexander Sterling', tournament: 'Royal Ascot Gold Cup', status: 'Pending' },
+  { horse: 'Velvet Comet', owner: 'Claire Beaumont', tournament: 'Emerald Derby Classic', status: 'Pending' },
+  { horse: 'Northern Crown', owner: 'James Whitmore', tournament: 'Heritage Breeders Cup', status: 'Pending' },
+  { horse: 'Golden Gallop', owner: 'Julian Rossi', tournament: 'Preakness Stakes', status: 'Approved' },
 ];
 
 function Icon({ name }: { name: AdminIconName }) {
@@ -44,9 +45,17 @@ function Icon({ name }: { name: AdminIconName }) {
       'M2 19v-2.1c0-.7.2-1.3.6-1.8.4-.5.9-.9 1.5-1.2 1.1-.5 2.2-.9 3.4-1.2 1.1-.3 2.3-.4 3.5-.4s2.4.1 3.5.4c1.2.3 2.3.7 3.4 1.2.6.3 1.1.7 1.5 1.2.4.5.6 1.1.6 1.8V19H2Zm5-9.5c-.9 0-1.7-.3-2.3-1C4.1 7.9 3.8 7.1 3.8 6.2s.3-1.7.9-2.3c.6-.7 1.4-1 2.3-1s1.7.3 2.3 1c.6.6.9 1.4.9 2.3s-.3 1.7-.9 2.3c-.6.7-1.4 1-2.3 1Z',
   };
 
+  const outlinePaths: Partial<Record<AdminIconName, string>> = {
+    users: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 9v-1a7 7 0 0 1 14 0v1m1-16a3.5 3.5 0 0 1 0 7m1.5 3a6 6 0 0 1 3.5 5.5',
+    trophy: 'M8 4h8v5a4 4 0 0 1-8 0V4Zm0 2H5a2 2 0 0 0 2 4h1m8-4h3a2 2 0 0 1-2 4h-1m-4 3v5m-4 2h8',
+    check: 'M4 20v-2.5A4.5 4.5 0 0 1 8.5 13H12M8.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm7 6 2 2 4-5',
+  };
+
   return (
     <svg className="admin-home__icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d={paths[name]} />
+      {outlinePaths[name] ? (
+        <path d={outlinePaths[name]} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+      ) : <path d={paths[name]} />}
     </svg>
   );
 }
@@ -56,16 +65,25 @@ export default function AdminHome() {
     <AdminLayout active="dashboard" title="Admin Dashboard" topNavActive="overview">
       <div className="admin-home">
         <section className="admin-home__content">
+          <header className="admin-home__intro">
+            <div>
+              <span>Racing administration overview</span>
+              <h2>Heritage operations at a glance</h2>
+              <p>Monitor users, tournament activity, and registration approvals from one unified workspace.</p>
+            </div>
+            <Link to="/Admin/ManageTournaments/Create">Create Tournament</Link>
+          </header>
+
           <section className="admin-home__stats" aria-label="Admin statistics">
             {stats.map((item) => (
-              <article className="admin-home__stat-card" key={item.label}>
+              <Link className="admin-home__stat-card" key={item.label} to={item.to}>
                 <div className="admin-home__stat-head">
                   <div className={`admin-home__stat-icon admin-home__tone-${item.tone}`}><Icon name={item.icon} /></div>
                   <span className={`admin-home__badge admin-home__tone-${item.tone}`}>{item.badge}</span>
                 </div>
                 <div className="admin-home__stat-label">{item.label}</div>
                 <div className="admin-home__stat-value">{item.value}</div>
-              </article>
+              </Link>
             ))}
           </section>
 
@@ -79,16 +97,16 @@ export default function AdminHome() {
                 <article className="admin-home__tournament" key={tournament.name}>
                   <div className="admin-home__tournament-top">
                     <div className="admin-home__thumb"><Icon name="trophy" /></div>
-                    <span className="admin-home__badge admin-home__tone-teal">Live</span>
+                    <span className="admin-home__badge admin-home__tone-teal">{tournament.status}</span>
                   </div>
                   <h3>{tournament.name}</h3>
-                  <p>{tournament.grade}</p>
+                  <p>{tournament.grade} · {tournament.prize}</p>
                   <div className="admin-home__capacity">
                     <div>
                       <span>Capacity</span>
                       <strong>{tournament.capacity}</strong>
                     </div>
-                    <button type="button" aria-label={`Open ${tournament.name}`}>+</button>
+                    <Link aria-label={`Manage ${tournament.name}`} to={`/Admin/ManageTournaments/${encodeURIComponent(tournament.name)}`}>→</Link>
                   </div>
                 </article>
               ))}
@@ -98,28 +116,25 @@ export default function AdminHome() {
           <section className="admin-home__panel" aria-label="Registration queue">
             <div className="admin-home__panel-head">
               <h2>Recent Registrations</h2>
-              <div className="admin-home__table-tools">
-                <button type="button">Filter</button>
-                <button type="button">Export</button>
-              </div>
+              <Link to="/Admin/ConfirmRegistration">Review All Entries</Link>
             </div>
             <div className="admin-home__table">
               <div className="admin-home__row admin-home__row--head">
-                <div>Stable</div>
-                <div>Representative</div>
+                <div>Horse</div>
+                <div>Owner</div>
                 <div>Tournament</div>
                 <div>Status</div>
               </div>
               {registrations.map((registration) => (
-                <div className="admin-home__row" key={`${registration.stable}-${registration.tournament}`}>
-                  <div className="admin-home__horse"><span>{registration.stable.slice(0, 2).toUpperCase()}</span><strong>{registration.stable}</strong></div>
-                  <div><small>{registration.rep}</small></div>
+                <div className="admin-home__row" key={`${registration.horse}-${registration.tournament}`}>
+                  <div className="admin-home__horse"><span>{registration.horse.slice(0, 2).toUpperCase()}</span><strong>{registration.horse}</strong></div>
+                  <div><small>{registration.owner}</small></div>
                   <div>{registration.tournament}</div>
-                  <div><span className="admin-home__status">{registration.status}</span></div>
+                  <div><span className={`admin-home__status admin-home__status--${registration.status.toLowerCase()}`}>{registration.status}</span></div>
                 </div>
               ))}
             </div>
-            <button className="admin-home__history" type="button">View Complete History</button>
+            <Link className="admin-home__history" to="/Admin/ConfirmRegistration">View Complete Registration Queue</Link>
           </section>
         </section>
       </div>

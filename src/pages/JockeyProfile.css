@@ -246,7 +246,7 @@
   color: var(--jp-gold);
 }
 
-.jockey-profile__hire {
+.jockey-profile__invite {
   width: 176px;
   min-height: 56px;
   padding: 14px 48px;
@@ -262,9 +262,13 @@
   letter-spacing: 0.07em;
   line-height: 28px;
   text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
-.jockey-profile__hire:disabled {
+.jockey-profile__invite:disabled {
   cursor: default;
   opacity: 0.72;
 }

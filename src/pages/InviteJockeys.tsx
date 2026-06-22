@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Footer } from '../components/common/Footer.tsx';
 import { Header } from '../components/common/Header.tsx';
 import { getPageData, Jockey } from '../data/pageData.ts';
-import './HireJockey.css';
+import './InviteJockeys.css';
 
 const PLACEHOLDER_IMG = 'https://placehold.co/361x451';
 
@@ -53,60 +53,61 @@ function PriceIcon() {
 }
 
 function JockeyCard({ jockey }: { jockey: Jockey }) {
-  const profileHref = `/horseowner/hirejockey/${encodeURIComponent(jockey.name)}`;
+  const profileHref = `/HorseOwner/InviteJockeys/${encodeURIComponent(jockey.name)}`;
+  const inviteHref = `${profileHref}/invite`;
 
   return (
-    <div className="hire-jockey__card" aria-label={`Jockey ${jockey.name}`}>
-      <div className="hire-jockey__card-media">
+    <div className="invite-jockeys__card" aria-label={`Jockey ${jockey.name}`}>
+      <div className="invite-jockeys__card-media">
         <Link
           to={profileHref}
           aria-label={`View profile of ${jockey.name}`}
           style={{ display: 'block', width: '100%', textDecoration: 'none' }}
         >
-          <img className="hire-jockey__card-img" src={jockey.imageSrc || PLACEHOLDER_IMG} alt={jockey.name} />
+          <img className="invite-jockeys__card-img" src={jockey.imageSrc || PLACEHOLDER_IMG} alt={jockey.name} />
         </Link>
       </div>
 
-      <div className="hire-jockey__card-body">
+      <div className="invite-jockeys__card-body">
         <div>
-          <div className="hire-jockey__card-name">{jockey.name}</div>
+          <div className="invite-jockeys__card-name">{jockey.name}</div>
           <div style={{ marginTop: 8, display: 'inline-flex' }}>
-            <div className="hire-jockey__pill" aria-label={`Level ${jockey.level}`}>
+            <div className="invite-jockeys__pill" aria-label={`Level ${jockey.level}`}>
               {jockey.level}
             </div>
           </div>
 
           <div style={{ marginTop: 22 }}>
-            <div className="hire-jockey__meta-row">
+            <div className="invite-jockeys__meta-row">
               <AgeIcon />
-              <div className="hire-jockey__meta-text">{jockey.ageText}</div>
+              <div className="invite-jockeys__meta-text">{jockey.ageText}</div>
             </div>
 
-            <div className="hire-jockey__meta-row">
+            <div className="invite-jockeys__meta-row">
               <GenderIcon />
-              <div className="hire-jockey__meta-text">{jockey.gender}</div>
+              <div className="invite-jockeys__meta-text">{jockey.gender}</div>
             </div>
 
-            <div className="hire-jockey__meta-row">
+            <div className="invite-jockeys__meta-row">
               <ExperienceIcon />
-              <div className="hire-jockey__meta-text">{jockey.experienceText}</div>
+              <div className="invite-jockeys__meta-text">{jockey.experienceText}</div>
             </div>
 
-            <div className="hire-jockey__meta-row">
+            <div className="invite-jockeys__meta-row">
               <PriceIcon />
-              <div className="hire-jockey__meta-text">{jockey.priceText}</div>
+              <div className="invite-jockeys__meta-text">{jockey.priceText}</div>
             </div>
           </div>
         </div>
 
         <>
-          <Link to={profileHref} className="hire-jockey__profile-link" aria-label={`View profile of ${jockey.name}`}>
+          <Link to={profileHref} className="invite-jockeys__profile-link" aria-label={`View profile of ${jockey.name}`}>
             VIEW PROFILE
           </Link>
-          {jockey.variant === 'hired' ? (
-            <div className="hire-jockey__already-hired">ALREADY HIRED</div>
+          {jockey.variant === 'invited' ? (
+            <div className="invite-jockeys__already-invited">ALREADY INVITED</div>
           ) : (
-            <div className="hire-jockey__hire-btn">Hire Jockey</div>
+            <Link className="invite-jockeys__invite-btn" to={inviteHref}>Invite Jockey</Link>
           )}
         </>
       </div>
@@ -115,23 +116,23 @@ function JockeyCard({ jockey }: { jockey: Jockey }) {
 }
 
 
-export default function HireJockey() {
-  const { hireJockey } = getPageData();
+export default function InviteJockeys() {
+  const { inviteJockeys } = getPageData();
 
   return (
-    <div className="hire-jockey">
+    <div className="invite-jockeys">
       <Header />
 
-      <div className="hire-jockey__wrap">
-        <div className="hire-jockey__header">
-          <div className="hire-jockey__hero-title">{hireJockey.title}</div>
-          <div className="hire-jockey__hero-sub">{hireJockey.subtitle}</div>
+      <div className="invite-jockeys__wrap">
+        <div className="invite-jockeys__header">
+          <div className="invite-jockeys__hero-title">{inviteJockeys.title}</div>
+          <div className="invite-jockeys__hero-sub">{inviteJockeys.subtitle}</div>
         </div>
 
-        <div className="hire-jockey__controls" aria-label="Search and filter actions">
-          <div className="hire-jockey__search">
-            <div className="hire-jockey__input" role="textbox" aria-label="Search jockeys by name">
-              <div className="hire-jockey__input-icon" aria-hidden="true">
+        <div className="invite-jockeys__controls" aria-label="Search and filter actions">
+          <div className="invite-jockeys__search">
+            <div className="invite-jockeys__input" role="textbox" aria-label="Search jockeys by name">
+              <div className="invite-jockeys__input-icon" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
                     d="M16.6 18L10.3 11.7C9.8 12.1 9.225 12.4167 8.575 12.65C7.925 12.8833 7.23333 13 6.5 13C4.68333 13 3.14583 12.3708 1.8875 11.1125C0.629167 9.85417 0 8.31667 0 6.5C0 4.68333 0.629167 3.14583 1.8875 1.8875C3.14583 0.629167 4.68333 0 6.5 0C8.31667 0 9.85417 0.629167 11.1125 1.8875C12.3708 3.14583 13 4.68333 13 6.5C13 7.23333 12.8833 7.925 12.65 8.575C12.4167 9.225 12.1 9.8 11.7 10.3L18 16.6L16.6 18V18M6.5 11C7.75 11 8.8125 10.5625 9.6875 9.6875C10.5625 8.8125 11 7.75 11 6.5C11 5.25 10.5625 4.1875 9.6875 3.3125C8.8125 2.4375 7.75 2 6.5 2C5.25 2 4.1875 2.4375 3.3125 3.3125C2.4375 4.1875 2 5.25 2 6.5C2 7.75 2.4375 8.8125 3.3125 9.6875C4.1875 10.5625 5.25 11 6.5 11V11"
@@ -139,10 +140,10 @@ export default function HireJockey() {
                   />
                 </svg>
               </div>
-              <div className="hire-jockey__search-placeholder">Search jockeys by name...</div>
+              <div className="invite-jockeys__search-placeholder">Search jockeys by name...</div>
             </div>
 
-            <button className="hire-jockey__btn" type="button">
+            <button className="invite-jockeys__btn" type="button">
               <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M13.8333 15L8.58333 9.75C8.16667 10.0833 7.6875 10.3472 7.14583 10.5417C6.60417 10.7361 6.02778 10.8333 5.41667 10.8333C3.90278 10.8333 2.62153 10.309 1.57292 9.26042C0.524305 8.21181 0 6.93056 0 5.41667C0 3.90278 0.524305 2.62153 1.57292 1.57292C2.62153 0.524305 3.90278 0 5.41667 0C6.93056 0 8.21181 0.524305 9.26042 1.57292C10.309 2.62153 10.8333 3.90278 10.8333 5.41667C10.8333 6.02778 10.7361 6.60417 10.5417 7.14583C10.3472 7.6875 10.0833 8.16667 9.75 8.58333L15 13.8333L13.8333 15V15M5.41667 9.16667C6.45833 9.16667 7.34375 8.80208 8.07292 8.07292C8.80208 7.34375 9.16667 6.45833 9.16667 5.41667C9.16667 4.375 8.80208 3.48958 8.07292 2.76042C7.34375 2.03125 6.45833 1.66667 5.41667 1.66667C4.375 1.66667 3.48958 2.03125 2.76042 2.76042C2.03125 3.48958 1.66667 4.375 1.66667 5.41667C1.66667 6.45833 2.03125 7.34375 2.76042 8.07292C3.48958 8.80208 4.375 9.16667 5.41667 9.16667V9.16667"
@@ -152,20 +153,20 @@ export default function HireJockey() {
               <span>Search</span>
             </button>
 
-            <button className="hire-jockey__btn-secondary" type="button">
+            <button className="invite-jockeys__btn-secondary" type="button">
               <svg width="19" height="14" viewBox="0 0 19 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M0 13.3333V11C0 10.5278 0.121528 10.0938 0.364583 9.69792C0.607639 9.30208 0.930556 9 1.33333 8.79167C2.19444 8.36111 3.06944 8.03819 3.95833 7.82292C4.84722 7.60764 5.75 7.5 6.66667 7.5C7.58333 7.5 8.48611 7.60764 9.375 7.82292C10.2639 8.03819 11.1389 8.36111 12 8.79167C12.4028 9 12.7257 9.30208 12.9688 9.69792C13.2118 10.0938 13.3333 10.5278 13.3333 11V13.3333H0V13.3333M15 13.3333V10.8333C15 10.2222 14.8299 9.63542 14.4896 9.07292C14.1493 8.51042 13.6667 8.02778 13.0417 7.625C13.75 7.70833 14.4167 7.85069 15.0417 8.05208C15.6667 8.25347 16.25 8.5 16.7917 8.79167C17.2917 9.06944 17.6736 9.37847 17.9375 9.71875C18.2014 10.059 18.3333 10.4306 18.3333 10.8333V13.3333H15V13.3333M6.66667 6.66667C5.75 6.66667 4.96528 6.34028 4.3125 5.6875C3.65972 5.03472 3.33333 4.25 3.33333 3.33333C3.33333 2.41667 3.65972 1.63194 4.3125 0.979167C4.96528 0.326389 5.75 0 6.66667 0C7.58333 0 8.36806 0.326389 9.02083 0.979167C9.67361 1.63194 10 2.41667 10 3.33333C10 4.25 9.67361 5.03472 9.02083 5.6875C8.36806 6.34028 7.58333 6.66667 6.66667 6.66667V6.66667M15 3.33333C15 4.25 14.6736 5.03472 14.0208 5.6875C13.3681 6.34028 12.5833 6.66667 11.6667 6.66667C11.5139 6.66667 11.3194 6.64931 11.0833 6.61458C10.8472 6.57986 10.6528 6.54167 10.5 6.5C10.875 6.05556 11.1632 5.5625 11.3646 5.02083C11.566 4.47917 11.6667 3.91667 11.6667 3.33333C11.6667 2.75 11.566 2.1875 11.3646 1.64583C11.1632 1.10417 10.875 0.611111 10.5 0.166667C10.6944 0.0972222 10.8889 0.0520833 11.0833 0.03125C11.2778 0.0104167 11.4722 0 11.6667 0C12.5833 0 13.3681 0.326389 14.0208 0.979167C14.6736 1.63194 15 2.41667 15 3.33333V3.33333M1.66667 11.6667H11.6667V11C11.6667 10.8472 11.6285 10.7083 11.5521 10.5833C11.4757 10.4583 11.375 10.3611 11.25 10.2917C10.5 9.91667 9.74306 9.63542 8.97917 9.44792C8.21528 9.26042 7.44444 9.16667 6.66667 9.16667C5.88889 9.16667 5.11806 9.26042 4.35417 9.44792C3.59028 9.63542 2.83333 9.91667 2.08333 10.2917C1.95833 10.3611 1.85764 10.4583 1.78125 10.5833C1.70486 10.7083 1.66667 10.8472 1.66667 11V11.6667V11.6667M6.66667 5C7.125 5 7.51736 4.83681 7.84375 4.51042C8.17014 4.18403 8.33333 3.79167 8.33333 3.33333C8.33333 2.875 8.17014 2.48264 7.84375 2.15625C7.51736 1.82986 7.125 1.66667 6.66667 1.66667C6.20833 1.66667 5.81597 1.82986 5.48958 2.15625C5.16319 2.48264 5 2.875 5 3.33333C5 3.79167 5.16319 4.18403 5.48958 4.51042C5.81597 4.83681 6.20833 5 6.66667 5V5M6.66667 11.6667V11.6667V11.6667V11.6667V11.6667V11.6667V11.6667V11.6667V11.6667V11.6667V11.6667V11.6667V11.6667M6.66667 3.33333V3.33333V3.33333V3.33333V3.33333V3.33333V3.33333V3.33333V3.33333V3.33333"
                   fill="#004225"
                 />
               </svg>
-              <span>Hired Jockeys</span>
+              <span>Invited Jockeys</span>
             </button>
           </div>
         </div>
 
-        <div className="hire-jockey__grid" aria-label="Jockey grid">
-          {hireJockey.jockeys.map((j) => (
+        <div className="invite-jockeys__grid" aria-label="Jockey grid">
+          {inviteJockeys.jockeys.map((j) => (
             <JockeyCard key={j.name} jockey={j} />
           ))}
         </div>

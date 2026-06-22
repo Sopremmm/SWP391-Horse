@@ -131,7 +131,7 @@ export default function JockeyProfilePage() {
               <h2>Service Terms</h2>
               <div className="jockey-profile-page__service-row">
                 <label className="jockey-profile-page__price">
-                  <span>Hiring Price (Per Race)</span>
+                  <span>Invitation Rate (Per Race)</span>
                   <div>
                     <strong>GBP</strong>
                     <input defaultValue="450.00" inputMode="decimal" />

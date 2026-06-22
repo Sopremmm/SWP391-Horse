@@ -2,41 +2,46 @@ import React from 'react';
 import AdminLayout from '../components/admin/AdminLayout.tsx';
 import './AdminConfirmRegistration.css';
 
-type RegistrationStatus = 'Pending' | 'Approved' | 'Rejected';
+type RegistrationStatus = 'Pending' | 'Approved' | 'Declined';
 type StatusFilter = 'All Entries' | RegistrationStatus;
 
 type Registration = {
   id: number;
   tournament: string;
   horse: string;
+  breedAge: string;
   owner: string;
-  jockey: string;
   accent: string;
   status: RegistrationStatus;
 };
 
 const initialRegistrations: Registration[] = [
-  { id: 1, tournament: 'Royal Ascot Gold Cup', horse: 'Midnight Sovereign', owner: 'Alexander Sterling', jockey: 'Elena Vance', accent: '#775a19', status: 'Pending' },
-  { id: 2, tournament: 'The Dubai World Cup', horse: 'Silver Shadow', owner: 'Arthur Sterling', jockey: 'Marcus Thorne', accent: '#004225', status: 'Rejected' },
-  { id: 3, tournament: 'Preakness Stakes', horse: 'Golden Gallop', owner: 'Julian Rossi', jockey: 'Leo Brooks', accent: '#002a15', status: 'Approved' },
-  { id: 4, tournament: 'Emerald Derby Classic', horse: 'Velvet Comet', owner: 'Claire Beaumont', jockey: 'Amelia Hart', accent: '#526d50', status: 'Pending' },
-  { id: 5, tournament: 'Heritage Breeders Cup', horse: 'Northern Crown', owner: 'James Whitmore', jockey: 'Theo Grant', accent: '#895f32', status: 'Pending' },
-  { id: 6, tournament: 'Winter Solstice Sprint', horse: 'Crimson Legacy', owner: 'Sofia Moretti', jockey: 'Daniel Reed', accent: '#7c2d12', status: 'Approved' },
-  { id: 7, tournament: 'King George Stakes', horse: 'Windswept Honor', owner: 'George Fairchild', jockey: 'Maya Collins', accent: '#365314', status: 'Pending' },
-  { id: 8, tournament: 'Belmont Heritage Run', horse: 'Noble Whisper', owner: 'Isabelle Laurent', jockey: 'Noah Bennett', accent: '#475569', status: 'Approved' },
-  { id: 9, tournament: 'Grand National Trial', horse: 'Ironwood Prince', owner: 'Henry Ashford', jockey: 'Lucas Vale', accent: '#713f12', status: 'Rejected' },
-  { id: 10, tournament: 'Royal Ascot Gold Cup', horse: 'Dawn’s Promise', owner: 'Victoria Wells', jockey: 'Emma Rhodes', accent: '#9f1239', status: 'Pending' },
-  { id: 11, tournament: 'The Dubai World Cup', horse: 'Desert Anthem', owner: 'Omar Al-Fayed', jockey: 'Ethan Cole', accent: '#a16207', status: 'Pending' },
-  { id: 12, tournament: 'Preakness Stakes', horse: 'Secretariat Blue', owner: 'Oliver Price', jockey: 'Ava Monroe', accent: '#1e3a8a', status: 'Pending' },
+  { id: 1, tournament: 'Royal Ascot Gold Cup', horse: 'Midnight Sovereign', breedAge: 'Thoroughbred · 5yo Stallion', owner: 'Alexander Sterling', accent: '#775a19', status: 'Pending' },
+  { id: 2, tournament: 'The Dubai World Cup', horse: 'Silver Shadow', breedAge: 'Arabian · 4yo Mare', owner: 'Arthur Sterling', accent: '#004225', status: 'Declined' },
+  { id: 3, tournament: 'Preakness Stakes', horse: 'Golden Gallop', breedAge: 'Thoroughbred · 6yo Stallion', owner: 'Julian Rossi', accent: '#002a15', status: 'Approved' },
+  { id: 4, tournament: 'Emerald Derby Classic', horse: 'Velvet Comet', breedAge: 'Thoroughbred · 3yo Mare', owner: 'Claire Beaumont', accent: '#526d50', status: 'Pending' },
+  { id: 5, tournament: 'Heritage Breeders Cup', horse: 'Northern Crown', breedAge: 'Warmblood · 5yo Stallion', owner: 'James Whitmore', accent: '#895f32', status: 'Pending' },
+  { id: 6, tournament: 'Winter Solstice Sprint', horse: 'Crimson Legacy', breedAge: 'Thoroughbred · 4yo Gelding', owner: 'Sofia Moretti', accent: '#7c2d12', status: 'Approved' },
+  { id: 7, tournament: 'King George Stakes', horse: 'Windswept Honor', breedAge: 'Arabian Cross · 5yo Mare', owner: 'George Fairchild', accent: '#365314', status: 'Pending' },
+  { id: 8, tournament: 'Belmont Heritage Run', horse: 'Noble Whisper', breedAge: 'Thoroughbred · 3yo Stallion', owner: 'Isabelle Laurent', accent: '#475569', status: 'Approved' },
+  { id: 9, tournament: 'Grand National Trial', horse: 'Ironwood Prince', breedAge: 'Warmblood · 6yo Gelding', owner: 'Henry Ashford', accent: '#713f12', status: 'Declined' },
+  { id: 10, tournament: 'Royal Ascot Gold Cup', horse: 'Dawn’s Promise', breedAge: 'Thoroughbred · 4yo Mare', owner: 'Victoria Wells', accent: '#9f1239', status: 'Pending' },
+  { id: 11, tournament: 'The Dubai World Cup', horse: 'Desert Anthem', breedAge: 'Arabian · 5yo Stallion', owner: 'Omar Al-Fayed', accent: '#a16207', status: 'Pending' },
+  { id: 12, tournament: 'Preakness Stakes', horse: 'Secretariat Blue', breedAge: 'Thoroughbred · 3yo Stallion', owner: 'Oliver Price', accent: '#1e3a8a', status: 'Pending' },
+  { id: 13, tournament: 'Emerald Derby Classic', horse: 'Autumn Regent', breedAge: 'Thoroughbred · 5yo Gelding', owner: 'Helena Ward', accent: '#166534', status: 'Approved' },
+  { id: 14, tournament: 'Heritage Breeders Cup', horse: 'Ivory Monarch', breedAge: 'Arabian Cross · 4yo Stallion', owner: 'Edward Sinclair', accent: '#854d0e', status: 'Declined' },
+  { id: 15, tournament: 'King George Stakes', horse: 'Rosewood Star', breedAge: 'Thoroughbred · 3yo Mare', owner: 'Beatrice Cole', accent: '#be123c', status: 'Pending' },
+  { id: 16, tournament: 'Belmont Heritage Run', horse: 'Sapphire Crest', breedAge: 'Warmblood · 5yo Mare', owner: 'Nathaniel Brooks', accent: '#1d4ed8', status: 'Approved' },
 ];
 
-const PAGE_SIZE = 3;
-const filters: StatusFilter[] = ['All Entries', 'Pending', 'Approved', 'Rejected'];
+const PAGE_SIZE = 7;
+const filters: StatusFilter[] = ['All Entries', 'Pending', 'Approved', 'Declined'];
 
-function RegistrationIcon({ name }: { name: 'clipboard' | 'approved' | 'trophy' | 'eye' | 'chevron-left' | 'chevron-right' | 'close' }) {
+function RegistrationIcon({ name }: { name: 'clipboard' | 'approved' | 'declined' | 'trophy' | 'eye' | 'chevron-left' | 'chevron-right' | 'close' }) {
   const paths: Record<typeof name, string> = {
     clipboard: 'M9 2h6a3 3 0 0 1 3 3v3.3a7 7 0 0 0-2-.3V5h-2v3H6V5H4v14h4.3a7 7 0 0 0 1.1 2H4a2 2 0 0 1-2-2V5a3 3 0 0 1 3-3h1.2A3 3 0 0 1 9 0h3a3 3 0 0 1 2.8 2H15v2H9V2Zm6 20a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm.7-3.2 1.4-1.4-1.1-1.1V13h-2v4.1l1.7 1.7Z',
     approved: 'M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm-1.4 14.6 7-7-1.4-1.4-5.6 5.6-2.8-2.8-1.4 1.4 4.2 4.2Z',
+    declined: 'M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm-3.6 14 3.6-3.6 3.6 3.6 1.4-1.4-3.6-3.6L17 7.4 15.6 6 12 9.6 8.4 6 7 7.4l3.6 3.6L7 14.6 8.4 16Z',
     trophy: 'M7 21v-2h4v-3.1c-.9-.2-1.7-.6-2.4-1.2-.7-.6-1.2-1.3-1.5-2.1-1.4-.2-2.5-.8-3.4-1.8C2.8 9.8 2.3 8.6 2.3 7.2V6c0-.6.2-1.1.6-1.5.4-.4.9-.6 1.5-.6H7V2h10v1.9h2.6c.6 0 1.1.2 1.5.6.4.4.6.9.6 1.5v1.2c0 1.4-.5 2.6-1.4 3.6-.9 1-2.1 1.6-3.4 1.8-.3.8-.8 1.5-1.5 2.1-.7.6-1.5 1-2.4 1.2V19h4v2H7Z',
     eye: 'M12 5c5 0 9.3 2.9 11 7-1.7 4.1-6 7-11 7S2.7 16.1 1 12c1.7-4.1 6-7 11-7Zm0 2c-3.8 0-7.2 2-8.7 5 1.5 3 4.9 5 8.7 5s7.2-2 8.7-5C19.2 9 15.8 7 12 7Zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z',
     'chevron-left': 'm15.4 7.4-1.4-1.4-6 6 6 6 1.4-1.4-4.6-4.6 4.6-4.6Z',
@@ -64,6 +69,17 @@ export default function AdminConfirmRegistration() {
   const pageRows = visibleRegistrations.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   const pendingCount = registrations.filter((item) => item.status === 'Pending').length;
   const approvedCount = registrations.filter((item) => item.status === 'Approved').length;
+  const declinedCount = registrations.filter((item) => item.status === 'Declined').length;
+
+  React.useEffect(() => {
+    setRegistrations((current) =>
+      current.map((item) =>
+        String(item.status).toLowerCase() === 'rejected'
+          ? { ...item, status: 'Declined' }
+          : item,
+      ),
+    );
+  }, []);
 
   React.useEffect(() => {
     if (!toast) return undefined;
@@ -104,6 +120,10 @@ export default function AdminConfirmRegistration() {
               <span className="admin-confirm-registration__stat-icon"><RegistrationIcon name="approved" /></span>
               <div><small>Approved entries</small><strong>{approvedCount} Entries</strong></div>
             </article>
+            <article className="is-declined">
+              <span className="admin-confirm-registration__stat-icon"><RegistrationIcon name="declined" /></span>
+              <div><small>Declined entries</small><strong>{declinedCount} Entries</strong></div>
+            </article>
           </section>
 
           <section className="admin-confirm-registration__filter" aria-label="Filter registrations by status">
@@ -126,7 +146,7 @@ export default function AdminConfirmRegistration() {
             <div className="admin-confirm-registration__table-scroll">
               <div className="admin-confirm-registration__table">
                 <div className="admin-confirm-registration__table-head" role="row">
-                  <span>Tournament</span><span>Horse</span><span>Jockey</span><span>Status / Actions</span>
+                  <span>Tournament</span><span>Horse</span><span>Owner</span><span>Status / Actions</span>
                 </div>
                 <div className="admin-confirm-registration__table-body">
                   {pageRows.length ? pageRows.map((registration) => (
@@ -137,16 +157,16 @@ export default function AdminConfirmRegistration() {
                       </div>
                       <div className="admin-confirm-registration__horse">
                         <strong>{registration.horse}</strong>
-                        <small>{registration.owner}</small>
+                        <small>{registration.breedAge}</small>
                       </div>
-                      <div className="admin-confirm-registration__jockey">
+                      <div className="admin-confirm-registration__owner">
                         <i style={{ background: registration.accent }} />
-                        <span>{registration.jockey}</span>
+                        <span>{registration.owner}</span>
                       </div>
                       <div className="admin-confirm-registration__row-actions">
                         {registration.status === 'Pending' ? (
                           <>
-                            <button className="is-decline" type="button" onClick={() => updateStatus(registration.id, 'Rejected')}>Decline</button>
+                            <button className="is-decline" type="button" onClick={() => updateStatus(registration.id, 'Declined')}>Decline</button>
                             <button className="is-accept" type="button" onClick={() => updateStatus(registration.id, 'Approved')}>Accept</button>
                           </>
                         ) : (
@@ -193,13 +213,13 @@ export default function AdminConfirmRegistration() {
               <h2 id="registration-detail-title">{selected.horse}</h2>
               <dl>
                 <div><dt>Tournament</dt><dd>{selected.tournament}</dd></div>
+                <div><dt>Breed / Age</dt><dd>{selected.breedAge}</dd></div>
                 <div><dt>Owner</dt><dd>{selected.owner}</dd></div>
-                <div><dt>Jockey</dt><dd>{selected.jockey}</dd></div>
                 <div><dt>Certification</dt><dd>Pedigree and ownership documents verified</dd></div>
               </dl>
               {selected.status === 'Pending' ? (
                 <div className="admin-confirm-registration__modal-actions">
-                  <button type="button" onClick={() => updateStatus(selected.id, 'Rejected')}>Decline registration</button>
+                  <button type="button" onClick={() => updateStatus(selected.id, 'Declined')}>Decline registration</button>
                   <button type="button" onClick={() => updateStatus(selected.id, 'Approved')}>Approve registration</button>
                 </div>
               ) : null}
