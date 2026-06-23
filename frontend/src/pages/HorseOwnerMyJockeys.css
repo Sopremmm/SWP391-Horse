@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+.jockey-invitations {
+  --ji-green: #003d22;
+  --ji-dark: #002a15;
+  --ji-text: #535a54;
+  --ji-line: #dddcd7;
+  --ji-paper: #fbfaf8;
+  min-height: 100vh;
+  background: var(--ji-paper);
+  color: var(--ji-text);
+  font-family: Manrope, Arial, sans-serif;
+}
+.jockey-invitations *,
+.jockey-invitations *::before,
+.jockey-invitations *::after { box-sizing: border-box; }
+.jockey-invitations svg { width: 1em; height: 1em; fill: currentColor; display: block; }
+
+.jockey-invitations__main {
+  width: min(100%, 1280px); min-height: 1545px; margin: 0 auto; padding: 48px 64px 384px;
+  display: grid; align-content: start; gap: 16px;
+}
+.jockey-invitations__breadcrumb { display: flex; align-items: center; gap: 9px; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.jockey-invitations__breadcrumb a { color: #797f79; text-decoration: none; }
+.jockey-invitations__breadcrumb strong { color: var(--ji-dark); }
+
+.jockey-invitations__hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; }
+.jockey-invitations__hero h1 {
+  margin: 0; color: var(--ji-dark); font-family: 'EB Garamond', Georgia, serif;
+  font-size: 32px; font-weight: 600; line-height: 40px;
+}
+.jockey-invitations__hero p { max-width: 680px; margin: 4px 0 0; font-size: 14px; line-height: 20px; }
+.jockey-invitations__hero > a {
+  min-height: 48px; padding: 12px 32px; background: var(--ji-dark); color: #fff;
+  display: inline-flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 800; text-decoration: none; white-space: nowrap;
+}
+.jockey-invitations__hero > a svg { width: 14px; height: 14px; }
+
+.jockey-invitations__metrics { padding-top: 32px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.jockey-invitations__metrics article {
+  min-height: 184px; padding: 32px; border: 1px solid #e2e0dc; border-radius: 4px; background: #fff; display: grid; align-content: start; gap: 8px;
+}
+.jockey-invitations__metrics article > div { display: flex; justify-content: space-between; align-items: flex-start; }
+.jockey-invitations__metrics article > div span { color: #7d827d; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.jockey-invitations__metrics article > div svg { width: 20px; height: 20px; color: var(--ji-green); }
+.jockey-invitations__metrics article:nth-child(2) > div svg { color: #775a19; }
+.jockey-invitations__metrics strong {
+  color: var(--ji-dark); font-family: 'EB Garamond', Georgia, serif; font-size: 48px; font-weight: 600; line-height: 56px;
+}
+.jockey-invitations__metrics small { font-size: 11px; font-weight: 800; letter-spacing: .03em; }
+.jockey-invitations__metrics small.is-positive { color: #15803d; display: flex; align-items: center; gap: 4px; }
+.jockey-invitations__metrics small svg { width: 14px; height: 8px; }
+
+.jockey-invitations__table-card {
+  margin-top: 32px; overflow: hidden; border: 1px solid #e2e0dc; border-radius: 4px; background: #fff;
+}
+.jockey-invitations__table-card > header {
+  min-height: 92px; padding: 24px; border-bottom: 1px solid #e2e0dc; background: #f5f4f1;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+}
+.jockey-invitations__table-card h2 { margin: 0; color: var(--ji-dark); font-size: 20px; line-height: 28px; }
+.jockey-invitations__tools { display: flex; align-items: center; gap: 16px; }
+.jockey-invitations__tools label {
+  width: 240px; height: 40px; position: relative; border: 1px solid #cbcfc9; background: #fff; display: flex; align-items: center;
+}
+.jockey-invitations__tools label svg { position: absolute; left: 12px; width: 15px; height: 15px; color: #717971; }
+.jockey-invitations__tools input { width: 100%; height: 100%; padding: 0 12px 0 40px; border: 0; background: transparent; font: inherit; font-size: 13px; outline: 0; }
+.jockey-invitations__filter-wrap { position: relative; }
+.jockey-invitations__filter-wrap > button { height: 40px; padding: 0 16px; border: 1px solid #cbcfc9; background: transparent; color: var(--ji-text); cursor: pointer; display: flex; align-items: center; gap: 8px; font: inherit; }
+.jockey-invitations__filter-wrap > button svg { width: 15px; height: 10px; }
+.jockey-invitations__filter-menu {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 10; width: 150px; padding: 6px;
+  border: 1px solid #dddcd7; background: #fff; box-shadow: 0 12px 28px rgba(0, 0, 0, .12);
+}
+.jockey-invitations__filter-menu button { width: 100%; padding: 9px 10px; border: 0; background: transparent; color: var(--ji-text); cursor: pointer; font: inherit; text-align: left; }
+.jockey-invitations__filter-menu button.is-active { background: #ecfdf5; color: var(--ji-dark); font-weight: 800; }
+
+.jockey-invitations__table-scroll { overflow-x: auto; }
+.jockey-invitations__table { min-width: 1060px; }
+.jockey-invitations__table-head,
+.jockey-invitations__table-body article {
+  display: grid; grid-template-columns: 1.25fr 1.25fr 1fr .8fr .75fr .75fr; align-items: center;
+}
+.jockey-invitations__table-head { min-height: 52px; border-bottom: 1px solid #cbcfc9; }
+.jockey-invitations__table-head span { padding: 16px 24px; color: #7d827d; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.jockey-invitations__table-head span:last-child { text-align: right; }
+.jockey-invitations__table-body article { min-height: 84px; border-top: 1px solid #e7e5e1; }
+.jockey-invitations__table-body article:first-child { border-top: 0; }
+.jockey-invitations__table-body article > * { min-width: 0; padding: 18px 24px; font-size: 14px; }
+.jockey-invitations__person { display: flex; align-items: center; gap: 12px; }
+.jockey-invitations__person img { width: 40px; height: 40px; border: 1px solid #c0c9c0; border-radius: 12px; object-fit: cover; }
+.jockey-invitations__person strong { color: var(--ji-dark); font-size: 15px; }
+.jockey-invitations__table-body i {
+  width: fit-content; padding: 5px 12px; border-radius: 999px; display: inline-flex;
+  font-size: 11px; font-style: normal; font-weight: 800; letter-spacing: .03em;
+}
+.jockey-invitations__table-body i.is-pending { background: #ffdda1; color: #806018; }
+.jockey-invitations__table-body i.is-accepted { background: #a7efc0; color: #176b37; }
+.jockey-invitations__table-body i.is-declined { background: #fecaca; color: #b91c1c; }
+.jockey-invitations__action { display: flex; justify-content: flex-end; }
+.jockey-invitations__action button,
+.jockey-invitations__action a { padding: 0; border: 0; background: transparent; color: #316948; cursor: pointer; font: inherit; font-size: 14px; font-weight: 800; text-decoration: none; white-space: nowrap; }
+.jockey-invitations__empty { min-height: 160px; color: #7d827d; display: grid; place-items: center; }
+
+.jockey-invitations__table-card > footer {
+  min-height: 68px; padding: 16px 24px; border-top: 1px solid #e2e0dc; background: #f5f4f1;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px; font-size: 13px;
+}
+.jockey-invitations__table-card > footer nav { display: flex; gap: 8px; }
+.jockey-invitations__table-card > footer button {
+  width: 34px; height: 34px; border: 1px solid #cdd1cb; background: transparent; color: #1b1c1a;
+  cursor: pointer; display: grid; place-items: center; font: inherit;
+}
+.jockey-invitations__table-card > footer button.is-active { background: var(--ji-dark); color: #fff; }
+.jockey-invitations__table-card > footer button:disabled { opacity: .42; cursor: not-allowed; }
+.jockey-invitations__table-card > footer svg { width: 18px; height: 18px; }
+
+.jockey-invitations__footer { min-height: 152px; background: var(--ji-dark); color: #fff; }
+.jockey-invitations__footer > div {
+  width: min(100%, 1280px); min-height: 152px; margin: 0 auto; padding: 48px 64px;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 40px;
+}
+.jockey-invitations__footer h2 { margin: 0; font-family: 'EB Garamond', Georgia, serif; font-size: 24px; font-weight: 500; }
+.jockey-invitations__footer section strong { color: rgba(255, 255, 255, .58); display: block; margin-top: 7px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.jockey-invitations__footer nav { display: flex; gap: 32px; }
+.jockey-invitations__footer a { color: rgba(255, 255, 255, .76); font-size: 13px; text-decoration: none; white-space: nowrap; }
+.jockey-invitations__footer p { justify-self: end; margin: 0; color: rgba(255, 255, 255, .76); font-size: 11px; font-weight: 800; white-space: nowrap; }
+.jockey-invitations__toast {
+  position: fixed; right: 28px; bottom: 28px; z-index: 80; max-width: min(390px, calc(100vw - 40px));
+  padding: 15px 20px; background: var(--ji-dark); color: #fff; box-shadow: 0 16px 38px rgba(0, 0, 0, .2); font-size: 14px; font-weight: 700;
+}
+
+@media (max-width: 1050px) {
+  .jockey-invitations__main { min-height: auto; padding: 44px 32px 96px; }
+  .jockey-invitations__metrics { grid-template-columns: 1fr; }
+  .jockey-invitations__footer > div { grid-template-columns: 1fr; justify-items: start; }
+  .jockey-invitations__footer p { justify-self: start; }
+}
+@media (max-width: 700px) {
+  .jockey-invitations__brand { font-size: 22px; }
+  .jockey-invitations__main { padding: 32px 18px 72px; }
+  .jockey-invitations__hero,
+  .jockey-invitations__table-card > header,
+  .jockey-invitations__table-card > footer { align-items: flex-start; flex-direction: column; }
+  .jockey-invitations__hero > a { width: 100%; justify-content: center; }
+  .jockey-invitations__tools { width: 100%; align-items: stretch; flex-direction: column; }
+  .jockey-invitations__tools label { width: 100%; }
+  .jockey-invitations__filter-wrap > button { width: 100%; justify-content: center; }
+  .jockey-invitations__footer > div { padding: 40px 20px; }
+  .jockey-invitations__footer nav { flex-wrap: wrap; gap: 16px 24px; }
+}
