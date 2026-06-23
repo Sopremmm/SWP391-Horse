@@ -12,8 +12,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "topup_request", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"reference"}),
-        @UniqueConstraint(columnNames = {"bank_txn_id"})
+        @UniqueConstraint(columnNames = {"reference"})
 })
 @Data
 @NoArgsConstructor
@@ -47,4 +46,3 @@ public class TopUpRequest {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 }
-

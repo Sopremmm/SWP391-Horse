@@ -51,9 +51,40 @@ public class SchemaPatchRunner implements CommandLineRunner {
                     paid_at DATETIME2 NULL,
                     CONSTRAINT FK_topup_request_user FOREIGN KEY (user_id) REFERENCES dbo.[user](id),
                     CONSTRAINT UQ_topup_request_reference UNIQUE (reference),
-                    CONSTRAINT UQ_topup_request_bank_txn_id UNIQUE (bank_txn_id),
                     CONSTRAINT CK_topup_request_status CHECK (status IN ('PENDING', 'PAID', 'EXPIRED', 'CANCELLED'))
                 )
+                """);
+
+        jdbcTemplate.execute("""
+                IF EXISTS (
+                    SELECT 1
+                    FROM sys.key_constraints
+                    WHERE parent_object_id = OBJECT_ID(N'dbo.topup_request')
+                      AND name = N'UQ_topup_request_bank_txn_id'
+                )
+                ALTER TABLE dbo.topup_request DROP CONSTRAINT UQ_topup_request_bank_txn_id
+                """);
+
+        jdbcTemplate.execute("""
+                IF EXISTS (
+                    SELECT 1
+                    FROM sys.indexes
+                    WHERE object_id = OBJECT_ID(N'dbo.topup_request')
+                      AND name = N'UQ_topup_request_bank_txn_id'
+                )
+                DROP INDEX UQ_topup_request_bank_txn_id ON dbo.topup_request
+                """);
+
+        jdbcTemplate.execute("""
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM sys.indexes
+                    WHERE object_id = OBJECT_ID(N'dbo.topup_request')
+                      AND name = N'UX_topup_request_bank_txn_id'
+                )
+                CREATE UNIQUE INDEX UX_topup_request_bank_txn_id
+                    ON dbo.topup_request(bank_txn_id)
+                    WHERE bank_txn_id IS NOT NULL
                 """);
 
         jdbcTemplate.execute("""

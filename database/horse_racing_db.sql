@@ -50,11 +50,16 @@ CREATE TABLE topup_request (
     amount DECIMAL(15,2) NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'PAID', 'EXPIRED', 'CANCELLED')),
     reference VARCHAR(64) NOT NULL UNIQUE,
-    bank_txn_id VARCHAR(64) NULL UNIQUE,
+    bank_txn_id VARCHAR(64) NULL,
     created_at DATETIME2 DEFAULT GETDATE(),
     paid_at DATETIME2 NULL,
     FOREIGN KEY (user_id) REFERENCES [user](id) ON DELETE NO ACTION
 );
+GO
+
+CREATE UNIQUE INDEX UX_topup_request_bank_txn_id
+ON topup_request(bank_txn_id)
+WHERE bank_txn_id IS NOT NULL;
 GO
 
 CREATE TABLE audit_log (

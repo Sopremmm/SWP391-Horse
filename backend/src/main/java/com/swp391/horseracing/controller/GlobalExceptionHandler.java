@@ -4,6 +4,7 @@ import com.swp391.horseracing.dto.response.MessageResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -51,6 +52,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<MessageResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return ResponseEntity.badRequest().body(new MessageResponse("Invalid parameter: " + ex.getName()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<MessageResponse> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new MessageResponse("Access Denied"));
     }
 
     @ExceptionHandler(RuntimeException.class)
