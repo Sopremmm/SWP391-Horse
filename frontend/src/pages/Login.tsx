@@ -3,6 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import HorseRaceCartoon from '../assets/images/RunningHorse.jpg';
 import './Login.css';
 
+type JwtResponse = {
+  token: string;
+  type?: string;
+  id: number;
+  email: string;
+  fullName: string;
+  roles: string[];
+};
+
 const UserIcon = () => (
   <svg width="14" height="20" viewBox="0 0 14 20" fill="none" aria-hidden="true">
     <path
@@ -41,10 +50,79 @@ const Login: React.FC = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string>('');
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const resolveLandingRoute = (roles: string[] | null | undefined) => {
+    const normalized = (roles ?? []).map((role) => role.trim().toUpperCase());
+    const has = (role: string) => normalized.includes(role) || normalized.includes(`ROLE_${role}`);
+
+    if (has('ADMIN')) return '/admin';
+    if (has('JOCKEY')) return '/Jockey/Home';
+    if (has('HORSE_OWNER')) return '/HorseOwnerHome';
+    return '/Homepage';
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    navigate('/HorseOwnerHome');
+    if (submitting) return;
+
+    setSubmitting(true);
+    setError('');
+
+    try {
+      const apiBaseUrl = (process.env.REACT_APP_API_BASE_URL ?? '').trim();
+      const endpoint = apiBaseUrl ? `${apiBaseUrl}/api/auth/signin` : '/api/auth/signin';
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: identifier, password }),
+      });
+
+      if (!res.ok) {
+        let message = 'Dang nhap that bai. Vui long thu lai.';
+        try {
+          const contentType = res.headers.get('content-type') ?? '';
+          if (contentType.includes('application/json')) {
+            const data = (await res.json()) as { message?: unknown };
+            if (typeof data?.message === 'string' && data.message.trim()) {
+              message = data.message.trim();
+            }
+          } else {
+            const text = (await res.text()).trim();
+            if (text) message = text;
+          }
+        } catch {
+          // ignore parse errors
+        }
+
+        if (message.toLowerCase().includes('invalid email or password')) {
+          setError('Email hoac mat khau khong dung.');
+        } else {
+          setError(message);
+        }
+        return;
+      }
+
+      const json = (await res.json()) as JwtResponse;
+      if (!json?.token) {
+        setError('Dang nhap that bai. Vui long thu lai.');
+        return;
+      }
+
+      window.localStorage.setItem('token', json.token);
+      window.localStorage.setItem('roles', JSON.stringify(json.roles ?? []));
+      window.localStorage.setItem('userId', String(json.id));
+      window.localStorage.setItem('email', json.email ?? '');
+      window.localStorage.setItem('fullName', json.fullName ?? '');
+
+      navigate(resolveLandingRoute(json.roles), { replace: true });
+    } catch {
+      setError('Khong the ket noi server. Vui long thu lai.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -66,16 +144,16 @@ const Login: React.FC = () => {
               <p>Sign in to manage your prestigious stable.</p>
             </div>
 
-            <form className="login-page__form" onSubmit={handleSubmit}>
+            <form className="login-page__form" onSubmit={handleSubmit} aria-busy={submitting}>
               <label className="login-page__field">
-                <span>Email or Username</span>
+                <span>Email</span>
                 <div className="login-page__input-wrap">
                   <input
-                    type="text"
+                    type="email"
                     value={identifier}
                     onChange={(event) => setIdentifier(event.target.value)}
-                    placeholder="Enter your credentials"
-                    autoComplete="username"
+                    placeholder="Enter your email"
+                    autoComplete="email"
                     required
                   />
                   <UserIcon />
@@ -108,9 +186,11 @@ const Login: React.FC = () => {
               </label>
 
               <button className="login-page__submit" type="submit">
-                Sign In
+                {submitting ? 'Signing In...' : 'Sign In'}
                 <ArrowIcon />
               </button>
+
+              {error ? <p className="login-page__error" role="alert">{error}</p> : null}
             </form>
 
             <div className="login-page__alternate">

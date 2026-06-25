@@ -247,6 +247,17 @@
   background: var(--login-green);
 }
 
+.login-page__error {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(197, 48, 48, 0.35);
+  background: rgba(197, 48, 48, 0.06);
+  color: #7a1f1f;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  border-radius: 2px;
+}
+
 .login-page__alternate {
   display: grid;
   justify-items: center;

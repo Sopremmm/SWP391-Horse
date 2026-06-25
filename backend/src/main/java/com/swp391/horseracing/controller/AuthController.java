@@ -26,6 +26,9 @@ public class AuthController {
         try {
             JwtResponse jwtResponse = authService.authenticateUser(loginRequest);
             return ResponseEntity.ok(jwtResponse);
+        } catch (RuntimeException e) {
+            log.warn("Signin rejected for {}: {}", loginRequest.getEmail(), e.getMessage());
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         } catch (Exception e) {
             log.error("Signin failed for {}", loginRequest.getEmail(), e);
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Invalid email or password!"));
