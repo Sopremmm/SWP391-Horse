@@ -1,0 +1,333 @@
+.referee-races-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.referee-races-page h1 {
+  margin: 0;
+  color: #003b1b;
+  font-family: Georgia, 'Libre Caslon Text', 'Times New Roman', serif;
+  font-size: clamp(36px, 4vw, 44px);
+  line-height: 1.12;
+}
+
+.referee-races-tabs {
+  min-height: 50px;
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  border-bottom: 1px solid #c0c9be;
+}
+
+.referee-races-tabs button {
+  position: relative;
+  min-width: 112px;
+  min-height: 50px;
+  padding: 0 32px;
+  border: 0;
+  background: transparent;
+  color: #404941;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.referee-races-tabs button.is-active {
+  color: #003b1b;
+}
+
+.referee-races-tabs button.is-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 3px;
+  background: #14532d;
+}
+
+.referee-races-card {
+  overflow: hidden;
+  border: 1px solid #c0c9be;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.referee-races-table {
+  min-width: 980px;
+}
+
+.referee-races-row {
+  min-height: 118px;
+  display: grid;
+  grid-template-columns: 150px 1.65fr 1.45fr 0.88fr 1.05fr 1.05fr 110px;
+  align-items: center;
+  gap: 16px;
+  padding: 0 26px;
+  border-top: 1px solid #e2e5de;
+}
+
+.referee-races-row:first-child {
+  border-top: 0;
+}
+
+.referee-races-row--head {
+  min-height: 58px;
+  background: #e8ebe5;
+  color: #404941;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.referee-races-date,
+.referee-races-address {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.referee-races-date svg,
+.referee-races-address svg {
+  flex: 0 0 auto;
+  color: #717970;
+}
+
+.referee-races-date strong {
+  color: #191c19;
+  font-size: 17px;
+  line-height: 22px;
+}
+
+.referee-races-date strong span {
+  display: block;
+}
+
+.referee-races-detail span {
+  display: block;
+  margin-bottom: 4px;
+  color: #855316;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 18px;
+  text-transform: uppercase;
+}
+
+.referee-races-detail strong {
+  display: block;
+  color: #003b1b;
+  font-family: Georgia, 'Libre Caslon Text', 'Times New Roman', serif;
+  font-size: 22px;
+  line-height: 26px;
+}
+
+.referee-races-address span,
+.referee-races-row > span,
+.referee-races-distance strong,
+.referee-races-distance span {
+  color: #404941;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.referee-races-address.is-verified svg,
+.referee-races-address.is-verified span {
+  color: #2f7a4c;
+  font-weight: 800;
+}
+
+.referee-races-distance strong,
+.referee-races-distance span {
+  display: block;
+}
+
+.referee-races-status {
+  width: max-content;
+  min-width: 96px;
+  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 999px;
+  font-size: 12px !important;
+  line-height: 14px !important;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.referee-races-status i {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.referee-races-status.is-live-now {
+  background: #c81e1e;
+  color: #ffffff !important;
+}
+
+.referee-races-status.is-upcoming {
+  background: #ffbc76;
+  color: #855316 !important;
+}
+
+.referee-races-status.is-completed {
+  border: 1px solid #c0c9be;
+  background: #e1e3dd;
+  color: #7a827a !important;
+}
+
+.referee-races-row > a {
+  min-height: 40px;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: #003b1b;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.referee-races-row > a.is-disabled {
+  pointer-events: none;
+  background: #f0f1ee;
+  color: #b3b8b0;
+}
+
+.referee-races-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 2px 8px 10px;
+}
+
+.referee-races-pagination > span {
+  color: #404941;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.referee-races-pagination nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.referee-races-pagination button {
+  min-width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #c0c9be;
+  border-radius: 4px;
+  background: #f8faf4;
+  color: #404941;
+  font: inherit;
+  font-size: 16px;
+}
+
+.referee-races-pagination button.is-active {
+  border-color: #003b1b;
+  background: #003b1b;
+  color: #ffffff;
+}
+
+.referee-races-pagination nav span {
+  padding: 0 12px;
+  color: #404941;
+}
+
+.referee-races-summary {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.referee-races-summary__card {
+  min-height: 90px;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  border: 1px solid #c0c9be;
+  border-radius: 8px;
+  background: #e8ebe5;
+  color: #404941;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.referee-races-summary__card.is-green {
+  border-color: #14532d;
+  background: #14532d;
+  color: #8ec49c;
+}
+
+.referee-races-summary__card.is-warm {
+  border-color: #ffd3a8;
+  background: #ffd9b5;
+  color: #8a6a4d;
+}
+
+.referee-races-summary__card > span {
+  display: inline-flex;
+  color: currentColor;
+}
+
+.referee-races-summary__card p {
+  margin: 0;
+  color: currentColor;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.referee-races-summary__card strong {
+  display: block;
+  margin-top: 2px;
+  color: #191c19;
+  font-size: 24px;
+  line-height: 28px;
+}
+
+.referee-races-summary__card.is-green strong {
+  color: #8ec49c;
+}
+
+@media (max-width: 1120px) {
+  .referee-races-card {
+    overflow-x: auto;
+  }
+
+  .referee-races-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .referee-races-tabs {
+    overflow-x: auto;
+  }
+
+  .referee-races-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

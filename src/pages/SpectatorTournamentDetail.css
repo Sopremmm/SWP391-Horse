@@ -1,0 +1,488 @@
+.spectator-detail-page {
+  min-height: 100vh;
+  background: #ffffff;
+  color: #191c19;
+  font-family: Manrope, Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.spectator-detail-page *,
+.spectator-detail-page *::before,
+.spectator-detail-page *::after {
+  box-sizing: border-box;
+}
+
+.spectator-detail-main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 28px 112px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.spectator-detail-hero {
+  position: relative;
+  min-height: 400px;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.spectator-detail-hero img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.spectator-detail-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.spectator-detail-hero__overlay {
+  position: relative;
+  z-index: 1;
+  min-height: 400px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.spectator-detail-hero__overlay p {
+  margin: 0 0 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.spectator-detail-hero h1,
+.spectator-detail-section-title h2,
+.spectator-race-schedule h2,
+.spectator-final-card h4 {
+  font-family: Georgia, 'Libre Caslon Text', 'Times New Roman', serif;
+}
+
+.spectator-detail-hero h1 {
+  margin: 0 0 16px;
+  color: #ffffff;
+  font-size: clamp(42px, 6vw, 68px);
+  line-height: 1;
+}
+
+.spectator-detail-hero__meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.spectator-detail-hero__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.spectator-detail-bracket {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.spectator-detail-section-title {
+  padding-bottom: 16px;
+  border-bottom: 1px solid #c0c9be;
+}
+
+.spectator-detail-section-title h2,
+.spectator-race-schedule h2 {
+  margin: 0;
+  color: #003b1b;
+  font-size: 28px;
+  line-height: 36px;
+}
+
+.spectator-bracket-shell {
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.spectator-bracket-grid {
+  position: relative;
+  min-width: 1080px;
+  min-height: 640px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+
+.spectator-bracket-grid::before,
+.spectator-bracket-grid::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: calc((100% - 48px) / 6);
+  height: 1px;
+  background: #c0c9be;
+  opacity: 0.75;
+}
+
+.spectator-bracket-grid::before {
+  left: calc((100% - 48px) / 3);
+}
+
+.spectator-bracket-grid::after {
+  right: calc((100% - 48px) / 3);
+}
+
+.spectator-bracket-column {
+  position: relative;
+  padding-top: 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.spectator-bracket-column > h3 {
+  position: absolute;
+  inset: 0 0 auto;
+  margin: 0;
+  color: #404941;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 16px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.spectator-bracket-column--final > h3 {
+  color: #003b1b;
+}
+
+.spectator-bracket-column__stack {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.spectator-bracket-column--qualifying .spectator-bracket-column__stack {
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.spectator-bracket-column--semi .spectator-bracket-column__stack {
+  justify-content: center;
+  gap: 104px;
+}
+
+.spectator-bracket-column--final {
+  justify-content: center;
+}
+
+.spectator-bracket-node {
+  position: relative;
+  min-height: 142px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 4px;
+  background: #ffffff;
+  border: 2px solid rgba(192, 201, 190, 0.3);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.spectator-bracket-node.is-live {
+  border-color: #003b1b;
+}
+
+.spectator-bracket-node__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.spectator-bracket-node__top > span {
+  color: #404941;
+  font-size: 10px;
+  line-height: 15px;
+  text-transform: uppercase;
+}
+
+.spectator-bracket-node h3 {
+  margin: 0;
+  color: #191c19;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 20px;
+}
+
+.spectator-bracket-node.is-live h3 {
+  color: #003b1b;
+}
+
+.spectator-bracket-node__entry {
+  min-height: 40px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-left: 4px solid #003b1b;
+  border-radius: 2px;
+  background: #f2f4ee;
+}
+
+.spectator-bracket-node__entry span {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #e1e3dd;
+  color: #191c19;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.spectator-bracket-node__entry.is-winner span {
+  background: #fcd34d;
+}
+
+.spectator-bracket-node__entry.is-live {
+  background: rgba(0, 59, 27, 0.05);
+}
+
+.spectator-bracket-node__entry.is-live span {
+  background: #003b1b;
+  color: #ffffff;
+}
+
+.spectator-bracket-node__entry strong {
+  min-width: 0;
+  color: #191c19;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+
+.spectator-bracket-node a {
+  width: max-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #003b1b;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 15px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.spectator-detail-status {
+  width: max-content;
+  display: inline-flex;
+  align-items: center;
+  min-height: 16px;
+  padding: 0 4px;
+  border-radius: 2px;
+  background: #e7e9e3;
+  color: #404941;
+  font-size: 10px;
+  line-height: 15px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.spectator-detail-status.is-live {
+  background: #003b1b;
+  color: #ffffff;
+}
+
+.spectator-final-card {
+  position: relative;
+  z-index: 1;
+  min-height: 322px;
+  margin-top: auto;
+  margin-bottom: auto;
+  padding: 44px 26px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 6px;
+  background: #004b23;
+  box-shadow: 0 18px 36px rgba(0, 59, 27, 0.28);
+}
+
+.spectator-final-card__title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.spectator-final-card__title span {
+  color: #ffbc76;
+}
+
+.spectator-final-card h4 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 36px;
+  line-height: 1.05;
+}
+
+.spectator-final-card p {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.spectator-final-card__facts {
+  padding: 18px 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.spectator-final-card__facts span {
+  display: block;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 10px;
+  line-height: 15px;
+  text-transform: uppercase;
+}
+
+.spectator-final-card__facts strong {
+  color: #ffbc76;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.spectator-final-card__facts div:last-child strong {
+  color: #ffffff;
+}
+
+.spectator-final-card > a {
+  min-height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 4px;
+  background: #ffbc76;
+  color: #79490b;
+  font-size: 16px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.spectator-race-schedule {
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.spectator-race-schedule__table {
+  overflow: hidden;
+  border: 1px solid #e5ebe2;
+  border-radius: 0 0 16px 16px;
+}
+
+.spectator-race-schedule__row {
+  min-height: 84px;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1.2fr 1.1fr 0.8fr 0.9fr 0.6fr;
+  align-items: center;
+  gap: 24px;
+  border-top: 1px solid #c0c9be;
+}
+
+.spectator-race-schedule__row--head {
+  min-height: 48px;
+  border-top: 0;
+  background: #f2f4ee;
+  color: #596159;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.spectator-race-schedule__row strong {
+  color: #2b302c;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.spectator-race-schedule__row > a {
+  min-height: 38px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  border-radius: 4px;
+  background: #004b23;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .spectator-detail-main {
+    padding-inline: 18px;
+  }
+
+  .spectator-race-schedule {
+    overflow-x: auto;
+  }
+
+  .spectator-race-schedule__table {
+    min-width: 820px;
+  }
+}
+
+@media (max-width: 640px) {
+  .spectator-detail-main {
+    padding-top: 24px;
+    padding-bottom: 72px;
+  }
+
+  .spectator-detail-hero,
+  .spectator-detail-hero__overlay {
+    min-height: 360px;
+  }
+
+  .spectator-detail-hero__meta {
+    gap: 10px;
+    flex-direction: column;
+  }
+}

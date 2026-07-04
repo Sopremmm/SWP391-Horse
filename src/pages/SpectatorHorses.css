@@ -1,0 +1,432 @@
+.spectator-horses-page {
+  min-height: 100vh;
+  background: #f8faf4;
+  color: #191c19;
+  font-family: Manrope, Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.spectator-horses-page *,
+.spectator-horses-page *::before,
+.spectator-horses-page *::after {
+  box-sizing: border-box;
+}
+
+.spectator-horses-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 36px;
+}
+
+.spectator-horses-hero {
+  background: #003b1b;
+}
+
+.spectator-horses-hero__inner {
+  max-width: 1280px;
+  min-height: 260px;
+  margin: 0 auto;
+  padding: 34px 28px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.spectator-horses-hero__crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: rgba(135, 198, 149, 0.62);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.spectator-horses-hero__crumb strong {
+  color: #87c695;
+}
+
+.spectator-horses-hero h1 {
+  max-width: 860px;
+  margin: 10px 0 14px;
+  color: #ffffff;
+  font-family: Georgia, 'Libre Caslon Text', 'Times New Roman', serif;
+  font-size: clamp(42px, 5vw, 60px);
+  line-height: 1.06;
+}
+
+.spectator-horses-hero p {
+  max-width: 700px;
+  margin: 0;
+  color: #87c695;
+  font-size: 20px;
+  line-height: 1.45;
+}
+
+.spectator-horses-toolbar,
+.spectator-horses-card {
+  width: min(1240px, calc(100% - 40px));
+  margin: 0 auto;
+  border: 1px solid #c0c9be;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.spectator-horses-toolbar {
+  min-height: 76px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.spectator-horses-search {
+  position: relative;
+  width: min(320px, 100%);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: #717970;
+}
+
+.spectator-horses-search svg {
+  position: absolute;
+  left: 12px;
+}
+
+.spectator-horses-search input,
+.spectator-horses-sort select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #c0c9be;
+  border-radius: 4px;
+  background: #f2f4ee;
+  color: #191c19;
+  font: inherit;
+  font-size: 16px;
+}
+
+.spectator-horses-search input {
+  padding: 0 16px 0 40px;
+}
+
+.spectator-horses-search input::placeholder {
+  color: #6b7280;
+}
+
+.spectator-horses-sort {
+  position: relative;
+  width: 192px;
+  display: flex;
+  align-items: center;
+  color: #717970;
+}
+
+.spectator-horses-sort select {
+  appearance: none;
+  padding: 0 42px 0 16px;
+}
+
+.spectator-horses-sort svg {
+  position: absolute;
+  right: 12px;
+  pointer-events: none;
+}
+
+.spectator-horses-card {
+  overflow: hidden;
+}
+
+.spectator-horses-table {
+  min-width: 1040px;
+  padding-top: 32px;
+}
+
+.spectator-horses-row {
+  min-height: 96px;
+  display: grid;
+  grid-template-columns: 106px 2fr 1.55fr 1.3fr 1.08fr 1.65fr 92px;
+  align-items: center;
+  border-top: 1px solid #c0c9be;
+}
+
+.spectator-horses-row--head {
+  min-height: 48px;
+  border-top: 0;
+  border-bottom: 1px solid #c0c9be;
+  color: #404941;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.spectator-horses-row > * {
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.spectator-horses-row--head > span:nth-child(4),
+.spectator-horses-row--head > span:nth-child(5) {
+  text-align: center;
+}
+
+.spectator-horses-rank {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #404941;
+}
+
+.spectator-horses-rank span {
+  font-family: Georgia, 'Libre Caslon Text', 'Times New Roman', serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.spectator-horses-rank.is-featured {
+  color: #855316;
+}
+
+.spectator-horses-name {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.spectator-horses-image-link {
+  display: inline-flex;
+  padding: 0;
+  border-radius: 12px;
+}
+
+.spectator-horses-name img,
+.spectator-horses-placeholder {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  border: 1px solid #c0c9be;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.spectator-horses-placeholder {
+  display: inline-block;
+  background: #ecefe9;
+}
+
+.spectator-horses-name strong,
+.spectator-horses-name-link {
+  display: block;
+  color: #191c19;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 20px;
+  text-decoration: none;
+}
+
+.spectator-horses-name-link:hover {
+  color: #003b1b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.spectator-horses-name span,
+.spectator-horses-breed span,
+.spectator-horses-result span {
+  display: block;
+  color: #717970;
+}
+
+.spectator-horses-name span {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.spectator-horses-breed strong {
+  display: block;
+  color: #191c19;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.spectator-horses-breed span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.spectator-horses-ratio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.spectator-horses-ratio strong {
+  color: #003b1b;
+  font-size: 20px;
+  line-height: 24px;
+}
+
+.spectator-horses-ratio span {
+  width: 112px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #c0c9be;
+}
+
+.spectator-horses-ratio i {
+  display: block;
+  height: 100%;
+  background: #003b1b;
+}
+
+.spectator-horses-starts {
+  color: #191c19;
+  font-size: 16px;
+  text-align: center;
+}
+
+.spectator-horses-result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.spectator-horses-result strong {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.spectator-horses-result strong.is-green {
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.spectator-horses-result strong.is-gold {
+  border: 1px solid rgba(245, 158, 11, 0.24);
+  background: #fffbeb;
+  color: #a16207;
+}
+
+.spectator-horses-result strong.is-neutral {
+  border: 1px solid #c0c9be;
+  background: #f8faf4;
+  color: #5d665d;
+}
+
+.spectator-horses-result span {
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.spectator-horses-action {
+  width: 34px;
+  height: 34px;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #003b1b;
+  text-decoration: none;
+}
+
+.spectator-horses-pagination {
+  min-height: 64px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  background: #f2f4ee;
+  border-top: 1px solid #e1e7de;
+}
+
+.spectator-horses-pagination > span {
+  color: #596159;
+  font-size: 14px;
+}
+
+.spectator-horses-pagination nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spectator-horses-pagination button {
+  min-width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #404941;
+  font: inherit;
+  font-weight: 700;
+}
+
+.spectator-horses-pagination button.is-active {
+  background: #003b1b;
+  color: #ffffff;
+}
+
+.spectator-horses-pagination nav span {
+  color: #404941;
+}
+
+@media (max-width: 1040px) {
+  .spectator-horses-card {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .spectator-horses-hero__inner {
+    min-height: auto;
+    padding: 30px 18px;
+  }
+
+  .spectator-horses-toolbar,
+  .spectator-horses-card {
+    width: calc(100% - 32px);
+  }
+
+  .spectator-horses-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .spectator-horses-search,
+  .spectator-horses-sort {
+    width: 100%;
+  }
+
+  .spectator-horses-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 16px 24px;
+  }
+}
