@@ -6,9 +6,9 @@ import { NavLink, Stat, Race, FooterLink } from '../types';
 import HomeBanner from '../assets/images/HomeBanner.png';
 
 export const NAV_LINKS: NavLink[] = [
-  { label: 'Home', href: '/HorseOwnerHome', active: true },
+  { label: 'Home', href: '/HorseOwner/Home', active: true },
   { label: 'Tournament', href: '/HorseOwner/Tournaments', active: false },
-  { label: 'My Horses', href: '/HorseOwner/MyHorses', active: false },
+  { label: 'Horses Leaderboard', href: '/HorseOwner/Horses', active: false },
   { label: 'Invite Jockeys', href: '/HorseOwner/InviteJockeys', active: false },
 ];
 

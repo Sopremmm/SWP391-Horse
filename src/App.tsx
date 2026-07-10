@@ -7,6 +7,7 @@ import Login from "./pages/Login.tsx";
 import Homepage from "./pages/Homepage.tsx";
 import HorseOwnerHome from "./pages/HorseOwnerHome.tsx";
 import Tournament from "./pages/Tournament.tsx";
+import HorseOwnerHorses from "./pages/HorseOwnerHorses.tsx";
 import MyHorses from "./pages/MyHorses.tsx";
 import AddHorse from "./pages/AddHorse.tsx";
 import InviteJockeys from "./pages/InviteJockeys.tsx";
@@ -19,12 +20,13 @@ import AdminConfirmRegistration from "./pages/AdminConfirmRegistration.tsx";
 import AdminUsers from "./pages/AdminUsers.tsx";
 import JockeyProfile from "./pages/JockeyProfile.tsx";
 import HorseOwnerTournamentDetail from "./pages/HorseOwnerTournamentDetail.tsx";
+import HorseOwnerTournamentEntryRegister from "./pages/HorseOwnerTournamentEntryRegister.tsx";
 import HorseOwnerHorseDetail from "./pages/HorseOwnerHorseDetail.tsx";
 import JockeyHome from "./pages/JockeyHome.tsx";
 import JockeyProfilePage from "./pages/JockeyProfilePage.tsx";
 import JockeyInvitationPage from "./pages/JockeyInvitationPage.tsx";
 import HorseOwnerProfile from "./pages/HorseOwnerProfile.tsx";
-import HorseOwnerMyTournament from "./pages/HorseOwnerMyTournament.tsx";
+import HorseOwnerMyTournament from "./pages/HorseOwnerTournamentRegister.tsx";
 import HorseOwnerMyJockeys from "./pages/HorseOwnerMyJockeys.tsx";
 import HorseOwnerNotifications from "./pages/HorseOwnerNotifications.tsx";
 import SpectatorHome from "./pages/SpectatorHome.tsx";
@@ -55,15 +57,21 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/Homepage" element={<Homepage />} />
         <Route path="/homepage" element={<Homepage />} />
+        <Route path="/HorseOwner/Home" element={<HorseOwnerHome />} />
+        <Route path="/horseowner/home" element={<HorseOwnerHome />} />
         <Route path="/HorseOwnerHome" element={<HorseOwnerHome />} />
         <Route path="/horseownerhome" element={<HorseOwnerHome />} />
         <Route path="/HorseOwner/Profile" element={<HorseOwnerProfile />} />
+        <Route path="/HorseOwner/Horses" element={<HorseOwnerHorses />} />
+        <Route path="/HorseOwner/Horses/:name" element={<HorseOwnerHorseDetail />} />
         <Route path="/HorseOwner/MyHorses" element={<MyHorses />} />
         <Route path="/HorseOwner/MyHorses/Add" element={<AddHorse />} />
         <Route path="/HorseOwner/MyHorses/edit/:name" element={<AddHorse mode="edit" />} />
         <Route path="/HorseOwner/MyHorses/:name" element={<HorseOwnerHorseDetail />} />
         <Route path="/HorseOwner/Tournaments" element={<Tournament />} />
         <Route path="/HorseOwner/Tournaments/:name" element={<HorseOwnerTournamentDetail />} />
+        <Route path="/HorseOwner/Tournaments/:name/Register" element={<HorseOwnerTournamentEntryRegister />} />
+        <Route path="/HorseOwner/Tournaments/:name/entry" element={<HorseOwnerTournamentDetail />} />
         <Route path="/HorseOwner/MyTournament" element={<HorseOwnerMyTournament />} />
         <Route path="/HorseOwner/MyJockeyinvitations" element={<HorseOwnerMyJockeys />} />
         <Route path="/HorseOwner/Notifications" element={<HorseOwnerNotifications />} />

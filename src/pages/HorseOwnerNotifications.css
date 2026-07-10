@@ -119,6 +119,18 @@
   gap: 16px;
 }
 
+.owner-notifications-empty {
+  min-height: 220px;
+  padding: 32px;
+  border: 1px dashed #d6d3d1;
+  border-radius: 3px;
+  background: #f3f2ef;
+  color: #717971;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
 .owner-notification-item {
   min-height: 96px;
   padding: 24px;

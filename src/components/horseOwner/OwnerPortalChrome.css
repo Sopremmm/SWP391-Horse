@@ -3,7 +3,7 @@
 .owner-profile-header {
   position: sticky;
   top: 0;
-  z-index: 40;
+  z-index: 50;
   height: 80px;
   border-bottom: 1px solid rgba(215, 211, 199, 0.9);
   background: rgba(247, 246, 241, 0.95);
@@ -19,11 +19,12 @@
   padding: 0 24px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 36px;
+  justify-content: space-between;
+  gap: 24px;
 }
 
 .owner-profile-header__brand {
+  flex: 0 0 auto;
   color: #064e3b;
   font-family: 'Times New Roman', Times, serif;
   font-size: 1.45rem;
@@ -35,9 +36,10 @@
 }
 
 .owner-profile-header__nav {
+  flex: 1 1 auto;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 12px;
   min-width: 0;
 }
@@ -70,7 +72,8 @@
 }
 
 .owner-profile-header__actions {
-  margin-left: auto;
+  flex: 0 0 auto;
+  margin-left: 0;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -104,6 +107,24 @@
 .owner-profile-header__account:hover {
   background: #f8fafc;
   transform: translateY(-1px);
+}
+
+.owner-profile-header .profile-dropdown__trigger {
+  width: 44px;
+  height: 44px;
+  border-color: #e2e8f0;
+  background: #ffffff;
+  color: #064e3b;
+}
+
+.owner-profile-header .profile-dropdown__trigger:hover {
+  background: #f8fafc;
+  color: #064e3b;
+}
+
+.owner-profile-header .profile-dropdown__user-icon {
+  width: 22px;
+  height: 22px;
 }
 
 .owner-profile-header__icon svg,

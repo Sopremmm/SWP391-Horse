@@ -64,7 +64,7 @@ export function OwnerPortalHeader() {
   return (
     <header className="owner-profile-header">
       <div className="owner-profile-header__inner">
-        <Link className="owner-profile-header__brand" to="/HorseOwnerHome">
+        <Link className="owner-profile-header__brand" to="/HorseOwner/Home">
           Heritage Racing
         </Link>
 
@@ -80,7 +80,6 @@ export function OwnerPortalHeader() {
                 end={
                   item.href === '/HorseOwner/Profile' ||
                   item.href === '/HorseOwner/MyTournament' ||
-                  item.href === '/HorseOwner/MyHorses' ||
                   item.href === '/HorseOwner/Notifications'
                 }
                 key={item.label}

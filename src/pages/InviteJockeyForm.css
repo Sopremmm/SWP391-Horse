@@ -36,7 +36,7 @@
 .invite-jockey-form-page__actions > a svg { width: 16px; height: 20px; }
 
 .invite-jockey-form-page__main {
-  min-height: 1118px; position: relative; overflow: hidden; padding: 48px 20px;
+  min-height: 1118px; position: relative; overflow: hidden; padding: 128px 20px 48px;
   display: flex; justify-content: center; align-items: flex-start;
 }
 .invite-jockey-form-page__glow { position: absolute; border-radius: 50%; filter: blur(62px); opacity: .15; pointer-events: none; }
@@ -129,12 +129,10 @@
 }
 
 @media (max-width: 900px) {
-  .invite-jockey-form-page__header-inner { padding-inline: 28px; grid-template-columns: 1fr auto; }
-  .invite-jockey-form-page__header nav { display: none; }
+  .invite-jockey-form-page__main { padding-top: 112px; }
 }
 @media (max-width: 680px) {
-  .invite-jockey-form-page__brand { font-size: 30px; }
-  .invite-jockey-form-page__main { padding: 24px 14px; }
+  .invite-jockey-form-page__main { padding: 96px 14px 24px; }
   .invite-jockey-form-page__card > header,
   .invite-jockey-form-page__card form { padding-left: 22px; padding-right: 22px; }
   .invite-jockey-form-page__fields { grid-template-columns: 1fr; }

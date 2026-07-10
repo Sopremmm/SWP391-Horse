@@ -1,249 +1,464 @@
 import React from 'react';
-import { Link, NavLink, useParams } from 'react-router-dom';
-import ProfileDropdown from '../components/common/ProfileDropdown.tsx';
+import { Link, useParams } from 'react-router-dom';
+import { Header } from '../components/common/Header.tsx';
 import { getPageData } from '../data/pageData.ts';
 import './HorseOwnerTournamentDetail.css';
 
-type RuleIcon = 'shield' | 'gavel' | 'trophy';
+type RaceStatus = 'completed' | 'live' | 'upcoming' | string;
 
-const tournamentFallback = {
-  title: 'The Platinum Jubilee Stakes',
-  description:
-    'A heritage sprint across the hallowed turf, celebrating seventy years of excellence in thoroughbred breeding and competitive spirit.',
-  classLabel: 'International Grade I Invitational',
-  date: 'July 14, 2024',
-  purse: '$2,500,000',
-  location: 'Ascot, UK',
-  distance: '2400m',
-  entries: '12/20 Horses',
+type TournamentRace = {
+  id: string;
+  round: 'qualifying' | 'semi' | 'final' | string;
+  name: string;
+  dateTime: string;
+  distance: string;
+  status: RaceStatus;
+  entrantLabel?: string;
+  entrantTone?: 'winner' | 'live' | 'pending';
 };
 
-const ruleCards: Array<{ title: string; icon: RuleIcon; items: string[] }> = [
+type TournamentParticipant = {
+  id?: string | number;
+  horse: string;
+  breedAge: string;
+  jockey: string;
+  owner: string;
+};
+
+type TournamentDetailData = {
+  title: string;
+  presenter: string;
+  location: string;
+  dateRange: string;
+  heroImage?: string;
+  races: TournamentRace[];
+  participants: TournamentParticipant[];
+  final: {
+    title: string;
+    dateTime: string;
+    venue: string;
+    distance: string;
+    status?: RaceStatus;
+  };
+};
+
+type RawTournamentDetailData = Partial<TournamentDetailData> & {
+  bracket?: TournamentRace[];
+  schedule?: TournamentRace[];
+};
+
+const fallbackRaces: TournamentRace[] = [
   {
-    title: 'Eligibility',
-    icon: 'shield',
-    items: [
-      'Horses must be aged 3 years or older.',
-      'Minimum Grade II certification required.',
-      'Owner must hold a valid Heritage Club license.',
-    ],
+    id: 'qualifying-a',
+    round: 'qualifying',
+    name: 'Qualifying A',
+    dateTime: 'Aug 20 - 14:00',
+    distance: '1,600M',
+    status: 'completed',
+    entrantLabel: 'Midnight Thunder',
+    entrantTone: 'winner',
   },
   {
-    title: 'Racing Rules',
-    icon: 'gavel',
-    items: [
-      'Standard flat racing regulations apply.',
-      'Mandatory post-race blood testing.',
-      'Fixed weight-for-age penalties strictly enforced.',
-    ],
+    id: 'qualifying-b',
+    round: 'qualifying',
+    name: 'Qualifying B',
+    dateTime: 'Aug 21 - 14:00',
+    distance: '1,600M',
+    status: 'live',
+    entrantLabel: 'Star Chaser',
+    entrantTone: 'live',
   },
   {
-    title: 'Prize Breakdown',
-    icon: 'trophy',
-    items: ['1st Place: $1,500,000', '2nd Place: $750,000', '3rd Place: $250,000'],
+    id: 'qualifying-c',
+    round: 'qualifying',
+    name: 'Qualifying C',
+    dateTime: 'Aug 21 - 16:00',
+    distance: '1,600M',
+    status: 'upcoming',
+  },
+  {
+    id: 'qualifying-d',
+    round: 'qualifying',
+    name: 'Qualifying D',
+    dateTime: 'Aug 21 - 18:00',
+    distance: '1,600M',
+    status: 'upcoming',
+  },
+  {
+    id: 'semi-final-a',
+    round: 'semi',
+    name: 'Semi-Final A',
+    dateTime: 'Aug 22 - 14:00',
+    distance: '2,000M',
+    status: 'upcoming',
+  },
+  {
+    id: 'semi-final-b',
+    round: 'semi',
+    name: 'Semi-Final B',
+    dateTime: 'Aug 22 - 16:00',
+    distance: '2,000M',
+    status: 'upcoming',
+  },
+  {
+    id: 'grand-final',
+    round: 'final',
+    name: 'Grand Final',
+    dateTime: 'Aug 24 - 18:00',
+    distance: '2,400M',
+    status: 'upcoming',
   },
 ];
 
-function normalize(value: string) {
+const EMPTY_DETAIL_DATA: TournamentDetailData = {
+  title: 'The Royal Gold Cup',
+  presenter: 'Heritage Racing Presents',
+  location: 'Grand Valley Circuit, UK',
+  dateRange: 'Aug 20 - Aug 24, 2024',
+  races: fallbackRaces,
+  participants: [
+    { horse: 'Sovereign Victory', breedAge: 'Thoroughbred · 5yo Stallion', jockey: 'James Whitaker', owner: 'Lord Winston Churchill' },
+    { horse: 'Emerald Legacy', breedAge: 'Thoroughbred · 4yo Mare', jockey: 'Elena Rossi', owner: 'Duke of Wellington' },
+    { horse: 'Gilded Thunder', breedAge: 'Arabian Cross · 6yo Stallion', jockey: 'Marcus Thorne', owner: 'Eleanor Rigby' },
+    { horse: 'Midnight Rose', breedAge: 'Thoroughbred · 3yo Mare', jockey: 'Julian Vane', owner: 'Sir Arthur Dayne' },
+    { horse: 'Royal Radiance', breedAge: 'Warmblood · 5yo Mare', jockey: 'Sarah Jenkins', owner: 'Lady Katherine' },
+    { horse: 'Velvet Gallop', breedAge: 'Thoroughbred · 4yo Gelding', jockey: 'Oliver Reed', owner: 'Baron von Richter' },
+    { horse: 'Majestic Wind', breedAge: 'Arabian · 5yo Stallion', jockey: 'Leo Sterling', owner: 'Countess of Kent' },
+    { horse: 'Golden Mane', breedAge: 'Thoroughbred · 6yo Stallion', jockey: 'Thomas Wright', owner: 'General Montgomery' },
+    { horse: 'Autumn Regent', breedAge: 'Thoroughbred · 4yo Gelding', jockey: 'Amelia Hart', owner: 'Helena Ward' },
+    { horse: 'Ivory Monarch', breedAge: 'Arabian Cross · 3yo Stallion', jockey: 'Noah Bennett', owner: 'Edward Sinclair' },
+  ],
+  final: {
+    title: 'Grand Finale',
+    dateTime: 'Aug 24 - 18:00 EST',
+    venue: 'Royal Track',
+    distance: '2400m',
+    status: 'upcoming',
+  },
+};
+
+function normalizeSlug(value: string) {
   return value.toLowerCase().replace(/\n/g, ' ').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
-function cleanTitle(value: string) {
-  return value.replace(/\n/g, ' ');
+function statusLabel(status: RaceStatus) {
+  if (status === 'live') return 'Live Now';
+  if (status === 'completed') return 'Completed';
+  return 'Upcoming';
 }
 
-function horseMeta(value: string) {
-  const parts = value.split(' - ').map((part) => part.trim());
-  return parts.length >= 3 ? `${parts[1]} ${parts[2]}` : value;
+function displayDate(value: string) {
+  return value.replace(' - ', ' • ');
 }
 
-function DetailIcon({ name }: { name: RuleIcon | 'arrow' | 'external' | 'bell' | 'close' }) {
-  const paths: Record<typeof name, string> = {
-    shield:
-      'M8 20c-2.3-.6-4.2-1.9-5.7-4C.8 13.9 0 11.6 0 9.1V3l8-3 8 3v6.1c0 2.5-.8 4.8-2.3 6.9-1.5 2.1-3.4 3.4-5.7 4Zm-1-6.5 5.7-5.7-1.4-1.4L7 10.7 4.9 8.6 3.5 10 7 13.5Z',
-    gavel:
-      'M1 22v-2h12v2H1Zm5.7-4.9L1.1 11.5l2.1-2.1 5.7 5.6-2.2 2.1Zm6.3-6.4L7.4 5l2.1-2.1 5.7 5.6-2.2 2.2Zm4.6 10.2L4.6 7.9 6 6.5l13 13-1.4 1.4Z',
-    trophy:
-      'M4 18v-2h4v-3.1a6.12 6.12 0 0 1-3.6-2.95 5.1 5.1 0 0 1-3.14-1.64A4.85 4.85 0 0 1 0 5V4c0-.55.2-1.02.59-1.41C.98 2.2 1.45 2 2 2h2V0h10v2h2c.55 0 1.02.2 1.41.59.39.39.59.86.59 1.41v1c0 1.27-.42 2.37-1.26 3.31a5.1 5.1 0 0 1-3.14 1.64A6.12 6.12 0 0 1 10 12.9V16h4v2H4Z',
-    arrow: 'M10.1 7.5H0V5.8h10.1L5.5 1.2 6.7 0l6.6 6.7-6.6 6.6-1.2-1.2 4.6-4.6Z',
-    external:
-      'M1.3 12c-.4 0-.7-.1-.9-.4-.3-.3-.4-.6-.4-.9V1.3C0 .9.1.6.4.4.6.1.9 0 1.3 0H6v1.3H1.3v9.4h9.4V6H12v4.7c0 .4-.1.7-.4.9-.3.3-.6.4-.9.4H1.3Zm3.2-3.5-.9-.9 6.1-6.3H7.3V0H12v4.7h-1.3V2.3L4.5 8.5Z',
-    bell:
-      'M0 17v-2h2V8c0-1.38.42-2.61 1.25-3.69A6.34 6.34 0 0 1 6.5 2.2v-.7c0-.42.15-.77.44-1.06C7.23.15 7.58 0 8 0s.77.15 1.06.44c.29.29.44.64.44 1.06v.7a6.34 6.34 0 0 1 3.25 2.11A5.86 5.86 0 0 1 14 8v7h2v2H0Zm8 3c-.55 0-1.02-.2-1.41-.59A1.93 1.93 0 0 1 6 18h4c0 .55-.2 1.02-.59 1.41-.39.39-.86.59-1.41.59Z',
-    close: 'M5.4 18.6 4 17.2l5.2-5.2L4 6.8l1.4-1.4 5.2 5.2 5.2-5.2 1.4 1.4-5.2 5.2 5.2 5.2-1.4 1.4-5.2-5.2-5.2 5.2Z',
+function raceHref(race: TournamentRace) {
+  return `#${race.id}`;
+}
+
+function normalizeDetailData(raw?: RawTournamentDetailData | null): TournamentDetailData {
+  const races = raw?.races || raw?.bracket || raw?.schedule || EMPTY_DETAIL_DATA.races;
+  return {
+    ...EMPTY_DETAIL_DATA,
+    ...raw,
+    races: races.length ? races : [],
+    participants: raw?.participants || EMPTY_DETAIL_DATA.participants,
+    final: {
+      ...EMPTY_DETAIL_DATA.final,
+      ...raw?.final,
+    },
   };
+}
 
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d={paths[name]} /></svg>;
+function readDetailFromLocalStorage(slug: string): RawTournamentDetailData | null {
+  try {
+    const specific = window.localStorage.getItem(`horse_owner_tournament_detail_${slug}`);
+    const shared = window.localStorage.getItem('horse_owner_tournament_detail_data');
+    return specific ? (JSON.parse(specific) as RawTournamentDetailData) : shared ? (JSON.parse(shared) as RawTournamentDetailData) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function readDetailFromApi(slug: string): Promise<RawTournamentDetailData | null> {
+  try {
+    const base = process.env.REACT_APP_HORSE_OWNER_TOURNAMENT_DETAIL_API || '/api/horse-owner/tournaments';
+    const response = await fetch(`${base}/${encodeURIComponent(slug)}`, { method: 'GET' });
+    if (!response.ok) return null;
+    return (await response.json()) as RawTournamentDetailData;
+  } catch {
+    return null;
+  }
+}
+
+function LocationIcon() {
+  return (
+    <svg viewBox="0 0 10 12" aria-hidden="true">
+      <path d="M5 11.7C3.3 10.2 2 8.9 1.2 7.8.4 6.7 0 5.7 0 4.8 0 3.3.5 2.2 1.4 1.3A5 5 0 0 1 5 0c1.3 0 2.5.4 3.6 1.3.9.9 1.4 2 1.4 3.5 0 .9-.4 1.9-1.2 3.1-.8 1.1-2.1 2.4-3.8 3.8Zm0-5.8c.4 0 .7-.1 1-.4.2-.2.4-.5.4-.9S6.2 3.9 6 3.6c-.3-.2-.6-.4-1-.4s-.7.1-1 .4c-.2.3-.4.6-.4 1s.1.7.4.9c.3.3.6.4 1 .4Z" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg viewBox="0 0 12 12" aria-hidden="true">
+      <path d="M1.3 12c-.4 0-.7-.1-.9-.4-.3-.3-.4-.6-.4-.9v-8c0-.4.1-.7.4-.9.2-.3.5-.5.9-.5H2V0h1.3v1.3h5.4V0H10v1.3h.7c.4 0 .7.2.9.5.3.2.4.5.4.9v8c0 .3-.1.6-.4.9-.2.3-.5.4-.9.4H1.3Zm0-1.3h9.4V5.3H1.3v5.4Zm0-6.7h9.4V2.7H1.3V4Z" />
+    </svg>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 8 8" aria-hidden="true">
+      <path d="M6.1 4.5H0v-1h6.1L3.3.7 4 0l4 4-4 4-.7-.7 2.8-2.8Z" />
+    </svg>
+  );
+}
+
+function RaceBadge({ race, index }: { race: TournamentRace; index: number }) {
+  const label = race.entrantLabel || `${displayDate(race.dateTime)} • ${race.distance}`;
+  const marker = race.entrantTone === 'winner' ? 'W' : race.entrantTone === 'live' ? '2' : String(index + 1);
+
+  return (
+    <div className="ho-tourney-race-card__entrant">
+      <span className={`ho-tourney-race-card__marker ho-tourney-race-card__marker--${race.entrantTone || 'pending'}`}>
+        {marker}
+      </span>
+      <strong>{label}</strong>
+    </div>
+  );
+}
+
+function RaceCard({ race, index }: { race: TournamentRace; index: number }) {
+  return (
+    <article className={`ho-tourney-race-card ${race.status === 'live' ? 'is-live' : ''}`} id={race.id}>
+      <div className="ho-tourney-race-card__meta">
+        <span>{displayDate(race.dateTime)}</span>
+        <small className={`ho-tourney-status ho-tourney-status--${race.status}`}>{statusLabel(race.status)}</small>
+      </div>
+      <h3>{race.name}</h3>
+      <RaceBadge race={race} index={index} />
+      <Link to={raceHref(race)}>
+        View Race
+        <ArrowIcon />
+      </Link>
+    </article>
+  );
 }
 
 export default function HorseOwnerTournamentDetail() {
   const { name } = useParams<{ name?: string }>();
-  const { tournamentPage, myHorses } = getPageData();
   const decodedName = decodeURIComponent(name ?? '');
-  const tournament = tournamentPage.tournaments.find(
-    (item) => normalize(item.id) === normalize(decodedName) || normalize(item.title) === normalize(decodedName),
+  const routeName = encodeURIComponent(decodedName || EMPTY_DETAIL_DATA.title);
+  const slug = normalizeSlug(decodedName || EMPTY_DETAIL_DATA.title);
+  const { tournamentPage } = getPageData();
+  const fallbackTournament = tournamentPage.tournaments.find(
+    (item) => normalizeSlug(item.id) === slug || normalizeSlug(item.title) === slug,
   );
-  const isPlatinum = !tournament || tournament.id === 'platinum-jubilee';
-  const title = isPlatinum ? tournamentFallback.title : cleanTitle(tournament.title);
-  const description = isPlatinum ? tournamentFallback.description : tournament.description;
-  const [selectedHorse, setSelectedHorse] = React.useState('');
-  const [horseModalOpen, setHorseModalOpen] = React.useState(false);
-  const [horseSearch, setHorseSearch] = React.useState('');
-  const [notice, setNotice] = React.useState('');
-
-  const filteredHorses = myHorses.horses.filter((horse) =>
-    horse.name.toLowerCase().includes(horseSearch.trim().toLowerCase()),
+  const fallbackData = React.useMemo(
+    () =>
+      normalizeDetailData({
+        title: fallbackTournament?.title?.replace(/\n/g, ' ') || EMPTY_DETAIL_DATA.title,
+        heroImage: fallbackTournament?.imageUrl,
+        dateRange: fallbackTournament?.dateValue || EMPTY_DETAIL_DATA.dateRange,
+      }),
+    [fallbackTournament?.dateValue, fallbackTournament?.imageUrl, fallbackTournament?.title],
   );
+  const [detail, setDetail] = React.useState<TournamentDetailData>(() =>
+    normalizeDetailData(readDetailFromLocalStorage(slug) ?? fallbackData),
+  );
+  const [participantsOpen, setParticipantsOpen] = React.useState(false);
 
   React.useEffect(() => {
-    if (!notice) return undefined;
-    const timeout = window.setTimeout(() => setNotice(''), 2800);
-    return () => window.clearTimeout(timeout);
-  }, [notice]);
+    let cancelled = false;
 
-  const selectHorse = (horseName: string) => {
-    setSelectedHorse(horseName);
-    setHorseModalOpen(false);
-    setHorseSearch('');
-  };
+    const load = async () => {
+      const apiData = await readDetailFromApi(slug);
+      const localData = readDetailFromLocalStorage(slug);
+      if (!cancelled) setDetail(normalizeDetailData(apiData ?? localData ?? fallbackData));
+    };
 
-  const confirmRegistration = () => {
-    if (!selectedHorse) {
-      setNotice('Please select a horse before confirming registration.');
-      return;
-    }
-    setNotice(`${selectedHorse} has been submitted for administrative review.`);
-  };
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fallbackData, slug]);
+
+  const qualifying = detail.races.filter((race) => race.round === 'qualifying');
+  const semiFinals = detail.races.filter((race) => race.round === 'semi');
+  const schedule = detail.races;
+  const participantCount = detail.participants.length;
 
   return (
-    <div className="ho-tournament-detail">
-      <header className="ho-tournament-detail__header">
-        <div className="ho-tournament-detail__header-inner">
-          <Link className="ho-tournament-detail__brand" to="/HorseOwnerHome">Heritage Racing</Link>
-          <nav aria-label="Horse owner navigation">
-            <NavLink className="is-active" to="/HorseOwner/Tournaments">Tournaments</NavLink>
-            <NavLink to="/HorseOwner/MyHorses">My Stable</NavLink>
-            <NavLink to="/HorseOwner/MyJockeyinvitations">Jockeys</NavLink>
-            <NavLink to="/HorseOwner/MyTournament">History</NavLink>
-          </nav>
-          <div className="ho-tournament-detail__header-actions">
-            <Link to="/HorseOwner/Notifications" aria-label="Notifications"><DetailIcon name="bell" /></Link>
-            <ProfileDropdown />
-          </div>
-        </div>
-      </header>
+    <div className="ho-tourney-detail">
+      <Header />
 
-      <main>
-        <section className="ho-tournament-detail__hero">
-          <div className="ho-tournament-detail__hero-inner">
-            <div className="ho-tournament-detail__hero-copy">
-              <span>{tournamentFallback.classLabel}</span>
-              <h1>{title}</h1>
-              <p>{description}</p>
+      <main className="ho-tourney-detail__main">
+        <section className="ho-tourney-hero" aria-label={detail.title}>
+          {detail.heroImage ? <img src={detail.heroImage} alt={detail.title} /> : <div className="ho-tourney-hero__placeholder" />}
+          <div className="ho-tourney-hero__overlay">
+            <p>{detail.presenter}</p>
+            <h1>{detail.title}</h1>
+            <div className="ho-tourney-hero__meta">
+              <span>
+                <LocationIcon />
+                {detail.location}
+              </span>
+              <span>
+                <CalendarIcon />
+                {detail.dateRange}
+              </span>
             </div>
-            <dl className="ho-tournament-detail__hero-stats">
-              <div><dt>Date</dt><dd>{isPlatinum ? tournamentFallback.date : tournament.dateValue ?? tournamentFallback.date}</dd></div>
-              <div><dt>Purse</dt><dd>{isPlatinum ? tournamentFallback.purse : tournament.prizePool}</dd></div>
-              <div><dt>Location</dt><dd>{tournamentFallback.location}</dd></div>
-              <div><dt>Distance</dt><dd>{tournamentFallback.distance}</dd></div>
-              <div><dt>Entries</dt><dd>{tournamentFallback.entries}</dd></div>
-            </dl>
+            <div className="ho-tourney-hero__actions">
+              <button type="button" onClick={() => setParticipantsOpen(true)}>
+                View Participants
+              </button>
+              <Link to={`/HorseOwner/Tournaments/${routeName}/Register`}>Register</Link>
+            </div>
           </div>
         </section>
 
-        <div className="ho-tournament-detail__body">
-          <section id="rules" className="ho-tournament-detail__section">
-            <div className="ho-tournament-detail__section-title"><h2>Rules of Participation</h2><span /></div>
-            <div className="ho-tournament-detail__rules">
-              {ruleCards.map((rule) => (
-                <article key={rule.title}>
-                  <div className="ho-tournament-detail__rule-icon"><DetailIcon name={rule.icon} /></div>
-                  <div>
-                    <h3>{rule.title}</h3>
-                    <ul>
-                      {rule.items.map((item, index) => (
-                        <li className={rule.icon === 'trophy' && index === 0 ? 'is-gold' : ''} key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
+        <section className="ho-tourney-section" aria-labelledby="bracket-title">
+          <div className="ho-tourney-section__heading">
+            <h2 id="bracket-title">Tournament Bracket</h2>
+          </div>
 
-          <section className="ho-tournament-detail__section ho-tournament-detail__entry">
-            <div className="ho-tournament-detail__section-title"><h2>Race Entry Form</h2><span /></div>
-            <div className="ho-tournament-detail__entry-layout">
-              <div className="ho-tournament-detail__horse-picker">
-                <div className="ho-tournament-detail__horse-picker-head">
-                  <h3>Select Your Horse</h3>
-                  <button type="button" onClick={() => setHorseModalOpen(true)}>View All Horses <DetailIcon name="external" /></button>
-                </div>
-                <div className="ho-tournament-detail__horse-grid">
-                  {myHorses.horses.slice(0, 2).map((horse) => (
-                    <button
-                      className={`ho-tournament-detail__horse-card ${selectedHorse === horse.name ? 'is-selected' : ''}`}
-                      key={horse.name}
-                      type="button"
-                      onClick={() => setSelectedHorse(horse.name)}
-                    >
-                      <img src={horse.imageSrc} alt={horse.name} />
-                      <span><strong>{horse.name}</strong><small>{horseMeta(horse.meta)}</small></span>
-                    </button>
-                  ))}
-                </div>
+          <div className="ho-tourney-bracket">
+            <div className="ho-tourney-bracket__column">
+              <h3>Qualifying</h3>
+              <div className="ho-tourney-bracket__stack">
+                {qualifying.map((race, index) => (
+                  <RaceCard key={race.id} race={race} index={index} />
+                ))}
               </div>
-
-              <aside className="ho-tournament-detail__summary" aria-label="Registration summary">
-                <h3>Registration Summary</h3>
-                <div className="ho-tournament-detail__selected-row">
-                  <span>Horse selected</span><strong>{selectedHorse || 'None selected'}</strong>
-                </div>
-                <div className="ho-tournament-detail__summary-action">
-                  <button type="button" onClick={confirmRegistration}>Confirm Registration <DetailIcon name="arrow" /></button>
-                  <p>Your registration will be submitted for administrative review.</p>
-                  <small>By clicking confirm, you agree to the <a href="#rules">Official Rules</a>.</small>
-                </div>
-              </aside>
             </div>
-          </section>
-        </div>
+
+            <div className="ho-tourney-bracket__column ho-tourney-bracket__column--middle">
+              <h3>Semi-Finals</h3>
+              <div className="ho-tourney-bracket__stack">
+                {semiFinals.map((race, index) => (
+                  <RaceCard key={race.id} race={race} index={index} />
+                ))}
+              </div>
+            </div>
+
+            <div className="ho-tourney-bracket__column ho-tourney-bracket__column--final">
+              <h3>Tournament Finals</h3>
+              <article className="ho-tourney-final">
+                <div>
+                  <h4>{detail.final.title}</h4>
+                  <p>{detail.final.dateTime}</p>
+                </div>
+                <div className="ho-tourney-final__stats">
+                  <span>
+                    Venue
+                    <strong>{detail.final.venue}</strong>
+                  </span>
+                  <span>
+                    Distance
+                    <strong>{detail.final.distance}</strong>
+                  </span>
+                </div>
+                <Link to="#grand-final">
+                  View Race
+                  <ArrowIcon />
+                </Link>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section className="ho-tourney-section" aria-labelledby="schedule-title">
+          <div className="ho-tourney-section__heading">
+            <h2 id="schedule-title">Race Schedule</h2>
+          </div>
+
+          <div className="ho-tourney-schedule" role="table" aria-label="Race schedule">
+            <div className="ho-tourney-schedule__head" role="row">
+              <span role="columnheader">Date &amp; Time</span>
+              <span role="columnheader">Race Name</span>
+              <span role="columnheader">Distance</span>
+              <span role="columnheader">Status</span>
+              <span role="columnheader">Action</span>
+            </div>
+            {schedule.map((race) => (
+              <div className="ho-tourney-schedule__row" role="row" key={race.id}>
+                <strong role="cell">{race.dateTime}</strong>
+                <strong role="cell">{race.name}</strong>
+                <strong role="cell">{race.distance}</strong>
+                <span role="cell">
+                  <small className={`ho-tourney-status ho-tourney-status--${race.status}`}>{statusLabel(race.status)}</small>
+                </span>
+                <span role="cell">
+                  <Link to={raceHref(race)}>View Race</Link>
+                </span>
+              </div>
+            ))}
+            {!schedule.length ? (
+              <div className="ho-tourney-schedule__empty">Race schedule will appear here when your tournament data is available.</div>
+            ) : null}
+          </div>
+        </section>
       </main>
 
-      <footer className="ho-tournament-detail__footer">
-        <div className="ho-tournament-detail__footer-inner">
-          <div><h2>Heritage Racing</h2><p>Elevating the spirit of equestrian competition<br />since 1954.</p></div>
-          <div>
-            <nav aria-label="Footer navigation">
-              <a href="#rules">Rules of Racing</a><a href="#privacy">Privacy Policy</a><a href="#terms">Terms of Service</a><a href="#support">Contact Support</a>
-            </nav>
-            <p>© 2024 Heritage Racing Club. All rights reserved.</p>
-          </div>
+      <footer className="ho-tourney-footer">
+        <div>
+          <h2>StallionElite</h2>
+          <p>Elevating the equestrian tradition through precision technology and timeless luxury.</p>
         </div>
+        <nav aria-label="Tournament footer navigation">
+          <a href="#privacy">Privacy Policy</a>
+          <a href="#terms">Terms of Service</a>
+          <a href="#support">Contact Support</a>
+        </nav>
+        <p>(c) 2024 StallionElite Racing Management. All rights reserved.</p>
       </footer>
 
-      {horseModalOpen ? (
-        <div className="ho-tournament-detail__modal-overlay" role="presentation" onMouseDown={() => setHorseModalOpen(false)}>
-          <section className="ho-tournament-detail__modal" role="dialog" aria-modal="true" aria-labelledby="horse-modal-title" onMouseDown={(event) => event.stopPropagation()}>
-            <div className="ho-tournament-detail__modal-head">
-              <div><h2 id="horse-modal-title">Select Your Horse</h2><p>Choose an eligible thoroughbred for this race.</p></div>
-              <button type="button" aria-label="Close horse selector" onClick={() => setHorseModalOpen(false)}><DetailIcon name="close" /></button>
-            </div>
-            <input value={horseSearch} onChange={(event) => setHorseSearch(event.target.value)} placeholder="Search horses..." autoFocus />
-            <div className="ho-tournament-detail__modal-grid">
-              {filteredHorses.map((horse) => (
-                <button key={horse.name} type="button" className={selectedHorse === horse.name ? 'is-selected' : ''} onClick={() => selectHorse(horse.name)}>
-                  <img src={horse.imageSrc} alt={horse.name} />
-                  <span><strong>{horse.name}</strong><small>{horseMeta(horse.meta)}</small></span>
-                </button>
+      {participantsOpen ? (
+        <div className="ho-tourney-modal-backdrop" role="presentation" onMouseDown={() => setParticipantsOpen(false)}>
+          <section
+            className="ho-tourney-participants-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="participants-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <header>
+              <div>
+                <h2 id="participants-title">Tournament Entries</h2>
+                <p>{participantCount} horses registered for {detail.title}.</p>
+              </div>
+              <button type="button" aria-label="Close participants" onClick={() => setParticipantsOpen(false)}>
+                ×
+              </button>
+            </header>
+
+            <div className="ho-tourney-participants-table" role="table" aria-label="Tournament entries">
+              <div className="ho-tourney-participants-table__head" role="row">
+                <span role="columnheader">#</span>
+                <span role="columnheader">Horse</span>
+                <span role="columnheader">Breed / Age</span>
+                <span role="columnheader">Jockey</span>
+                <span role="columnheader">Owner</span>
+              </div>
+              {detail.participants.map((participant, index) => (
+                <div className="ho-tourney-participants-table__row" role="row" key={participant.id ?? participant.horse}>
+                  <span role="cell">{index + 1}</span>
+                  <strong role="cell">{participant.horse}</strong>
+                  <span role="cell">{participant.breedAge}</span>
+                  <span role="cell">{participant.jockey}</span>
+                  <span role="cell">{participant.owner}</span>
+                </div>
               ))}
-              {!filteredHorses.length ? <p className="ho-tournament-detail__empty">No horses found.</p> : null}
+              {!participantCount ? (
+                <div className="ho-tourney-participants-table__empty">
+                  Participants will appear here when registration data is available.
+                </div>
+              ) : null}
             </div>
           </section>
         </div>
       ) : null}
-
-      {notice ? <div className="ho-tournament-detail__notice" role="status">{notice}</div> : null}
     </div>
   );
 }

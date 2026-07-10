@@ -1,61 +1,193 @@
 import React from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { Header } from '../components/common/Header.tsx';
-import { Footer } from '../components/common/Footer.tsx';
+import { OwnerPortalHeader } from '../components/horseOwner/OwnerPortalChrome.tsx';
 import { getPageData, MyHorse } from '../data/pageData.ts';
 import './HorseOwnerHorseDetail.css';
 
-type HorsePerformance = {
-  event: string;
-  detail: string;
-  position: string;
-  jockey: string;
-  earnings: string;
+type RaceHistoryRow = {
+  tournament: string;
+  date?: string;
+  race?: string;
+  jockey?: string;
+  time?: string;
+  position?: string;
 };
 
-const performanceRows: HorsePerformance[] = [
-  { event: 'Royal Ascot Classic', detail: 'Oct 14, 2023 - 2400m Turf', position: '1st', jockey: 'S. Whitmore', earnings: '850k Cr' },
-  { event: 'Heritage Stakes', detail: 'Sep 02, 2023 - 1800m Dirt', position: '2nd', jockey: 'L. Hamilton', earnings: '420k Cr' },
-  { event: 'Emerald Derby', detail: 'Jul 28, 2023 - 2200m Turf', position: '1st', jockey: 'S. Whitmore', earnings: '1.2M Cr' },
-];
+type HorseDetailData = {
+  id?: string;
+  name: string;
+  owner: string;
+  breed: string;
+  age: string;
+  gender: string;
+  imageSrc: string;
+  heroImageSrc: string;
+  rank?: number;
+  winRatio?: number;
+  totalStarts?: number;
+  totalEarnings?: string;
+  raceHistory: RaceHistoryRow[];
+};
+
+type RawHorse = Partial<HorseDetailData> & Partial<MyHorse> & {
+  meta?: string;
+  image?: string;
+  imageUrl?: string;
+  heroImage?: string;
+  ownerName?: string;
+  breedOrigin?: string;
+  sex?: string;
+  systemRank?: number;
+  starts?: number;
+  earnings?: string;
+  lastResult?: {
+    position?: string;
+    race?: string;
+    date?: string;
+  };
+  history?: RaceHistoryRow[];
+  performances?: RaceHistoryRow[];
+};
+
+type RawHorseResponse = {
+  horses?: RawHorse[];
+  items?: RawHorse[];
+  leaderboard?: RawHorse[];
+};
+
+const fallbackImage = getPageData().myHorses.horses[0]?.imageSrc || 'https://placehold.co/1280x650';
 
 function normalize(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
-function readStoredHorses(): MyHorse[] {
+function parseHorseMeta(meta?: string) {
+  const parts = String(meta || '').split(' - ').map((part) => part.trim()).filter(Boolean);
+  const ageText = parts.find((part) => /\d+\s*yo/i.test(part) || /\d+\s*yrs?/i.test(part));
+
+  return {
+    breed: parts[0] || 'Thoroughbred',
+    age: ageText?.match(/\d+/)?.[0] || 'TBA',
+    gender: parts.find((part) => /stallion|gelding|mare|filly|colt|dam/i.test(part)) || 'TBA',
+    winRatio: Number(parts.find((part) => /win rate/i.test(part))?.match(/\d+/)?.[0] || 0),
+  };
+}
+
+function pickString(...values: unknown[]) {
+  const value = values.find((item) => typeof item === 'string' && item.trim().length > 0);
+  return typeof value === 'string' ? value : undefined;
+}
+
+function pickDisplayValue(...values: unknown[]) {
+  const value = values.find((item) => {
+    if (typeof item === 'string') return item.trim().length > 0;
+    return typeof item === 'number' && Number.isFinite(item);
+  });
+  return value === undefined ? undefined : String(value);
+}
+
+function pickNumber(...values: unknown[]) {
+  const value = values.find((item) => item !== undefined && item !== null && item !== '');
+  const number = Number(value);
+  return Number.isFinite(number) ? number : undefined;
+}
+
+function normalizeRaceHistory(raw: RawHorse): RaceHistoryRow[] {
+  const rows = raw.raceHistory || raw.history || raw.performances || [];
+  if (Array.isArray(rows) && rows.length > 0) {
+    return rows.map((row) => ({
+      tournament: pickString(row.tournament, 'Unnamed Tournament') || 'Unnamed Tournament',
+      date: pickString(row.date),
+      race: pickString(row.race, 'Race TBA'),
+      jockey: pickString(row.jockey, 'Jockey TBA'),
+      time: pickString(row.time, 'TBA'),
+      position: pickString(row.position, 'TBA'),
+    }));
+  }
+
+  if (raw.lastResult?.race || raw.lastResult?.position) {
+    return [{
+      tournament: raw.lastResult.race || 'Recent Race',
+      date: raw.lastResult.date,
+      race: raw.lastResult.race,
+      jockey: 'TBA',
+      time: 'TBA',
+      position: raw.lastResult.position,
+    }];
+  }
+
+  return [];
+}
+
+function normalizeHorse(raw: RawHorse, index = 0): HorseDetailData {
+  const meta = parseHorseMeta(raw.meta);
+  const imageSrc = pickString(raw.heroImageSrc, raw.heroImage, raw.imageSrc, raw.imageUrl, raw.image) || fallbackImage;
+
+  return {
+    id: raw.id,
+    name: pickString(raw.name, `Horse ${index + 1}`) || `Horse ${index + 1}`,
+    owner: pickString(raw.owner, raw.ownerName, 'Unassigned') || 'Unassigned',
+    breed: pickString(raw.breed, raw.breedOrigin, meta.breed) || 'Thoroughbred',
+    age: (pickDisplayValue(raw.age, meta.age) || 'TBA').replace(/\s*(yrs?|yo)$/i, ''),
+    gender: pickString(raw.gender, raw.sex, meta.gender) || 'TBA',
+    imageSrc,
+    heroImageSrc: imageSrc,
+    rank: pickNumber(raw.rank, raw.systemRank),
+    winRatio: pickNumber(raw.winRatio, meta.winRatio),
+    totalStarts: pickNumber(raw.totalStarts, raw.starts),
+    totalEarnings: pickDisplayValue(raw.totalEarnings, raw.earnings, '$0'),
+    raceHistory: normalizeRaceHistory(raw),
+  };
+}
+
+function normalizeResponse(raw?: RawHorseResponse | null): HorseDetailData[] {
+  const horses = raw?.horses || raw?.items || raw?.leaderboard || [];
+  return horses.map(normalizeHorse);
+}
+
+function readJsonFromStorage(key: string): RawHorseResponse | null {
   try {
-    const raw = window.localStorage.getItem('my_horses_data');
-    const parsed = raw ? JSON.parse(raw) as { horses?: MyHorse[] } : null;
-    return parsed?.horses?.length ? parsed.horses : getPageData().myHorses.horses;
+    const raw = window.localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as RawHorseResponse) : null;
   } catch {
-    return getPageData().myHorses.horses;
+    return null;
   }
 }
 
-function parseHorseMeta(meta: string) {
-  const parts = meta.split(' - ').map((part) => part.trim()).filter(Boolean);
-  const breed = parts[0] ?? 'Thoroughbred';
-  const age = parts.find((part) => /\d+\s*yo/i.test(part))?.match(/\d+/)?.[0] ?? '5';
-  const ageClass = parts.find((part) => ['Colt', 'Stallion', 'Gelding', 'Filly', 'Mare', 'Dam'].includes(part)) ?? 'Stallion';
-  const condition = parts.find((part) => /condition/i.test(part))?.replace(/ condition/i, '') ?? 'Peak Performance';
-  const winRate = parts.find((part) => /win rate/i.test(part))?.match(/\d+/)?.[0] ?? '78';
-
-  return { breed, age, ageClass, condition, winRate };
+async function readHorsesFromApi(endpoint: string): Promise<RawHorseResponse | null> {
+  try {
+    const response = await fetch(endpoint, { method: 'GET' });
+    if (!response.ok) return null;
+    return (await response.json()) as RawHorseResponse;
+  } catch {
+    return null;
+  }
 }
 
-function Icon({ name }: { name: 'calendar' | 'edit' | 'race' | 'sex' | 'type' }) {
+function fallbackMyHorses(): HorseDetailData[] {
+  return getPageData().myHorses.horses.map((horse, index) => normalizeHorse(horse, index));
+}
+
+function findHorse(horses: HorseDetailData[], selectedName: string) {
+  const target = normalize(selectedName);
+  return horses.find((horse) => normalize(horse.id || horse.name) === target || normalize(horse.name) === target);
+}
+
+function PositionBadge({ value }: { value?: string }) {
+  const text = value || 'TBA';
+  const tone = /1|first/i.test(text) ? 'first' : /2|second/i.test(text) ? 'second' : /3|third/i.test(text) ? 'third' : 'neutral';
+  return <span className={`horse-detail__position is-${tone}`}>{text}</span>;
+}
+
+function SimpleIcon({ name }: { name: 'edit' | 'race' | 'rank' | 'starts' | 'earnings' | 'history' }) {
   const paths = {
-    calendar:
-      'M1.5 15c-.4 0-.8-.1-1.1-.4A1.5 1.5 0 0 1 0 13.5V3c0-.4.1-.8.4-1.1.3-.3.7-.4 1.1-.4h.8V0h1.5v1.5h6V0h1.5v1.5h.7c.4 0 .8.1 1.1.4.3.3.4.7.4 1.1v10.5c0 .4-.1.8-.4 1.1-.3.3-.7.4-1.1.4H1.5Zm0-1.5H12V6H1.5v7.5Z',
-    edit:
-      'M1.7 13.3h1.2L11 5.2 9.8 4 1.7 12.1v1.2ZM0 15v-3.5L11 .5c.2-.2.4-.3.6-.4.2-.1.4-.1.6-.1.3 0 .5 0 .7.1.2.1.4.2.5.4l1.2 1.2c.2.2.3.4.4.6.1.2.1.4.1.6 0 .3 0 .5-.1.7-.1.2-.2.4-.4.6L3.5 15H0Z',
-    race:
-      'M.8 4.2V.8L4.2 2.5.8 4.2Zm6.7-.9V0l3.3 1.7-3.3 1.6Zm0 13.4c-1.1 0-2.1-.1-3-.3-.9-.1-1.7-.3-2.3-.5-.7-.2-1.2-.5-1.6-.8C.2 14.8 0 14.5 0 14.2V6.7c0-.4.2-.7.7-1 .4-.3 1-.6 1.7-.8.8-.2 1.7-.4 2.7-.5 1-.1 2.1-.2 3.2-.2 1.2 0 2.3.1 3.3.2 1 .1 1.9.3 2.6.5.8.2 1.4.5 1.8.8.4.3.7.6.7 1v7.5c0 .3-.2.6-.6.9-.4.3-.9.6-1.6.8-.7.2-1.5.4-2.4.5-.9.2-1.9.3-2.9.3v-3.3H7.5v3.3Z',
-    sex:
-      'M12 0v4.5h-1.5V2.6l-3 3c.2.4.4.7.5 1.1.2.4.2.8.2 1.2 0 1.2-.4 2.1-1.2 2.9-.8.8-1.8 1.2-2.9 1.2-1.1 0-2.1-.4-2.9-1.2C.4 10 0 9 0 7.9c0-1.2.4-2.1 1.2-2.9.8-.8 1.8-1.2 2.9-1.2.4 0 .8.1 1.2.2.4.1.8.3 1.1.5l3-3H7.5V0H12Z',
-    type:
-      'M7.5 15c-1 0-2-.2-2.9-.6-.9-.4-1.7-.9-2.4-1.6-.7-.7-1.2-1.5-1.6-2.4C.2 9.5 0 8.5 0 7.5s.2-2 .6-2.9c.4-.9.9-1.7 1.6-2.4C2.9 1.5 3.7 1 4.6.6 5.5.2 6.5 0 7.5 0s2 .2 2.9.6c.9.4 1.7.9 2.4 1.6.7.7 1.2 1.5 1.6 2.4.4.9.6 1.9.6 2.9s-.2 2-.6 2.9c-.4.9-.9 1.7-1.6 2.4-.7.7-1.5 1.2-2.4 1.6-.9.4-1.9.6-2.9.6Zm0-4.5 2.3-3-2.3-3-2.3 3 2.3 3Z',
+    edit: 'M4 14.5H1.5V12L11 .5 13.5 3 4 14.5Zm8.2-8.9L8.4 1.8',
+    race: 'M2 15c2-4 5-6 9-6h3M3 5l3 2 3-4 3 4 3-2M6 16l2-5m4 5-2-5',
+    rank: 'M9 1l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L1.8 6.2l5-.7L9 1Z',
+    starts: 'M3 3h12v12H3V3Zm3 9V8m3 4V5m3 7v-2',
+    earnings: 'M3 6c0-1.7 2.7-3 6-3s6 1.3 6 3-2.7 3-6 3-6-1.3-6-3Zm0 0v6c0 1.7 2.7 3 6 3s6-1.3 6-3V6',
+    history: 'M4 4a7 7 0 1 1-1.7 7M2 4v4h4M9 5v4l3 2',
   };
 
   return (
@@ -67,114 +199,196 @@ function Icon({ name }: { name: 'calendar' | 'edit' | 'race' | 'sex' | 'type' })
 
 export default function HorseOwnerHorseDetail() {
   const { name } = useParams<{ name?: string }>();
+  const location = useLocation();
+  const isRegistryView = location.pathname.startsWith('/HorseOwner/Horses/');
   const decodedName = decodeURIComponent(name ?? '');
-  const horses = readStoredHorses();
-  const horse = horses.find((item) => normalize(item.name) === normalize(decodedName)) ?? horses[0];
-  const info = parseHorseMeta(horse.meta);
+  const [horse, setHorse] = React.useState<HorseDetailData | null>(() => {
+    const initialData = isRegistryView
+      ? normalizeResponse(readJsonFromStorage('horse_owner_horses_data'))
+      : normalizeResponse(readJsonFromStorage('my_horses_data'));
+    const fallbackData = isRegistryView ? initialData : [...initialData, ...fallbackMyHorses()];
+    return findHorse(fallbackData, decodedName) || fallbackData[0] || null;
+  });
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      const endpoint = isRegistryView
+        ? process.env.REACT_APP_HORSE_OWNER_HORSES_API || '/api/horse-owner/horses'
+        : '/api/my-horses';
+      const apiData = await readHorsesFromApi(endpoint);
+      const localData = readJsonFromStorage(isRegistryView ? 'horse_owner_horses_data' : 'my_horses_data');
+      const data = normalizeResponse(apiData ?? localData);
+      const candidates = isRegistryView ? data : [...data, ...fallbackMyHorses()];
+      const nextHorse = findHorse(candidates, decodedName) || candidates[0] || null;
+
+      if (!cancelled) setHorse(nextHorse);
+    };
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [decodedName, isRegistryView]);
+
+  if (!horse) {
+    return (
+      <div className={`horse-detail ${isRegistryView ? '' : 'horse-detail--owner-portal'}`}>
+        {isRegistryView ? <Header /> : <OwnerPortalHeader />}
+        <main className="horse-detail__main horse-detail__main--empty">
+          <section className="horse-detail__empty">
+            <h1>Horse detail data is empty.</h1>
+            <p>
+              Connect the database endpoint or provide localStorage data for this route to render the horse profile.
+            </p>
+          </section>
+        </main>
+      </div>
+    );
+  }
+
+  const winRatio = Math.min(Math.max(Number(horse.winRatio || 0), 0), 100);
 
   return (
-    <div className="horse-detail">
-      <Header />
+    <div className={`horse-detail ${isRegistryView ? '' : 'horse-detail--owner-portal'}`}>
+      {isRegistryView ? <Header /> : <OwnerPortalHeader />}
 
       <main className="horse-detail__main">
         <section className="horse-detail__hero">
-          <img src={horse.imageSrc} alt={horse.name} />
-          <div className="horse-detail__hero-gradient" />
+          <img src={horse.heroImageSrc} alt={horse.name} />
+          <div className="horse-detail__hero-overlay" />
           <div className="horse-detail__hero-content">
-            <span className="horse-detail__status">Active</span>
-            <h1>{horse.name}</h1>
-            <div className="horse-detail__meta">
-              <span><Icon name="type" />{info.breed}</span>
-              <span><Icon name="calendar" />{info.age}yo</span>
-              <span><Icon name="sex" />{info.ageClass}</span>
+            <div className="horse-detail__hero-copy">
+              <p className="horse-detail__breadcrumb">Registry <span /> Horses <span /> {horse.name}</p>
+              <h1>{horse.name}</h1>
+              <dl className="horse-detail__identity">
+                <div>
+                  <dt>Owner</dt>
+                  <dd>{horse.owner}</dd>
+                </div>
+                <div>
+                  <dt>Breed</dt>
+                  <dd>{horse.breed}</dd>
+                </div>
+                <div>
+                  <dt>Age</dt>
+                  <dd>{horse.age} Yrs</dd>
+                </div>
+                <div>
+                  <dt>Gender</dt>
+                  <dd>{horse.gender}</dd>
+                </div>
+              </dl>
             </div>
+
+            {!isRegistryView ? (
+              <div className="horse-detail__hero-actions">
+                <Link className="horse-detail__outline-button" to={`/HorseOwner/MyHorses/edit/${encodeURIComponent(horse.name)}`}>
+                  <SimpleIcon name="edit" />
+                  Edit Horse
+                </Link>
+                <Link className="horse-detail__solid-button" to="/HorseOwner/Tournaments">
+                  <SimpleIcon name="race" />
+                  Register for Race
+                </Link>
+              </div>
+            ) : null}
           </div>
         </section>
 
-        <section className="horse-detail__grid">
-          <div className="horse-detail__left">
-            <article className="horse-detail__metrics">
-              <span>Key Performance Metrics</span>
-              <div className="horse-detail__metric-row">
-                <p>Win Rate</p>
-                <strong>{info.winRate}%</strong>
-              </div>
-              <div className="horse-detail__bar"><i style={{ width: `${Math.min(Number(info.winRate), 100)}%` }} /></div>
-              <div className="horse-detail__mini-grid">
-                <div>
-                  <span>Total Earnings</span>
-                  <strong>4.2M <small>CR</small></strong>
-                </div>
-                <div>
-                  <span>Starts</span>
-                  <strong>24</strong>
-                </div>
-              </div>
-            </article>
-
-            <article className="horse-detail__condition">
-              <div>
-                <span>Condition</span>
-                <strong>{info.condition}</strong>
-              </div>
-              <div className="horse-detail__condition-bars" aria-hidden="true"><i /><i /><i /><i /></div>
-            </article>
-          </div>
-
-          <div className="horse-detail__right">
-            <div className="horse-detail__actions">
-              <Link className="horse-detail__primary" to="/HorseOwner/Tournaments">
-                <Icon name="race" />
-                Register for Race
-              </Link>
-              <Link className="horse-detail__secondary" to={`/HorseOwner/MyHorses/edit/${encodeURIComponent(horse.name)}`}>
-                <Icon name="edit" />
-                Edit Details
-              </Link>
-            </div>
-
-            <article className="horse-detail__performance">
-              <div className="horse-detail__table-head">
-                <h2>Recent Performance</h2>
-                <span>Showing last 5 events</span>
-              </div>
-              <div className="horse-detail__table">
-                <div className="horse-detail__table-row horse-detail__table-row--head">
-                  <span>Event / Race</span>
-                  <span>Position</span>
-                  <span>Jockey</span>
-                  <span>Earnings</span>
-                </div>
-                {performanceRows.map((row) => (
-                  <div className="horse-detail__table-row" key={row.event}>
-                    <div><strong>{row.event}</strong><small>{row.detail}</small></div>
-                    <span className={`horse-detail__position ${row.position === '1st' ? 'is-first' : ''}`}>{row.position}</span>
-                    <p>{row.jockey}</p>
-                    <b>{row.earnings}</b>
-                  </div>
-                ))}
-              </div>
-            </article>
-          </div>
+        <section className="horse-detail__stats" aria-label="Horse statistics">
+          <article>
+            <span>System Rank</span>
+            <strong>{horse.rank ? String(horse.rank).padStart(2, '0') : '--'}</strong>
+            <i><SimpleIcon name="rank" /></i>
+          </article>
+          <article>
+            <span>Win Ratio</span>
+            <strong>{winRatio || '--'}{winRatio ? '%' : ''}</strong>
+            <div className="horse-detail__progress"><b style={{ width: `${winRatio}%` }} /></div>
+          </article>
+          <article>
+            <span>Total Starts</span>
+            <strong>{horse.totalStarts ?? '--'}</strong>
+            <i><SimpleIcon name="starts" /></i>
+          </article>
+          <article>
+            <span>Total Earnings</span>
+            <strong>{horse.totalEarnings || '$0'}</strong>
+            <i><SimpleIcon name="earnings" /></i>
+          </article>
         </section>
 
-        <section className="horse-detail__heritage">
-          <div className="horse-detail__heritage-copy">
-            <h2>The Heritage of<br />Speed</h2>
-            <p>
-              {horse.name} carries the legacy of the Royal Ascot lineage, combining a powerful stride with a focused
-              temperament that has defined our stables for decades.
-            </p>
-            <a href="#pedigree">Explore Full Pedigree</a>
+        <section className="horse-detail__history">
+          <div className="horse-detail__section-title">
+            <h2><SimpleIcon name="history" /> Recent Race History</h2>
+            <Link to={isRegistryView ? '/HorseOwner/Horses' : '/HorseOwner/MyHorses'}>View Full Career</Link>
           </div>
-          <div className="horse-detail__gallery">
-            <img src={horse.imageSrc} alt={`${horse.name} stable portrait`} />
-            <img src={horse.imageSrc} alt={`${horse.name} racing profile`} />
+
+          <div className="horse-detail__history-card">
+            {horse.raceHistory.length > 0 ? (
+              <div className="horse-detail__table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tournament</th>
+                      <th>Race</th>
+                      <th>Jockey</th>
+                      <th>Time</th>
+                      <th>Position</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {horse.raceHistory.map((row, index) => (
+                      <tr key={`${row.tournament}-${row.race}-${index}`}>
+                        <td>
+                          <strong>{row.tournament}</strong>
+                          {row.date ? <small>{row.date}</small> : null}
+                        </td>
+                        <td>{row.race || 'Race TBA'}</td>
+                        <td><b>{row.jockey || 'Jockey TBA'}</b></td>
+                        <td><b>{row.time || 'TBA'}</b></td>
+                        <td><PositionBadge value={row.position} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="horse-detail__empty-table">
+                No race history yet. When the database returns race history, it will appear here automatically.
+              </div>
+            )}
           </div>
         </section>
       </main>
 
-      <Footer />
+      <footer className="horse-detail__footer">
+        <div className="horse-detail__footer-inner">
+          <div>
+            <h2>Heritage Racing</h2>
+            <p>
+              The world's premier platform for professional horse racing management, lineage tracking,
+              and real-time performance analytics. Bridging legacy and innovation.
+            </p>
+          </div>
+          <nav aria-label="Navigation">
+            <strong>Navigation</strong>
+            <a href="#about">About Us</a>
+            <a href="#terms">Terms of Service</a>
+            <a href="#privacy">Privacy Policy</a>
+            <a href="#rules">Racing Rules</a>
+          </nav>
+          <nav aria-label="Contact">
+            <strong>Contact</strong>
+            <a href="mailto:support@heritageracing.com">support@heritageracing.com</a>
+            <span>share</span>
+          </nav>
+        </div>
+        <div className="horse-detail__copyright">(c) 2024 Heritage Racing Management. All rights reserved.</div>
+      </footer>
     </div>
   );
 }

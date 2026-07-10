@@ -1,20 +1,34 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OwnerPortalHeader } from '../components/horseOwner/OwnerPortalChrome.tsx';
-import { getPageData } from '../data/pageData.ts';
 import './HorseOwnerMyJockeys.css';
 
 type InvitationStatus = 'Pending' | 'Accepted' | 'Declined';
 type StatusFilter = 'All' | InvitationStatus;
 
 type JockeyInvitation = {
-  id: number;
+  id: string | number;
   jockey: string;
   tournament: string;
   horse: string;
-  sentDate: string;
+  sentDate?: string;
   status: InvitationStatus;
-  image: string;
+  image?: string;
+};
+
+type InvitationMetric = {
+  label: string;
+  value: string;
+  note?: string;
+  icon?: 'check' | 'hourglass' | 'mail' | 'trend';
+  positive?: boolean;
+};
+
+type MyJockeyInvitationsData = {
+  title?: string;
+  subtitle?: string;
+  metrics?: InvitationMetric[];
+  invitations?: Array<Partial<JockeyInvitation>>;
 };
 
 const PAGE_SIZE = 5;
@@ -34,44 +48,84 @@ function InvitationIcon({ name }: { name: 'check' | 'chevron-left' | 'chevron-ri
   return <svg viewBox="0 0 20 20" aria-hidden="true"><path d={paths[name]} /></svg>;
 }
 
-function buildInvitations(): JockeyInvitation[] {
-  const jockeys = getPageData().inviteJockeys.jockeys;
-  const image = (index: number) => jockeys[index % jockeys.length]?.imageSrc ?? 'https://placehold.co/80x80';
+const normalizeStatus = (status?: string): InvitationStatus => {
+  if (status === 'Accepted' || status === 'Declined' || status === 'Pending') return status;
+  return 'Pending';
+};
+
+const normalizeInvitations = (raw?: Array<Partial<JockeyInvitation>>): JockeyInvitation[] =>
+  (raw || [])
+    .filter((item) => item.jockey || item.tournament || item.horse)
+    .map((item, index) => ({
+      id: item.id ?? index + 1,
+      jockey: item.jockey || '',
+      tournament: item.tournament || '',
+      horse: item.horse || '',
+      sentDate: item.sentDate || '',
+      status: normalizeStatus(item.status),
+      image: item.image,
+    }));
+
+const readInvitationsFromLocalStorage = (): MyJockeyInvitationsData | null => {
+  try {
+    const raw = window.localStorage.getItem('horse_owner_jockey_invitations_data');
+    return raw ? (JSON.parse(raw) as MyJockeyInvitationsData) : null;
+  } catch {
+    return null;
+  }
+};
+
+const readInvitationsFromApi = async (): Promise<MyJockeyInvitationsData | null> => {
+  try {
+    const endpoint = process.env.REACT_APP_HORSE_OWNER_MY_JOCKEYS_API || '/api/horse-owner/jockey-invitations';
+    const response = await fetch(endpoint, { method: 'GET' });
+    if (!response.ok) return null;
+    return (await response.json()) as MyJockeyInvitationsData;
+  } catch {
+    return null;
+  }
+};
+
+const buildMetrics = (data: MyJockeyInvitationsData | null, invitations: JockeyInvitation[]): InvitationMetric[] => {
+  if (data?.metrics?.length) return data.metrics;
+  if (!invitations.length) return [];
   return [
-    { id: 1, jockey: 'Julian Sterling', tournament: 'Royal Ascot Invitational', horse: 'Midnight Cavalier', sentDate: 'Oct 12, 2024', status: 'Pending', image: image(0) },
-    { id: 2, jockey: 'Elara Vance', tournament: 'Dubai World Cup', horse: 'Golden Scepter', sentDate: 'Oct 08, 2024', status: 'Accepted', image: image(3) },
-    { id: 3, jockey: 'Marcus Thorne', tournament: "Breeders' Cup Classic", horse: 'Titan’s Echo', sentDate: 'Oct 05, 2024', status: 'Declined', image: image(4) },
-    { id: 4, jockey: 'Sasha Romanoff', tournament: 'The Epsom Derby', horse: 'Silver Streak', sentDate: 'Sep 28, 2024', status: 'Accepted', image: image(1) },
-    { id: 5, jockey: "Liam O'Conner", tournament: "Prix de l'Arc de Triomphe", horse: 'Storm King', sentDate: 'Oct 14, 2024', status: 'Pending', image: image(2) },
-    { id: 6, jockey: 'Diana Prince', tournament: 'Emerald Derby', horse: 'Royal Velvet', sentDate: 'Sep 24, 2024', status: 'Accepted', image: image(5) },
-    { id: 7, jockey: 'Arthur Thorne', tournament: 'Winter Solstice Cup', horse: 'Ivory Ghost', sentDate: 'Sep 20, 2024', status: 'Pending', image: image(2) },
-    { id: 8, jockey: 'Sophie Whitmore', tournament: 'Heritage Plate', horse: 'Midnight Sovereign', sentDate: 'Sep 18, 2024', status: 'Accepted', image: image(1) },
-    { id: 9, jockey: 'Marcus Reed', tournament: 'Highland Sprint Cup', horse: 'Golden Scepter', sentDate: 'Sep 15, 2024', status: 'Declined', image: image(4) },
-    { id: 10, jockey: 'Elena Vance', tournament: 'Southern Fields Invitational', horse: 'Silver Streak', sentDate: 'Sep 12, 2024', status: 'Pending', image: image(3) },
-    { id: 11, jockey: 'Liam Hamilton', tournament: 'Royal Ascot Invitational', horse: 'Storm King', sentDate: 'Sep 08, 2024', status: 'Accepted', image: image(0) },
-    { id: 12, jockey: 'Sophie Whitmore', tournament: 'Dubai World Cup', horse: 'Titan’s Echo', sentDate: 'Sep 04, 2024', status: 'Accepted', image: image(1) },
-    { id: 13, jockey: 'Arthur Thorne', tournament: "Breeders' Cup Classic", horse: 'Royal Velvet', sentDate: 'Aug 30, 2024', status: 'Pending', image: image(2) },
-    { id: 14, jockey: 'Diana Prince', tournament: 'The Epsom Derby', horse: 'Ivory Ghost', sentDate: 'Aug 25, 2024', status: 'Accepted', image: image(5) },
-    { id: 15, jockey: 'Elara Vance', tournament: 'Emerald Derby', horse: 'Midnight Cavalier', sentDate: 'Aug 22, 2024', status: 'Declined', image: image(3) },
-    { id: 16, jockey: 'Marcus Thorne', tournament: 'Heritage Plate', horse: 'Storm King', sentDate: 'Aug 18, 2024', status: 'Accepted', image: image(4) },
-    { id: 17, jockey: 'Liam Hamilton', tournament: 'Highland Sprint Cup', horse: 'Silver Streak', sentDate: 'Aug 14, 2024', status: 'Pending', image: image(0) },
-    { id: 18, jockey: 'Sophie Whitmore', tournament: 'Winter Solstice Cup', horse: 'Royal Velvet', sentDate: 'Aug 10, 2024', status: 'Accepted', image: image(1) },
-    { id: 19, jockey: 'Diana Prince', tournament: 'Dubai World Cup', horse: 'Ivory Ghost', sentDate: 'Aug 06, 2024', status: 'Declined', image: image(5) },
-    { id: 20, jockey: 'Arthur Thorne', tournament: 'Royal Ascot Invitational', horse: 'Titan’s Echo', sentDate: 'Aug 02, 2024', status: 'Pending', image: image(2) },
-    { id: 21, jockey: 'Elena Vance', tournament: 'Southern Fields Invitational', horse: 'Midnight Sovereign', sentDate: 'Jul 28, 2024', status: 'Accepted', image: image(3) },
-    { id: 22, jockey: 'Marcus Reed', tournament: 'Emerald Derby', horse: 'Golden Scepter', sentDate: 'Jul 24, 2024', status: 'Accepted', image: image(4) },
-    { id: 23, jockey: 'Liam Hamilton', tournament: "Prix de l'Arc de Triomphe", horse: 'Storm King', sentDate: 'Jul 20, 2024', status: 'Pending', image: image(0) },
-    { id: 24, jockey: 'Sophie Whitmore', tournament: 'The Epsom Derby', horse: 'Silver Streak', sentDate: 'Jul 16, 2024', status: 'Accepted', image: image(1) },
+    { label: 'Total Invitations', value: String(invitations.length), icon: 'mail' },
+    { label: 'Pending Response', value: String(invitations.filter((item) => item.status === 'Pending').length), icon: 'hourglass' },
+    { label: 'Active Assignments', value: String(invitations.filter((item) => item.status === 'Accepted').length), icon: 'check' },
   ];
-}
+};
 
 export default function HorseOwnerMyJockeys() {
-  const [invitations, setInvitations] = React.useState(buildInvitations);
+  const initialData = React.useMemo(() => readInvitationsFromLocalStorage(), []);
+  const [pageData, setPageData] = React.useState<MyJockeyInvitationsData | null>(initialData);
+  const [invitations, setInvitations] = React.useState<JockeyInvitation[]>(() =>
+    normalizeInvitations(initialData?.invitations),
+  );
   const [query, setQuery] = React.useState('');
   const [filter, setFilter] = React.useState<StatusFilter>('All');
   const [page, setPage] = React.useState(1);
   const [filterOpen, setFilterOpen] = React.useState(false);
   const [toast, setToast] = React.useState('');
+  const metrics = buildMetrics(pageData, invitations);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    const loadInvitations = async () => {
+      const apiData = await readInvitationsFromApi();
+      const localData = readInvitationsFromLocalStorage();
+      const data = apiData ?? localData;
+      if (!cancelled) {
+        setPageData(data);
+        setInvitations(normalizeInvitations(data?.invitations));
+      }
+    };
+
+    void loadInvitations();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filtered = invitations.filter((invitation) => {
     const matchesQuery = `${invitation.jockey} ${invitation.tournament} ${invitation.horse}`.toLowerCase().includes(query.trim().toLowerCase());
@@ -102,33 +156,25 @@ export default function HorseOwnerMyJockeys() {
 
       <main className="jockey-invitations__main">
         <nav className="jockey-invitations__breadcrumb" aria-label="Breadcrumb">
-          <Link to="/HorseOwner/InviteJockeys">Jockeys</Link><span>›</span><strong>Invitations</strong>
+          <Link to="/HorseOwner/InviteJockeys">Jockeys</Link><span>&gt;</span><strong>Invitations</strong>
         </nav>
 
         <section className="jockey-invitations__hero">
           <div>
-            <h1>Jockey Recruitment Status</h1>
-            <p>Manage your formal invitations to professional jockeys. Track response times and confirm assignments for upcoming seasonal tournaments.</p>
+            <h1>{pageData?.title || 'Jockey Recruitment Status'}</h1>
+            {pageData?.subtitle ? <p>{pageData.subtitle}</p> : null}
           </div>
           <Link to="/HorseOwner/InviteJockeys"><InvitationIcon name="plus" /> Invite New Jockey</Link>
         </section>
 
         <section className="jockey-invitations__metrics" aria-label="Invitation summary">
-          <article>
-            <div><span>Total Invitations</span><InvitationIcon name="mail" /></div>
-            <strong>24</strong>
-            <small className="is-positive"><InvitationIcon name="trend" /> +12% from last season</small>
-          </article>
-          <article>
-            <div><span>Pending Response</span><InvitationIcon name="hourglass" /></div>
-            <strong>08</strong>
-            <small>Average wait: 2.4 days</small>
-          </article>
-          <article>
-            <div><span>Active Assignments</span><InvitationIcon name="check" /></div>
-            <strong>14</strong>
-            <small>Ready for Epsom Derby</small>
-          </article>
+          {metrics.length ? metrics.map((metric) => (
+            <article key={metric.label}>
+              <div><span>{metric.label}</span><InvitationIcon name={metric.icon || 'mail'} /></div>
+              <strong>{metric.value}</strong>
+              {metric.note ? <small className={metric.positive ? 'is-positive' : ''}>{metric.positive ? <InvitationIcon name="trend" /> : null}{metric.note}</small> : null}
+            </article>
+          )) : <div className="jockey-invitations__empty">Invitation metrics are empty.</div>}
         </section>
 
         <section className="jockey-invitations__table-card" aria-label="Active recruitment list">
@@ -157,7 +203,7 @@ export default function HorseOwnerMyJockeys() {
               <div className="jockey-invitations__table-body">
                 {rows.map((invitation) => (
                   <article key={invitation.id}>
-                    <div className="jockey-invitations__person"><img src={invitation.image} alt="" /><strong>{invitation.jockey}</strong></div>
+                    <div className="jockey-invitations__person">{invitation.image ? <img src={invitation.image} alt="" /> : null}<strong>{invitation.jockey}</strong></div>
                     <span>{invitation.tournament}</span>
                     <span>{invitation.horse}</span>
                     <span>{invitation.sentDate}</span>
@@ -168,7 +214,7 @@ export default function HorseOwnerMyJockeys() {
                     </div>
                   </article>
                 ))}
-                {!rows.length ? <div className="jockey-invitations__empty">No invitations match your search.</div> : null}
+                {!rows.length ? <div className="jockey-invitations__empty">Invitation data is empty.</div> : null}
               </div>
             </div>
           </div>
@@ -190,7 +236,7 @@ export default function HorseOwnerMyJockeys() {
         <div>
           <section><h2>Heritage Racing</h2><strong>Prestige. Performance. Legacy.</strong></section>
           <nav><a href="#privacy">Privacy Policy</a><a href="#terms">Terms of Service</a><a href="#support">Contact Support</a></nav>
-          <p>© 2024 Heritage Racing Management. All rights reserved.</p>
+          <p>(c) 2024 Heritage Racing Management. All rights reserved.</p>
         </div>
       </footer>
 

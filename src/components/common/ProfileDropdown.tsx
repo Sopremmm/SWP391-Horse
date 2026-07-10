@@ -57,9 +57,10 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = () => {
             className="profile-dropdown__item"
             role="menuitem"
             to="/HorseOwner/MyHorses"
+            state={{ ownerPortalHeader: true }}
             onClick={() => setOpen(false)}
           >
-            My Horses
+            My Stable
           </Link>
           <Link
             className="profile-dropdown__item"

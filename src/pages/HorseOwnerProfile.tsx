@@ -15,47 +15,102 @@ type OwnerProfileForm = {
   age: string;
   gender: string;
   bio: string;
+  avatarUrl?: string;
+  initials?: string;
 };
 
-const INITIAL_PROFILE: OwnerProfileForm = {
-  fullName: 'Alistair Sterling',
-  username: '@asterling',
-  role: 'Senior Managing Partner',
-  age: '42',
-  gender: 'Male',
-  bio: 'Dedicated to the preservation and progress of the purebred thoroughbred legacy.',
+type OwnerProfileStat = {
+  label: string;
+  value: string;
+  icon?: OwnerPortalIconName;
+  variant?: 'dark' | 'light';
+  action?: string;
+  href?: string;
 };
 
-const statCards = [
-  { label: 'TOTAL EARNINGS', value: '$12,408,000', icon: 'money' as OwnerPortalIconName, variant: 'dark' },
-  { label: 'TOURNAMENT WINS', value: '24 Wins', icon: 'trophy' as OwnerPortalIconName },
-  { label: 'STABLE SIZE', value: '15 Registered', icon: 'stable' as OwnerPortalIconName, action: 'Active Horses' },
-  { label: 'INDUSTRY TENURE', value: '12 Years', icon: 'tenure' as OwnerPortalIconName },
-];
+type OwnerProfileData = {
+  profile?: Partial<OwnerProfileForm>;
+  stats?: OwnerProfileStat[];
+  readonlyStats?: Array<{ label: string; value: string }>;
+};
+
+const EMPTY_PROFILE: OwnerProfileForm = {
+  fullName: '',
+  username: '',
+  role: '',
+  age: '',
+  gender: '',
+  bio: '',
+};
+
+const normalizeProfile = (raw?: OwnerProfileData | null): OwnerProfileForm => ({
+  fullName: raw?.profile?.fullName ?? '',
+  username: raw?.profile?.username ?? '',
+  role: raw?.profile?.role ?? '',
+  age: raw?.profile?.age ?? '',
+  gender: raw?.profile?.gender ?? '',
+  bio: raw?.profile?.bio ?? '',
+  avatarUrl: raw?.profile?.avatarUrl,
+  initials: raw?.profile?.initials,
+});
+
+const readOwnerProfileFromLocalStorage = (): OwnerProfileData | null => {
+  try {
+    const raw = window.localStorage.getItem('horse_owner_profile_data');
+    return raw ? (JSON.parse(raw) as OwnerProfileData) : null;
+  } catch {
+    return null;
+  }
+};
+
+const readOwnerProfileFromApi = async (): Promise<OwnerProfileData | null> => {
+  try {
+    const endpoint = process.env.REACT_APP_HORSE_OWNER_PROFILE_API || '/api/horse-owner/profile';
+    const response = await fetch(endpoint, { method: 'GET' });
+    if (!response.ok) return null;
+    return (await response.json()) as OwnerProfileData;
+  } catch {
+    return null;
+  }
+};
+
+const profileInitials = (profile: OwnerProfileForm) => {
+  if (profile.initials) return profile.initials;
+  return profile.fullName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('');
+};
 
 function ProfileOverview({
   profile,
+  stats,
   onEdit,
 }: {
   profile: OwnerProfileForm;
+  stats: OwnerProfileStat[];
   onEdit: () => void;
 }) {
   return (
     <main className="owner-profile-main owner-profile-main--overview">
       <section className="owner-profile-hero" aria-label="Owner summary">
         <div className="owner-profile-hero__wash" aria-hidden="true" />
-        <div className="owner-profile-avatar" aria-label={`${profile.fullName} verified profile`}>
-          <div className="owner-profile-avatar__letters">AS</div>
+        <div className="owner-profile-avatar" aria-label={`${profile.fullName || 'Owner'} verified profile`}>
+          {profile.avatarUrl ? (
+            <img src={profile.avatarUrl} alt={profile.fullName || 'Owner profile'} />
+          ) : (
+            <div className="owner-profile-avatar__letters">{profileInitials(profile)}</div>
+          )}
           <div className="owner-profile-avatar__badge">
             <OwnerPortalIcon name="badge" />
           </div>
         </div>
 
         <div className="owner-profile-hero__copy">
-          <h1>{profile.fullName}</h1>
-          <p>
-            {profile.username} <span aria-hidden="true">•</span> {profile.role}
-          </p>
+          <h1>{profile.fullName || 'Owner Profile'}</h1>
+          <p>{[profile.username, profile.role].filter(Boolean).join(' • ')}</p>
         </div>
 
         <button className="owner-profile-btn owner-profile-btn--primary" type="button" onClick={onEdit}>
@@ -72,7 +127,7 @@ function ProfileOverview({
           <dl>
             <div>
               <dt>Age</dt>
-              <dd>{profile.age} Years</dd>
+              <dd>{profile.age}</dd>
             </div>
             <div>
               <dt>Gender</dt>
@@ -80,30 +135,34 @@ function ProfileOverview({
             </div>
             <div className="owner-profile-details__bio">
               <dt>Bio</dt>
-              <dd>"{profile.bio}"</dd>
+              <dd>{profile.bio}</dd>
             </div>
           </dl>
         </aside>
 
         <div className="owner-profile-stats">
-          {statCards.map((stat) => (
-            <article
-              className={`owner-profile-stat ${stat.variant === 'dark' ? 'owner-profile-stat--dark' : ''}`}
-              key={stat.label}
-            >
-              <div className="owner-profile-stat__icon">
-                <OwnerPortalIcon name={stat.icon} />
-              </div>
-              <span>{stat.label}</span>
-              <strong>{stat.value}</strong>
-              {stat.action ? (
-                <Link to="/HorseOwner/MyHorses">
-                  {stat.action}
-                  <OwnerPortalIcon name="arrow" />
-                </Link>
-              ) : null}
-            </article>
-          ))}
+          {stats.length ? (
+            stats.map((stat) => (
+              <article
+                className={`owner-profile-stat ${stat.variant === 'dark' ? 'owner-profile-stat--dark' : ''}`}
+                key={stat.label}
+              >
+                <div className="owner-profile-stat__icon">
+                  <OwnerPortalIcon name={stat.icon || 'badge'} />
+                </div>
+                <span>{stat.label}</span>
+                <strong>{stat.value}</strong>
+                {stat.action ? (
+                  <Link to={stat.href || '/HorseOwner/MyHorses'}>
+                    {stat.action}
+                    <OwnerPortalIcon name="arrow" />
+                  </Link>
+                ) : null}
+              </article>
+            ))
+          ) : (
+            <div className="owner-profile-empty">Profile stats are empty.</div>
+          )}
         </div>
       </section>
     </main>
@@ -112,10 +171,12 @@ function ProfileOverview({
 
 function ProfileEdit({
   profile,
+  readonlyStats,
   onCancel,
   onSave,
 }: {
   profile: OwnerProfileForm;
+  readonlyStats: Array<{ label: string; value: string }>;
   onCancel: () => void;
   onSave: (profile: OwnerProfileForm) => void;
 }) {
@@ -143,7 +204,7 @@ function ProfileEdit({
         <form onSubmit={handleSubmit}>
           <div className="owner-profile-upload">
             <div className="owner-profile-upload__photo">
-              <img src="https://placehold.co/116x116" alt={`${draft.fullName} profile`} />
+              {draft.avatarUrl ? <img src={draft.avatarUrl} alt={`${draft.fullName} profile`} /> : null}
               <button type="button" aria-label="Change profile picture">
                 <OwnerPortalIcon name="edit" />
               </button>
@@ -168,6 +229,7 @@ function ProfileEdit({
             <label>
               <span>Gender</span>
               <select value={draft.gender} onChange={updateDraft('gender')}>
+                <option value=""></option>
                 <option>Male</option>
                 <option>Female</option>
                 <option>Other</option>
@@ -183,18 +245,16 @@ function ProfileEdit({
           <section className="owner-profile-readonly" aria-label="Account statistics read only">
             <h2>Account Statistics (Read Only)</h2>
             <div>
-              <article>
-                <span>Stable Size</span>
-                <strong>12</strong>
-              </article>
-              <article>
-                <span>Total Wins</span>
-                <strong>45</strong>
-              </article>
-              <article>
-                <span>Tier</span>
-                <strong>Elite</strong>
-              </article>
+              {readonlyStats.length ? (
+                readonlyStats.map((stat) => (
+                  <article key={stat.label}>
+                    <span>{stat.label}</span>
+                    <strong>{stat.value}</strong>
+                  </article>
+                ))
+              ) : (
+                <div className="owner-profile-empty">Readonly stats are empty.</div>
+              )}
             </div>
           </section>
 
@@ -213,8 +273,32 @@ function ProfileEdit({
 }
 
 export default function HorseOwnerProfile() {
-  const [profile, setProfile] = React.useState(INITIAL_PROFILE);
+  const localData = React.useMemo(() => readOwnerProfileFromLocalStorage(), []);
+  const [profile, setProfile] = React.useState<OwnerProfileForm>(() => normalizeProfile(localData) || EMPTY_PROFILE);
+  const [stats, setStats] = React.useState<OwnerProfileStat[]>(() => localData?.stats || []);
+  const [readonlyStats, setReadonlyStats] = React.useState<Array<{ label: string; value: string }>>(
+    () => localData?.readonlyStats || [],
+  );
   const [editing, setEditing] = React.useState(false);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    const loadProfile = async () => {
+      const apiData = await readOwnerProfileFromApi();
+      const fallbackData = readOwnerProfileFromLocalStorage();
+      const data = apiData ?? fallbackData;
+      if (!cancelled && data) {
+        setProfile(normalizeProfile(data));
+        setStats(data.stats || []);
+        setReadonlyStats(data.readonlyStats || []);
+      }
+    };
+
+    void loadProfile();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSave = (nextProfile: OwnerProfileForm) => {
     setProfile(nextProfile);
@@ -225,9 +309,9 @@ export default function HorseOwnerProfile() {
     <div className="horse-owner-profile">
       <OwnerPortalHeader />
       {editing ? (
-        <ProfileEdit profile={profile} onCancel={() => setEditing(false)} onSave={handleSave} />
+        <ProfileEdit profile={profile} readonlyStats={readonlyStats} onCancel={() => setEditing(false)} onSave={handleSave} />
       ) : (
-        <ProfileOverview profile={profile} onEdit={() => setEditing(true)} />
+        <ProfileOverview profile={profile} stats={stats} onEdit={() => setEditing(true)} />
       )}
       <OwnerPortalFooter />
     </div>

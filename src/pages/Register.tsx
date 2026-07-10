@@ -28,7 +28,7 @@ const Register: React.FC = () => {
 
     if (!agreeToTerms || !isPasswordMatched) return;
 
-    navigate('/HorseOwnerHome');
+    navigate('/HorseOwner/Home');
   };
 
   return (

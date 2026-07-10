@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import ProfileDropdown from '../components/common/ProfileDropdown.tsx';
+import { Header } from '../components/common/Header.tsx';
 import { getPageData, Jockey } from '../data/pageData.ts';
 import './InviteJockeyForm.css';
 
@@ -58,21 +58,7 @@ export default function InviteJockeyForm() {
 
   return (
     <div className="invite-jockey-form-page">
-      <header className="invite-jockey-form-page__header">
-        <div className="invite-jockey-form-page__header-inner">
-          <Link className="invite-jockey-form-page__brand" to="/HorseOwnerHome">Heritage Racing</Link>
-          <nav aria-label="Horse owner navigation">
-            <Link to="/HorseOwner/Tournaments">Tournaments</Link>
-            <Link to="/HorseOwner/MyHorses">My Stable</Link>
-            <Link className="is-active" to="/HorseOwner/InviteJockeys">Jockeys</Link>
-            <Link to="/HorseOwner/MyTournament">History</Link>
-          </nav>
-          <div className="invite-jockey-form-page__actions">
-            <Link to="/HorseOwner/Notifications" aria-label="Notifications"><InviteIcon name="bell" /></Link>
-            <ProfileDropdown />
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main className="invite-jockey-form-page__main">
         <div className="invite-jockey-form-page__glow invite-jockey-form-page__glow--gold" />
