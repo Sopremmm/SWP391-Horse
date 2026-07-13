@@ -1,0 +1,30 @@
+/* Keep participant data aligned at wide screen sizes. */
+.adminParticipantHead,
+.adminParticipantRow {
+  grid-template-columns: 70px minmax(250px, 1.35fr) minmax(165px, .8fr) minmax(170px, .78fr) 82px;
+  column-gap: 18px;
+}
+
+.adminParticipantHead,
+.adminParticipantRow {
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+.adminParticipantRow > span:nth-child(3) {
+  line-height: 1.45;
+}
+
+.adminParticipantStatus {
+  justify-self: center;
+}
+
+@media (max-width: 900px) {
+  .adminParticipantHead,
+  .adminParticipantRow {
+    grid-template-columns: 58px minmax(220px, 1.25fr) minmax(140px, .75fr) minmax(150px, .75fr) 76px;
+    column-gap: 12px;
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+}

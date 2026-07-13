@@ -15,7 +15,7 @@ import InviteJockeyForm from "./pages/InviteJockeyForm.tsx";
 import AdminHome from "./pages/AdminHome.tsx";
 import AdminManageTournaments from "./pages/AdminManageTournaments.tsx";
 import AdminCreateTournament from "./pages/AdminCreateTournament.tsx";
-import AdminManageTournamentDetail from "./pages/AdminManageTournamentDetail.tsx";
+import AdminManageTournamentDetail from "./pages/admin/AdminManageTournamentDetail.tsx";
 import AdminConfirmRegistration from "./pages/AdminConfirmRegistration.tsx";
 import AdminUsers from "./pages/AdminUsers.tsx";
 import JockeyProfile from "./pages/JockeyProfile.tsx";
@@ -119,6 +119,7 @@ export default function App() {
         <Route path="/Admin/ManageTournaments" element={<AdminManageTournaments />} />
         <Route path="/Admin/ManageTournaments/Create" element={<AdminCreateTournament />} />
         <Route path="/Admin/ManageTournaments/edit/:name" element={<AdminCreateTournament mode="edit" />} />
+        <Route path="/Admin/ManageTournaments/:name/:racename" element={<AdminManageTournamentDetail />} />
         <Route path="/Admin/ManageTournaments/:name" element={<AdminManageTournamentDetail />} />
         <Route path="/Admin/ConfirmRegistration" element={<AdminConfirmRegistration />} />
 

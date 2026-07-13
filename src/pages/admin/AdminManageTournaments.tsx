@@ -15,7 +15,7 @@ type ManagedTournament = {
   prizePool: string;
 };
 
-const tournaments: ManagedTournament[] = [
+const exampleTournaments: ManagedTournament[] = [
   {
     name: 'Royal Ascot Gold Cup',
     grade: 'Grade I Stakes',
@@ -54,22 +54,14 @@ const tournaments: ManagedTournament[] = [
   },
 ];
 
+// Data is intentionally empty until it is supplied by the tournament data source.
+const tournaments: ManagedTournament[] = [];
+void exampleTournaments;
+
 const insights = [
-  {
-    label: 'Active Tournaments',
-    value: '12',
-    copy: 'Four elite stakes are currently accepting stable entries.',
-  },
-  {
-    label: 'Prize Pool Live',
-    value: '$8.4M',
-    copy: 'Committed across active and upcoming race events.',
-  },
-  {
-    label: 'Upcoming Deadlines',
-    value: '3',
-    copy: 'Tournaments closing within the next 48 hours.',
-  },
+  { label: 'Active Tournaments', value: '0', copy: 'No active tournaments yet.' },
+  { label: 'Prize Pool Live', value: '$0', copy: 'No prize pool has been published yet.' },
+  { label: 'Upcoming Deadlines', value: '0', copy: 'No registration deadlines are scheduled.' },
 ];
 
 function Icon({ name }: { name: 'bell' | 'user' | 'grid' | 'users' | 'trophy' | 'check' | 'settings' | 'plus' | 'filter' | 'star' | 'logout' | 'help' }) {

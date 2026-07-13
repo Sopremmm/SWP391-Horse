@@ -2,507 +2,118 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
 import HomeBanner from '../../assets/images/HomeBanner.png';
-
 import '../AdminManageTournamentDetail.css';
+import './AdminRaceDetail.css';
+import './AdminRaceDetailOverrides.css';
 
-type RouteParams = {
-  name?: string;
-};
+type Race = { id: string; title: string; date: string; time: string; runners: number; state: string };
+type Bracket = { qualifiers: Race[]; semifinals: Race[]; final: Race };
 
-type HeatHorse = {
-  gate: number;
-  horseName: string;
-  rank: number | '';
-};
+const tournamentName = (name?: string) => decodeURIComponent(name ?? 'Royal Ascot Autumn Derby');
 
-type RaceHeat = {
-  id: number;
-  type: HeatType;
-  title: string;
-  referee: string;
-  horseCount: number;
-  date: string;
-  startTime: string;
-  horses: HeatHorse[];
-};
+function RaceCard({ race, tournament, featured = false }: { race: Race; tournament: string; featured?: boolean }) {
+  return (
+    <Link className={`amtBracketRace ${featured ? 'amtBracketRace--final' : ''}`} to={`/Admin/ManageTournaments/${encodeURIComponent(tournament)}/${encodeURIComponent(race.id)}`}>
+      {featured ? <div className="amtBracketRace__championship">The Championship Match</div> : null}
+      <div className="amtBracketRace__body">
+        <div className="amtBracketRace__top"><h3>{race.title}</h3><span>{race.state}</span></div>
+        <div className="amtBracketRace__detail"><b>▣</b> {race.date} · {race.time}</div>
+        <div className="amtBracketRace__detail"><b>━</b> 2400m</div>
+        <div className="amtBracketRace__detail"><b>♟</b> {race.runners} Runners</div>
+        <p>Ref: Official Official</p>
+      </div>
+      <footer>{featured ? 'Pending final results' : 'Pending bracket'} <span>↗</span></footer>
+    </Link>
+  );
+}
 
-type HeatType = 'Qualifier' | 'Quarterfinal' | 'Semifinal' | 'Final';
-
-const registeredHorses = [
-  { name: 'Sovereign Victory', breedAge: 'Thoroughbred · 5yo Stallion', jockey: 'James Whitaker', owner: 'Lord Winston Churchill', status: 'Approved' },
-  { name: 'Emerald Legacy', breedAge: 'Thoroughbred · 4yo Mare', jockey: 'Elena Rossi', owner: 'Duke of Wellington', status: 'Approved' },
-  { name: 'Gilded Thunder', breedAge: 'Arabian Cross · 6yo Stallion', jockey: 'Marcus Thorne', owner: 'Eleanor Rigby', status: 'Approved' },
-  { name: 'Midnight Rose', breedAge: 'Thoroughbred · 3yo Mare', jockey: 'Julian Vane', owner: 'Sir Arthur Dayne', status: 'Approved' },
-  { name: 'Royal Radiance', breedAge: 'Warmblood · 5yo Mare', jockey: 'Sarah Jenkins', owner: 'Lady Katherine', status: 'Approved' },
-  { name: 'Velvet Gallop', breedAge: 'Thoroughbred · 4yo Gelding', jockey: 'Oliver Reed', owner: 'Baron von Richter', status: 'Approved' },
-  { name: 'Majestic Wind', breedAge: 'Arabian · 5yo Stallion', jockey: 'Leo Sterling', owner: 'Countess of Kent', status: 'Approved' },
-  { name: 'Golden Mane', breedAge: 'Thoroughbred · 6yo Stallion', jockey: 'Thomas Wright', owner: 'General Montgomery', status: 'Approved' },
-  { name: 'Autumn Regent', breedAge: 'Thoroughbred · 4yo Gelding', jockey: 'Amelia Hart', owner: 'Helena Ward', status: 'Pending' },
-  { name: 'Ivory Monarch', breedAge: 'Arabian Cross · 3yo Stallion', jockey: 'Noah Bennett', owner: 'Edward Sinclair', status: 'Approved' },
+const availableHorses = [
+  { name: 'Midnight Sovereign', jockey: 'James Harrington', owner: 'Heritage Stables' },
+  { name: 'Royal Emissary', jockey: 'Sarah Whitmore', owner: 'Oaks Racing Group' },
+  { name: 'Crimson Baron', jockey: 'Marcus Vane', owner: 'Baroness Bloodstock' },
+  { name: 'Emerald Legacy', jockey: 'Elena Rossi', owner: 'Wellington Racing' },
 ];
+const referees = ['Official Assign', 'Michael Harrington', 'Amelia Clarke', 'Victor Nguyen', 'Sophia Bennett'];
 
-const referees = ['Michael Harrington', 'Amelia Clarke', 'Victor Nguyen', 'Sophia Bennett'];
-
-function buildHeat(
-  id: number,
-  horseCount: number,
-  referee: string,
-  type: HeatType,
-  date: string,
-  startTime: string,
-  prefill = false,
-): RaceHeat {
-  return {
-    id,
-    type,
-    title: `${type} ${type === 'Final' ? '' : String.fromCharCode(64 + id)}`.trim(),
-    referee,
-    horseCount,
-    date,
-    startTime,
-    horses: Array.from({ length: horseCount }, (_, index) => ({
-      gate: index + 1,
-      horseName: prefill ? registeredHorses[index]?.name ?? '' : '',
-      rank: '',
-    })),
-  };
-}
-
-function formatRank(rank: number) {
-  if (rank === 1) return '1st';
-  if (rank === 2) return '2nd';
-  if (rank === 3) return '3rd';
-  return `${rank}th`;
-}
-
-function hasCompleteRefereeResults(heat: RaceHeat) {
-  const enteredHorses = heat.horses.filter((horse) => horse.horseName);
-  return enteredHorses.length === heat.horseCount && enteredHorses.every((horse) => horse.rank !== '');
+function RaceDetailView({ tournament, raceName }: { tournament: string; raceName: string }) {
+  const [race, setRace] = React.useState({ date: '2024-11-12', time: '14:00', distance: '1200' });
+  const [participants, setParticipants] = React.useState<Array<{ horse: string }>>([]);
+  const [referee, setReferee] = React.useState(referees[0]);
+  const [editOpen, setEditOpen] = React.useState(false);
+  const [gatesOpen, setGatesOpen] = React.useState(false);
+  const [gateCount, setGateCount] = React.useState(4);
+  const displayRace = raceName.replace(/-/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const changeHorse = (index: number, horse: string) => setParticipants((items) => items.map((item, itemIndex) => itemIndex === index ? { horse } : item));
+  const createGates = (event: React.FormEvent) => { event.preventDefault(); setParticipants(Array.from({ length: gateCount }, () => ({ horse: '' }))); setGatesOpen(false); };
+  return <div className="adminRaceDetail">
+    <section className="adminRaceHero"><button type="button" onClick={() => setEditOpen(true)}>✎ Edit Race</button><div><h1>Heat: {displayRace}</h1><div className="adminRaceHero__facts"><span>▣ Nov 12, 2024</span><span>◷ {race.time} GMT</span><span>━ {race.distance}m</span></div></div></section>
+    <div className="adminRaceContent"><section className="adminRacePanel"><header className="adminRacePanel__heading"><h2>Race Participant Assignment</h2><button type="button" onClick={() => setGatesOpen(true)}>✎ Configure Gates</button></header>{participants.length === 0 ? <div className="adminRaceEmpty"><b>No participants created yet</b><p>Configure race gates to start assigning registered horses to this heat.</p><button type="button" onClick={() => setGatesOpen(true)}>Configure Gates</button></div> : <><div className="adminParticipantHead"><span>Gate</span><span>Horse Name</span><span>Jockey</span><span>Finish Time</span><span>Status</span></div>{participants.map((participant, index) => { const horse = availableHorses.find((item) => item.name === participant.horse); return <div className="adminParticipantRow" key={index}><strong>{String(index + 1).padStart(2, '0')}</strong><div><select value={participant.horse} onChange={(event) => changeHorse(index, event.target.value)}><option value="">Select horse...</option>{availableHorses.map((item) => <option value={item.name} key={item.name}>{item.name}</option>)}</select><small>{horse?.owner ?? '—'}</small></div><span>{horse?.jockey ?? '—'}</span><input aria-label={`Finish time gate ${index + 1}`} placeholder="--:--:--" /><span className="adminParticipantStatus">Pending</span></div>})}<button className="adminAddEntry" type="button" onClick={() => setParticipants((items) => [...items, { horse: '' }])}>+ Add additional entry</button></>}</section>
+    <aside className="adminRaceSide"><section className="adminRefereeCard"><h2>♢ Referee Assignment</h2><p>Select the presiding official for this qualifier heat.</p><label>Assigned official</label><select value={referee} onChange={(event) => setReferee(event.target.value)}>{referees.map((item) => <option key={item}>{item}</option>)}</select><button type="button">♙ Assign Official</button></section><section className="adminFinalActions"><span>Final actions</span><button type="button">↥ Publish Results</button><button type="button">▣ Save Draft</button><p>Last auto-saved: just now</p></section></aside></div>
+    {editOpen && <div className="adminRaceModal" onMouseDown={() => setEditOpen(false)}><form onSubmit={(event) => { event.preventDefault(); setEditOpen(false); }} onMouseDown={(event) => event.stopPropagation()}><h2>Edit Race</h2><p>Update the race schedule and distance.</p><div className="adminRaceModal__fields"><label>Date<input type="date" value={race.date} onChange={(event) => setRace({ ...race, date: event.target.value })} /></label><label>Start time<input type="time" value={race.time} onChange={(event) => setRace({ ...race, time: event.target.value })} /></label></div><label>Distance (metres)<input type="number" min="100" value={race.distance} onChange={(event) => setRace({ ...race, distance: event.target.value })} /></label><div className="adminRaceModal__actions"><button type="button" onClick={() => setEditOpen(false)}>Cancel</button><button type="submit">Save changes</button></div></form></div>}
+    {gatesOpen && <div className="adminRaceModal" onMouseDown={() => setGatesOpen(false)}><form onSubmit={createGates} onMouseDown={(event) => event.stopPropagation()}><h2>Configure Gates</h2><p>Choose the number of participant gates for this race.</p><label>Number of gates<select value={gateCount} onChange={(event) => setGateCount(Number(event.target.value))}>{[1,2,3,4,5,6,8,10,12].map((value) => <option value={value} key={value}>{value} gates</option>)}</select></label><div className="adminRaceModal__actions"><button type="button" onClick={() => setGatesOpen(false)}>Cancel</button><button type="submit">Create participants</button></div></form></div>}
+  </div>;
 }
 
 export default function AdminManageTournamentDetail() {
-  const { name } = useParams<RouteParams>();
-  const [heats, setHeats] = React.useState<RaceHeat[]>([
-    buildHeat(1, 8, 'Not Assigned', 'Qualifier', '2024-11-12', '14:00', true),
-  ]);
-  const [createOpen, setCreateOpen] = React.useState(false);
-  const [entriesOpen, setEntriesOpen] = React.useState(false);
-  const [horseCount, setHorseCount] = React.useState(8);
-  const [heatType, setHeatType] = React.useState<HeatType>('Qualifier');
-  const [heatDate, setHeatDate] = React.useState('2024-11-12');
-  const [startTime, setStartTime] = React.useState('14:00');
-  const [referee, setReferee] = React.useState('Not Assigned');
-  const [officialHeatId, setOfficialHeatId] = React.useState<number | null>(null);
-  const [officialName, setOfficialName] = React.useState(referees[0]);
-  const [actionMessage, setActionMessage] = React.useState('');
-  const actionMessageTimer = React.useRef<number | null>(null);
+  const { name, racename } = useParams<{ name?: string; racename?: string }>();
+  const title = tournamentName(name);
+  const [bracket, setBracket] = React.useState<Bracket | null>(null);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [qualifierCount, setQualifierCount] = React.useState(3);
+  const [semifinalCount, setSemifinalCount] = React.useState(2);
 
-  const totalRegistrations = registeredHorses.length;
-
-  React.useEffect(() => () => {
-    if (actionMessageTimer.current !== null) {
-      window.clearTimeout(actionMessageTimer.current);
-    }
-  }, []);
-
-  const showActionMessage = (message: string) => {
-    setActionMessage(message);
-
-    if (actionMessageTimer.current !== null) {
-      window.clearTimeout(actionMessageTimer.current);
-    }
-
-    actionMessageTimer.current = window.setTimeout(() => {
-      setActionMessage('');
-      actionMessageTimer.current = null;
-    }, 2800);
-  };
-
-  const handleCreateHeat = (event: React.FormEvent<HTMLFormElement>) => {
+  const createBracket = (event: React.FormEvent) => {
     event.preventDefault();
-    const nextId = heats.length ? Math.max(...heats.map((heat) => heat.id)) + 1 : 1;
-
-    setHeats((current) => [
-      ...current,
-      buildHeat(nextId, horseCount, referee, heatType, heatDate, startTime),
-    ]);
-    setCreateOpen(false);
+    const qualifiers = Array.from({ length: qualifierCount }, (_, index) => ({
+      id: `qualifier-${index + 1}`, title: `Qualifier ${String.fromCharCode(65 + index)}`,
+      date: 'Nov 12, 2024', time: index === 0 ? '14:00' : `${14 + index}:30`, runners: 12, state: 'Awaiting entries',
+    }));
+    const semifinals = Array.from({ length: semifinalCount }, (_, index) => ({
+      id: `semi-final-${index + 1}`, title: `Semi-final ${String.fromCharCode(65 + index)}`,
+      date: 'Nov 13, 2024', time: index === 0 ? '18:00' : '16:00', runners: 8, state: 'Awaiting qualifiers',
+    }));
+    setBracket({ qualifiers, semifinals, final: { id: 'grand-finals', title: 'Grand Finals', date: 'Nov 15, 2024', time: '15:00 GMT', runners: 6, state: 'Final' } });
+    setModalOpen(false);
   };
 
-  const handleDeleteHeat = (heatId: number) => {
-    setHeats((current) => current.filter((heat) => heat.id !== heatId));
-  };
-
-  const handleHorseChange = (heatId: number, gate: number, value: string) => {
-    setHeats((current) =>
-      current.map((heat) => {
-        if (heat.id !== heatId) return heat;
-
-        return {
-          ...heat,
-          horses: heat.horses.map((horse) => (
-            horse.gate === gate ? { ...horse, horseName: value, rank: value ? horse.rank : '' } : horse
-          )),
-        };
-      }),
+  if (racename) {
+    const raceTitle = decodeURIComponent(racename).replace(/-/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+    return (
+      <AdminLayout active="tournaments" breadcrumb={[{ label: 'Tournaments', to: '/Admin/ManageTournaments' }, { label: title, to: `/Admin/ManageTournaments/${encodeURIComponent(title)}` }, { label: raceTitle }]}>
+        <RaceDetailView tournament={title} raceName={racename} />
+      </AdminLayout>
     );
-  };
-
-  const handleRefereeChange = (heatId: number, value: string) => {
-    setHeats((current) =>
-      current.map((heat) => (heat.id === heatId ? { ...heat, referee: value } : heat)),
-    );
-  };
-
-  const openAssignOfficial = (heat: RaceHeat) => {
-    setOfficialHeatId(heat.id);
-    setOfficialName(heat.referee === 'Not Assigned' ? referees[0] : heat.referee);
-  };
-
-  const handleAssignOfficial = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (officialHeatId === null) return;
-
-    handleRefereeChange(officialHeatId, officialName);
-    setOfficialHeatId(null);
-    showActionMessage(`${officialName} has been assigned to this heat.`);
-  };
-
-  const handleSendStartList = (heat: RaceHeat) => {
-    if (heat.referee === 'Not Assigned') {
-      showActionMessage('Assign an official before sending the start list.');
-      return;
-    }
-
-    showActionMessage(`Start list sent to ${heat.referee}.`);
-  };
-
-  const handleSaveDraft = (heat: RaceHeat) => {
-    showActionMessage(`${heat.title} was saved as a draft.`);
-  };
-
-  const handlePublishRankings = (heat: RaceHeat) => {
-    if (!hasCompleteRefereeResults(heat)) {
-      showActionMessage('Rankings are pending until the referee submits the complete result.');
-      return;
-    }
-
-    showActionMessage(`Rankings for ${heat.title} have been published.`);
-  };
+  }
 
   return (
-    <AdminLayout
-      active="tournaments"
-      breadcrumb={[
-        { label: 'Tournaments', to: '/Admin/ManageTournaments' },
-        { label: name ?? 'Tournament' },
-      ]}
-    >
-    <div className="amtDetailPage">
-      <div className="amtDetailWrap">
+    <AdminLayout active="tournaments" breadcrumb={[{ label: 'Tournaments', to: '/Admin/ManageTournaments' }, { label: title }]}>
+      <div className="amtDetailPage">
         <main className="amtDetailMain">
           <section className="amtDetailHero">
-            <div className="amtDetailHeroBg">
-              <img alt="Royal Ascot racecourse" className="amtDetailHeroImg" src={HomeBanner} />
-              <div className="amtDetailHeroGradient" />
-            </div>
-
+            <div className="amtDetailHeroBg"><img alt="Racecourse" className="amtDetailHeroImg" src={HomeBanner} /><div className="amtDetailHeroGradient" /></div>
             <div className="amtDetailHeroContent">
-              <div className="amtDetailHeroLeft">
-                <div className="amtDetailBadges">
-                  <div className="amtBadge amtBadgeGold">PREMIUM EVENT</div>
-                  <div className="amtBadge amtBadgeTeal">REGISTRATION OPEN</div>
-                </div>
-                <div className="amtDetailHeroTitle">{name ?? 'Royal Ascot Autumn Derby'}</div>
-                <div className="amtDetailHeroDesc">
-                  The pinnacle of the autumn racing season, where tradition meets speed. A gathering of elite breeders and thoroughbreds.
-                </div>
-              </div>
-
-              <Link className="amtDetailEditBtn" to={`/Admin/ManageTournaments/edit/${encodeURIComponent(name ?? 'Tournament')}`}>
-                Edit Tournament
-              </Link>
+              <div className="amtDetailHeroLeft"><span className="amtRegistration">Registration open</span><h1 className="amtDetailHeroTitle">{title}</h1><p className="amtDetailHeroDesc">The pinnacle of the autumn racing season, where tradition meets speed. A gathering of the world's most elite breeders and thoroughbreds.</p></div>
+              <div className="amtHeroActions"><button type="button" className="amtViewEntries">▦ View Entries</button><Link className="amtDetailEditBtn" to={`/Admin/ManageTournaments/edit/${encodeURIComponent(title)}`}>✎ Edit Tournament</Link></div>
             </div>
           </section>
 
-          <section className="amtDetailGrid" aria-label="Tournament stats">
-            <div className="amtDetailStat">
-              <div className="amtDetailStatIcon">DATE</div>
-              <div className="amtDetailStatLabel">DATE</div>
-              <div className="amtDetailStatValue">Nov 12-15,<br />2024</div>
-            </div>
-            <div className="amtDetailStat">
-              <div className="amtDetailStatIcon">M</div>
-              <div className="amtDetailStatLabel">DISTANCE</div>
-              <div className="amtDetailStatValue">2400m</div>
-            </div>
-            <div className="amtDetailStat">
-              <div className="amtDetailStatIcon">$</div>
-              <div className="amtDetailStatLabel">PRIZE POOL</div>
-              <div className="amtDetailStatValue">$500,000</div>
-            </div>
-            <div className="amtDetailStat">
-              <div className="amtDetailStatIcon">LOC</div>
-              <div className="amtDetailStatLabel">LOCATION</div>
-              <div className="amtDetailStatValue">Berkshire,<br />UK</div>
-            </div>
+          <section className="amtDetailGrid" aria-label="Tournament information">
+            {[['▣', 'Date', 'Nov 12 - 15, 2024'], ['▤', 'Prize pool', '$150,000'], ['♟', 'Entries / total', '10/20'], ['⌖', 'Location', 'Berkshire, UK']].map(([icon, label, value]) => <article className="amtDetailStat" key={label}><i>{icon}</i><div><span>{label}</span><strong>{value}</strong></div></article>)}
           </section>
 
-          <section className="amtDetailSection">
-            <div className="amtDetailSectionHeader">
-              <div>
-                <div className="amtDetailSectionTitle">Race Management</div>
-                <div className="amtDetailSectionDesc">Schedule heats, assign referees, manage participants, and record final standings.</div>
-                <div className="amtDetailSectionMeta">
-                  <div className="amtDetailMetaLabel">TOTAL REGISTRATIONS:</div>
-                  <div className="amtDetailMetaPill">{totalRegistrations}/20</div>
-                  <div className="amtDetailMetaPillSmall">REGISTRATION OPEN</div>
-                </div>
+          <section className="amtBracketSection">
+            <header className="amtBracketHeader"><div><h2>Tournament Bracket</h2><p>Official management view of the Autumn Series progression.</p></div><button type="button" onClick={() => setModalOpen(true)}>✎ {bracket ? 'Edit Bracket' : 'Create Bracket'}</button></header>
+            {!bracket ? <div className="amtBracketEmpty"><div>♜</div><strong>No bracket created yet</strong><p>Create a bracket to organize qualifying races, semi-finals, and the championship match.</p></div> : (
+              <div className="amtBracketBoard">
+                <div className="amtBracketColumn"><h3>Qualifiers</h3><div className="amtBracketStack">{bracket.qualifiers.map((race) => <RaceCard key={race.id} race={race} tournament={title} />)}</div></div>
+                <div className="amtBracketColumn"><h3>Semi-finals</h3><div className="amtBracketStack amtBracketStack--middle">{bracket.semifinals.map((race) => <RaceCard key={race.id} race={race} tournament={title} />)}</div></div>
+                <div className="amtBracketColumn amtBracketColumn--final"><h3>Grand finals</h3><RaceCard race={bracket.final} tournament={title} featured /></div>
               </div>
-
-              <div className="amtDetailSectionActions">
-                <button className="amtDetailViewEntries" type="button" onClick={() => setEntriesOpen(true)}>
-                  <span aria-hidden="true">▦</span>
-                  <span>View Entries</span>
-                </button>
-                <button className="amtDetailCreateHeat" type="button" onClick={() => setCreateOpen(true)}>
-                  <span aria-hidden="true">+</span>
-                  <span>Create Race Heat</span>
-                </button>
-              </div>
-            </div>
-
-            {heats.length === 0 ? (
-              <div className="amtNoHeatState">No race heats yet.</div>
-            ) : (
-              heats.map((heat) => (
-                <article className="amtHeatCard" key={heat.id}>
-                  <div className="amtHeatCardHeader">
-                    <div className="amtHeatHeaderLeft">
-                      <div className="amtHeatHeaderBar" aria-hidden="true" />
-                      <div>
-                        <div className="amtHeatTitle">Heat: {heat.title}</div>
-                        <div className="amtHeatMeta">
-                          <span className="amtHeatSlots">
-                            {heat.horses.filter((horse) => horse.horseName).length} / {heat.horseCount} SLOTS FILLED
-                          </span>
-                          <span>{heat.date} · {heat.startTime}</span>
-                          <span className={hasCompleteRefereeResults(heat) ? 'amtHeatResultState amtHeatResultStateReady' : 'amtHeatResultState'}>
-                            {hasCompleteRefereeResults(heat) ? 'RESULTS RECEIVED' : 'AWAITING REFEREE RESULTS'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="amtHeatHeaderActions">
-                      <button className="amtHeatActionBtn" type="button">Edit Heat Details</button>
-                      <button className="amtHeatActionBtn amtHeatActionBtnDanger" type="button" onClick={() => handleDeleteHeat(heat.id)}>Delete</button>
-                    </div>
-                  </div>
-
-                  <div className="amtHeatTable">
-                    <div className="amtHeatTableHead">
-                      <div className="amtHeatRowHead">
-                        <div className="amtHeatCellHead">GATE</div>
-                        <div className="amtHeatCellHead">HORSE NAME</div>
-                        <div className="amtHeatCellHead">JOCKEY</div>
-                        <div className="amtHeatCellHead">OWNER</div>
-                        <div className="amtHeatCellHead amtHeatCellHeadRight">FINAL RANK</div>
-                      </div>
-                    </div>
-
-                    <div className="amtHeatBody">
-                      {heat.horses.map((horse) => {
-                        const selectedHorseNames = heat.horses.filter((item) => item.gate !== horse.gate).map((item) => item.horseName);
-                        const selectedHorse = registeredHorses.find((item) => item.name === horse.horseName);
-
-                        return (
-                          <div key={horse.gate} className="amtHeatRow">
-                            <div className="amtHeatCell amtHeatCellGate">{horse.gate}</div>
-                            <div className="amtHeatCell amtHeatCellHorse">
-                              <select className="amtAssignHorseSelect" value={horse.horseName} onChange={(event) => handleHorseChange(heat.id, horse.gate, event.target.value)}>
-                                <option value="">Select registered horse</option>
-                                {registeredHorses.map((registeredHorse) => (
-                                  <option key={registeredHorse.name} value={registeredHorse.name} disabled={selectedHorseNames.includes(registeredHorse.name)}>
-                                    {registeredHorse.name}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div className="amtHeatCell amtHeatCellOwner">
-                              <div className="amtHeatOwnerName">{selectedHorse?.jockey ?? '-'}</div>
-                            </div>
-                            <div className="amtHeatCell amtHeatCellOwner">
-                              <div className="amtHeatOwnerName">{selectedHorse?.owner ?? '-'}</div>
-                            </div>
-                            <div className="amtHeatCell amtHeatCellRank">
-                              {hasCompleteRefereeResults(heat) && horse.rank !== '' ? (
-                                <span className="amtRankBadge amtRankBadgeReady">{formatRank(horse.rank as number)}</span>
-                              ) : (
-                                <span className="amtRankBadge">Pending</span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className="amtHeatOfficialRow">
-                      <div className="amtHeatOfficialInfo">
-                        <span className="amtHeatOfficialIcon" aria-hidden="true">♙</span>
-                        <span>
-                          <small>ASSIGNED REFEREE</small>
-                          <strong>{heat.referee}</strong>
-                        </span>
-                      </div>
-                      <button type="button" className="amtAssignOfficialBtn" onClick={() => openAssignOfficial(heat)}>
-                        Assign Official
-                      </button>
-                    </div>
-
-                    <div className="amtHeatActionBar">
-                      <button type="button" className="amtHeatFooterBtn amtSendStartBtn" onClick={() => handleSendStartList(heat)}>
-                        <span aria-hidden="true">▷</span>
-                        Send Start List to Referee
-                      </button>
-                      <button type="button" className="amtHeatFooterBtn amtDraftBtn" onClick={() => handleSaveDraft(heat)}>
-                        Save Draft
-                      </button>
-                      <button type="button" className="amtHeatFooterBtn amtPublishBtn" onClick={() => handlePublishRankings(heat)}>
-                        <span aria-hidden="true">↥</span>
-                        Publish Rankings
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))
             )}
           </section>
         </main>
+        {modalOpen && <div className="amtModalOverlay" onMouseDown={() => setModalOpen(false)}><form className="amtCreateHeatModal" onSubmit={createBracket} onMouseDown={(event) => event.stopPropagation()}><div className="amtModalHeader"><div><h2 className="amtModalTitle">{bracket ? 'Edit' : 'Create'} Tournament Bracket</h2><p className="amtModalDesc">Enter the number of races in each stage. The Grand Final is always included.</p></div><button className="amtModalClose" type="button" onClick={() => setModalOpen(false)}>×</button></div><div className="amtModalFieldGrid"><label className="amtModalField"><span>Qualifying races</span><input type="number" min="0" max="32" value={qualifierCount} onChange={(e) => setQualifierCount(Math.max(0, Number(e.target.value)))} /></label><label className="amtModalField"><span>Semi-final races</span><input type="number" min="0" max="16" value={semifinalCount} onChange={(e) => setSemifinalCount(Math.max(0, Number(e.target.value)))} /></label></div><div className="amtModalActions"><button className="amtModalSecondary" type="button" onClick={() => setModalOpen(false)}>Cancel</button><button className="amtModalPrimary" type="submit">Create Bracket</button></div></form></div>}
       </div>
-
-      {createOpen ? (
-        <div className="amtModalOverlay" role="presentation">
-          <form className="amtCreateHeatModal" onSubmit={handleCreateHeat}>
-            <div className="amtModalHeader">
-              <div>
-                <div className="amtModalTitle">Create Race Heat</div>
-                <div className="amtModalDesc">Configure the race round, horse capacity, date, and starting time.</div>
-              </div>
-              <button className="amtModalClose" type="button" aria-label="Close" onClick={() => setCreateOpen(false)}>x</button>
-            </div>
-
-            <label className="amtModalField">
-              <span>Race round</span>
-              <select value={heatType} onChange={(event) => setHeatType(event.target.value as HeatType)}>
-                <option value="Qualifier">Qualifier</option>
-                <option value="Quarterfinal">Quarterfinal</option>
-                <option value="Semifinal">Semifinal</option>
-                <option value="Final">Final</option>
-              </select>
-            </label>
-
-            <label className="amtModalField">
-              <span>Number of horses</span>
-              <select value={horseCount} onChange={(event) => setHorseCount(Number(event.target.value))}>
-                {Array.from({ length: 10 }, (_, index) => index + 1).map((count) => (
-                  <option key={count} value={count}>{count}</option>
-                ))}
-              </select>
-            </label>
-
-            <div className="amtModalFieldGrid">
-              <label className="amtModalField">
-                <span>Race date</span>
-                <input type="date" required value={heatDate} onChange={(event) => setHeatDate(event.target.value)} />
-              </label>
-              <label className="amtModalField">
-                <span>Start time</span>
-                <input type="time" required value={startTime} onChange={(event) => setStartTime(event.target.value)} />
-              </label>
-            </div>
-
-            <label className="amtModalField">
-              <span>Assign referee (optional)</span>
-              <select value={referee} onChange={(event) => setReferee(event.target.value)}>
-                <option value="Not Assigned">Not Assigned</option>
-                {referees.map((refereeName) => (
-                  <option key={refereeName} value={refereeName}>{refereeName}</option>
-                ))}
-              </select>
-            </label>
-
-            <div className="amtModalActions">
-              <button className="amtModalSecondary" type="button" onClick={() => setCreateOpen(false)}>Cancel</button>
-              <button className="amtModalPrimary" type="submit">Create Heat</button>
-            </div>
-          </form>
-        </div>
-      ) : null}
-
-      {entriesOpen ? (
-        <div className="amtModalOverlay" role="presentation" onMouseDown={() => setEntriesOpen(false)}>
-          <section className="amtEntriesModal" role="dialog" aria-modal="true" aria-labelledby="entries-modal-title" onMouseDown={(event) => event.stopPropagation()}>
-            <div className="amtModalHeader">
-              <div>
-                <div className="amtModalTitle" id="entries-modal-title">Tournament Entries</div>
-                <div className="amtModalDesc">{registeredHorses.length} horses registered for {name ?? 'Royal Ascot Autumn Derby'}.</div>
-              </div>
-              <button className="amtModalClose" type="button" aria-label="Close entries" onClick={() => setEntriesOpen(false)}>×</button>
-            </div>
-            <div className="amtEntriesTableScroll">
-              <div className="amtEntriesTable">
-                <div className="amtEntriesTableHead">
-                  <span>#</span><span>Horse</span><span>Breed / Age</span><span>Jockey</span><span>Owner</span><span>Status</span>
-                </div>
-                {registeredHorses.map((horse, index) => (
-                  <article key={horse.name}>
-                    <span>{index + 1}</span>
-                    <strong>{horse.name}</strong>
-                    <span>{horse.breedAge}</span>
-                    <span>{horse.jockey}</span>
-                    <span>{horse.owner}</span>
-                    <i className={horse.status.toLowerCase()}>{horse.status}</i>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </section>
-        </div>
-      ) : null}
-
-      {officialHeatId !== null ? (
-        <div className="amtModalOverlay" role="presentation" onMouseDown={() => setOfficialHeatId(null)}>
-          <form className="amtCreateHeatModal" onSubmit={handleAssignOfficial} onMouseDown={(event) => event.stopPropagation()}>
-            <div className="amtModalHeader">
-              <div>
-                <div className="amtModalTitle">Assign Official</div>
-                <div className="amtModalDesc">Select the referee responsible for this race heat.</div>
-              </div>
-              <button className="amtModalClose" type="button" aria-label="Close official assignment" onClick={() => setOfficialHeatId(null)}>×</button>
-            </div>
-
-            <label className="amtModalField">
-              <span>Referee</span>
-              <select value={officialName} onChange={(event) => setOfficialName(event.target.value)}>
-                {referees.map((refereeName) => (
-                  <option key={refereeName} value={refereeName}>{refereeName}</option>
-                ))}
-              </select>
-            </label>
-
-            <div className="amtModalActions">
-              <button className="amtModalSecondary" type="button" onClick={() => setOfficialHeatId(null)}>Cancel</button>
-              <button className="amtModalPrimary" type="submit">Assign Official</button>
-            </div>
-          </form>
-        </div>
-      ) : null}
-
-      {actionMessage ? (
-        <div className="amtActionToast" role="status" aria-live="polite">{actionMessage}</div>
-      ) : null}
-    </div>
     </AdminLayout>
   );
 }

@@ -15,7 +15,7 @@ type Registration = {
   status: RegistrationStatus;
 };
 
-const initialRegistrations: Registration[] = [
+const exampleRegistrations: Registration[] = [
   { id: 1, tournament: 'Royal Ascot Gold Cup', horse: 'Midnight Sovereign', breedAge: 'Thoroughbred · 5yo Stallion', owner: 'Alexander Sterling', accent: '#775a19', status: 'Pending' },
   { id: 2, tournament: 'The Dubai World Cup', horse: 'Silver Shadow', breedAge: 'Arabian · 4yo Mare', owner: 'Arthur Sterling', accent: '#004225', status: 'Declined' },
   { id: 3, tournament: 'Preakness Stakes', horse: 'Golden Gallop', breedAge: 'Thoroughbred · 6yo Stallion', owner: 'Julian Rossi', accent: '#002a15', status: 'Approved' },
@@ -34,6 +34,9 @@ const initialRegistrations: Registration[] = [
   { id: 16, tournament: 'Belmont Heritage Run', horse: 'Sapphire Crest', breedAge: 'Warmblood · 5yo Mare', owner: 'Nathaniel Brooks', accent: '#1d4ed8', status: 'Approved' },
 ];
 
+// Data is intentionally empty until it is supplied by the registration data source.
+const initialRegistrations: Registration[] = [];
+void exampleRegistrations;
 const PAGE_SIZE = 7;
 const filters: StatusFilter[] = ['All Entries', 'Pending', 'Approved', 'Declined'];
 

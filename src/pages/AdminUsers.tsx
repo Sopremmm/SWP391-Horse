@@ -18,7 +18,7 @@ type ManagedUser = {
   location: string;
 };
 
-const initialUsers: ManagedUser[] = [
+const exampleUsers: ManagedUser[] = [
   { id: 'HR-1001', name: 'Julian Sterling', email: 'j.sterling@heritage.com', role: 'Horse Owner', status: 'Active', initials: 'JS', tone: 'forest', joined: 'Jan 18, 2022', location: 'Berkshire, UK' },
   { id: 'HR-1002', name: 'Elara Vance', email: 'evance.racing@pro.net', role: 'Jockey', status: 'Active', initials: 'EV', tone: 'gold', joined: 'Mar 06, 2023', location: 'Newmarket, UK' },
   { id: 'HR-1003', name: 'Marcus Thorne', email: 'm.thorne@equine.org', role: 'Referee', status: 'Active', initials: 'MT', tone: 'slate', joined: 'Aug 11, 2021', location: 'York, UK' },
@@ -28,6 +28,9 @@ const initialUsers: ManagedUser[] = [
   { id: 'HR-1007', name: 'Thomas Wright', email: 't.wright@heritage.com', role: 'Referee', status: 'Inactive', initials: 'TW', tone: 'stone', joined: 'May 27, 2020', location: 'Kent, UK' },
   { id: 'HR-1008', name: 'Aria Montgomery', email: 'aria.m@spectate.net', role: 'Spectator', status: 'Active', initials: 'AM', tone: 'violet', joined: 'Oct 09, 2024', location: 'Bath, UK' },
 ];
+
+const initialUsers: ManagedUser[] = [];
+void exampleUsers;
 
 function Icon({ name }: { name: 'search' | 'user' | 'ban' | 'restore' | 'trash' | 'left' | 'right' }) {
   const paths = {

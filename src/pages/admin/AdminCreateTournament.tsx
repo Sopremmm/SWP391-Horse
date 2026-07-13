@@ -1,10 +1,10 @@
 import React from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
 
 import '../AdminCreateTournament.css';
 
-type IconName = 'bell' | 'camera' | 'check' | 'grid' | 'help' | 'logout' | 'map' | 'money' | 'plus' | 'ruler' | 'settings' | 'trophy' | 'user' | 'users';
+type IconName = 'bell' | 'camera' | 'check' | 'grid' | 'help' | 'logout' | 'map' | 'money' | 'plus' | 'settings' | 'trophy' | 'user' | 'users';
 
 function Icon({ name }: { name: IconName }) {
   const paths: Record<IconName, string> = {
@@ -17,7 +17,6 @@ function Icon({ name }: { name: IconName }) {
     map: 'M12 22c-2.7-2.3-4.7-4.4-6-6.4C4.7 13.7 4 11.9 4 10.2c0-2.5.8-4.5 2.4-6C8 2.7 9.9 2 12 2s4 .7 5.6 2.2c1.6 1.5 2.4 3.5 2.4 6 0 1.7-.7 3.5-2 5.4-1.3 2-3.3 4.1-6 6.4Zm0-9.8c.6 0 1.1-.2 1.5-.6.4-.4.6-.9.6-1.5s-.2-1.1-.6-1.5C13.1 8.2 12.6 8 12 8s-1.1.2-1.5.6c-.4.4-.6.9-.6 1.5s.2 1.1.6 1.5c.4.4.9.6 1.5.6Z',
     money: 'M4 18c-.6 0-1.1-.2-1.5-.6S2 16.5 2 15.9V8.1c0-.6.2-1.1.6-1.5S3.4 6 4 6h16c.6 0 1.1.2 1.5.6s.6.9.6 1.5v7.8c0 .6-.2 1.1-.6 1.5s-.9.6-1.5.6H4Zm8-3c.8 0 1.5-.3 2.1-.9.6-.6.9-1.3.9-2.1s-.3-1.5-.9-2.1C13.5 9.3 12.8 9 12 9s-1.5.3-2.1.9C9.3 10.5 9 11.2 9 12s.3 1.5.9 2.1c.6.6 1.3.9 2.1.9Z',
     plus: 'M11 19v-6H5v-2h6V5h2v6h6v2h-6v6h-2Z',
-    ruler: 'M3 17.3 17.3 3 21 6.7 6.7 21 3 17.3Zm4.1.9 1.4-1.4-1.3-1.3 1.4-1.4 1.3 1.3 1.4-1.4-1.3-1.3 1.4-1.4 1.3 1.3 1.4-1.4-1.3-1.3 1.4-1.4 1.3 1.3 1.7-1.7-1.9-1.9L5.2 17.3l1.9 1.9Z',
     settings: 'm10 22-.4-3c-.3-.1-.6-.2-.9-.4-.3-.1-.6-.3-.8-.5l-2.8 1.2-2-3.5 2.4-1.8v-2l-2.4-1.8 2-3.5 2.8 1.2c.2-.2.5-.4.8-.5.3-.2.6-.3.9-.4l.4-3h4l.4 3c.3.1.6.2.9.4.3.1.6.3.8.5l2.8-1.2 2 3.5-2.4 1.8v2l2.4 1.8-2 3.5-2.8-1.2c-.2.2-.5.4-.8.5-.3.2-.6.3-.9.4l-.4 3h-4Z',
     trophy: 'M7 21v-2h4v-3.1c-.9-.2-1.7-.6-2.4-1.2-.7-.6-1.2-1.3-1.5-2.1-1.4-.2-2.5-.8-3.4-1.8C2.8 9.8 2.3 8.6 2.3 7.2V6c0-.6.2-1.1.6-1.5.4-.4.9-.6 1.5-.6H7V2h10v1.9h2.6c.6 0 1.1.2 1.5.6.4.4.6.9.6 1.5v1.2c0 1.4-.5 2.6-1.4 3.6-.9 1-2.1 1.6-3.4 1.8-.3.8-.8 1.5-1.5 2.1-.7.6-1.5 1-2.4 1.2V19h4v2H7Z',
     user: 'M12 12c-1.1 0-2-.4-2.8-1.2C8.4 10 8 9.1 8 8s.4-2 1.2-2.8C10 4.4 10.9 4 12 4s2 .4 2.8 1.2C15.6 6 16 6.9 16 8s-.4 2-1.2 2.8C14 11.6 13.1 12 12 12ZM4 20v-2.8c0-.6.1-1.1.4-1.6.3-.5.7-.8 1.2-1.1 1-.5 2.1-.9 3.2-1.2 1.1-.2 2.1-.3 3.2-.3s2.1.1 3.2.3c1.1.3 2.2.7 3.2 1.2.5.3.9.6 1.2 1.1.3.5.4 1 .4 1.6V20H4Z',
@@ -35,28 +34,11 @@ type AdminCreateTournamentProps = {
   mode?: 'create' | 'edit';
 };
 
-type TournamentRouteParams = {
-  name?: string;
-};
-
 export default function AdminCreateTournament({ mode = 'create' }: AdminCreateTournamentProps) {
-  const { name } = useParams<TournamentRouteParams>();
-  const decodedName = name ? decodeURIComponent(name) : 'The Heritage Autumn Cup';
   const isEdit = mode === 'edit';
   const [created, setCreated] = React.useState(false);
   const initialTournament = {
-    name: isEdit ? decodedName : '',
-    description: isEdit
-      ? 'The pinnacle of the autumn racing season, where tradition meets speed. A gathering of elite breeders and thoroughbreds.'
-      : '',
-    participants: isEdit ? 20 : 24,
-    distance: isEdit ? 2400 : 2400,
-    prize: isEdit ? '500,000' : '50,000',
-    registrationStart: isEdit ? '06/01/2024, 09:00' : '',
-    registrationDeadline: isEdit ? '06/10/2024, 17:00' : '',
-    tournamentStart: isEdit ? '06/18/2024' : '',
-    tournamentEnd: isEdit ? '06/20/2024' : '',
-    venue: isEdit ? 'Berkshire, UK' : '',
+    name: '', description: '', participants: '', prize: '', registrationStart: '', registrationDeadline: '', tournamentStart: '', tournamentEnd: '', venue: '',
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -127,14 +109,6 @@ export default function AdminCreateTournament({ mode = 'create' }: AdminCreateTo
                     <Icon name="users" />
                     <input name="participants" type="number" min="1" max="64" defaultValue={initialTournament.participants} />
                     <strong>Horses</strong>
-                  </div>
-                </label>
-                <label className="admin-create-tournament__field admin-create-tournament__compound-field">
-                  <span>Race Distance</span>
-                  <div>
-                    <Icon name="ruler" />
-                    <input name="distance" type="number" min="0" defaultValue={initialTournament.distance} />
-                    <strong>Meters</strong>
                   </div>
                 </label>
                 <label className="admin-create-tournament__field admin-create-tournament__compound-field admin-create-tournament__money">
