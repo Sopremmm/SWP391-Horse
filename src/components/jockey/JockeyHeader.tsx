@@ -46,12 +46,12 @@ function JockeyProfileDropdown() {
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
       >
-        <JockeyHeaderIcon name="user" />
+        <span className="jockey-header__avatar"><JockeyHeaderIcon name="user" /></span>
       </button>
       {open ? (
         <div className="jockey-header__menu" role="menu">
           <Link to="/Jockey/Profile" role="menuitem" onClick={() => setOpen(false)}>Profile</Link>
-          <Link to="/Jockey/Tournaments" role="menuitem" onClick={() => setOpen(false)}>Tournament</Link>
+          <Link to="/Jockey/MyRace" role="menuitem" onClick={() => setOpen(false)}>My Races</Link>
           <Link to="/Jockey/Invitation" role="menuitem" onClick={() => setOpen(false)}>My Invitations</Link>
           <button type="button" role="menuitem" onClick={handleLogout}>Logout</button>
         </div>
@@ -62,10 +62,10 @@ function JockeyProfileDropdown() {
 
 export default function JockeyHeader({ brandName = 'Heritage Racing' }: JockeyHeaderProps) {
   const nav = [
-    { label: 'Home', to: '/Jockey/Home' },
-    { label: 'Profile', to: '/Jockey/Profile' },
+    { label: 'Dashboard', to: '/Jockey/Home' },
     { label: 'Tournaments', to: '/Jockey/Tournaments' },
-    { label: 'My Invitations', to: '/Jockey/Invitation' },
+    { label: 'Leaderboard', to: '/Jockey/HorseLeaderBoard' },
+    { label: 'Invitations', to: '/Jockey/Invitation' },
   ];
 
   return (

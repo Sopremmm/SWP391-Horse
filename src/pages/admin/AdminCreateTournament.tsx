@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
 
-import '../AdminCreateTournament.css';
+import './AdminCreateTournament.css';
 
 type IconName = 'bell' | 'camera' | 'check' | 'grid' | 'help' | 'logout' | 'map' | 'money' | 'plus' | 'settings' | 'trophy' | 'user' | 'users';
 
@@ -128,19 +128,19 @@ export default function AdminCreateTournament({ mode = 'create' }: AdminCreateTo
             <div className="admin-create-tournament__schedule-grid">
               <label className="admin-create-tournament__field">
                 <span>Registration Start</span>
-                <input name="registrationStart" type="text" defaultValue={initialTournament.registrationStart} placeholder="mm/dd/yyyy, --:--" />
+                <input name="registrationStart" type="datetime-local" defaultValue={initialTournament.registrationStart} />
               </label>
               <label className="admin-create-tournament__field">
                 <span>Registration Deadline</span>
-                <input name="registrationDeadline" type="text" defaultValue={initialTournament.registrationDeadline} placeholder="mm/dd/yyyy, --:--" />
+                <input name="registrationDeadline" type="datetime-local" defaultValue={initialTournament.registrationDeadline} />
               </label>
               <label className="admin-create-tournament__field">
                 <span>Tournament Start</span>
-                <input name="tournamentStart" type="text" defaultValue={initialTournament.tournamentStart} placeholder="mm/dd/yyyy" />
+                <input name="tournamentStart" type="date" defaultValue={initialTournament.tournamentStart} />
               </label>
               <label className="admin-create-tournament__field">
                 <span>Tournament End</span>
-                <input name="tournamentEnd" type="text" defaultValue={initialTournament.tournamentEnd} placeholder="mm/dd/yyyy" />
+                <input name="tournamentEnd" type="date" defaultValue={initialTournament.tournamentEnd} />
               </label>
             </div>
           </section>

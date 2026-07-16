@@ -5,40 +5,51 @@ import Register from "./pages/Register.tsx";
 
 import Login from "./pages/Login.tsx";
 import Homepage from "./pages/Homepage.tsx";
-import HorseOwnerHome from "./pages/HorseOwnerHome.tsx";
-import Tournament from "./pages/Tournament.tsx";
-import HorseOwnerHorses from "./pages/HorseOwnerHorses.tsx";
-import MyHorses from "./pages/MyHorses.tsx";
-import AddHorse from "./pages/AddHorse.tsx";
-import InviteJockeys from "./pages/InviteJockeys.tsx";
-import InviteJockeyForm from "./pages/InviteJockeyForm.tsx";
-import AdminHome from "./pages/AdminHome.tsx";
-import AdminManageTournaments from "./pages/AdminManageTournaments.tsx";
-import AdminCreateTournament from "./pages/AdminCreateTournament.tsx";
+import HorseOwnerHome from "./pages/horse-owner/HorseOwnerHome.tsx";
+import Tournament from "./pages/horse-owner/Tournament.tsx";
+import HorseOwnerHorses from "./pages/horse-owner/HorseOwnerHorses.tsx";
+import MyHorses from "./pages/horse-owner/MyHorses.tsx";
+import AddHorse from "./pages/horse-owner/AddHorse.tsx";
+import InviteJockeys from "./pages/horse-owner/InviteJockeys.tsx";
+import InviteJockeyForm from "./pages/horse-owner/InviteJockeyForm.tsx";
+import AdminHome from "./pages/admin/AdminHome.tsx";
+import AdminManageTournaments from "./pages/admin/AdminManageTournaments.tsx";
+import AdminCreateTournament from "./pages/admin/AdminCreateTournament.tsx";
 import AdminManageTournamentDetail from "./pages/admin/AdminManageTournamentDetail.tsx";
-import AdminConfirmRegistration from "./pages/AdminConfirmRegistration.tsx";
-import AdminUsers from "./pages/AdminUsers.tsx";
-import JockeyProfile from "./pages/JockeyProfile.tsx";
-import HorseOwnerTournamentDetail from "./pages/HorseOwnerTournamentDetail.tsx";
-import HorseOwnerTournamentEntryRegister from "./pages/HorseOwnerTournamentEntryRegister.tsx";
-import HorseOwnerHorseDetail from "./pages/HorseOwnerHorseDetail.tsx";
-import JockeyHome from "./pages/JockeyHome.tsx";
-import JockeyProfilePage from "./pages/JockeyProfilePage.tsx";
-import JockeyInvitationPage from "./pages/JockeyInvitationPage.tsx";
-import HorseOwnerProfile from "./pages/HorseOwnerProfile.tsx";
-import HorseOwnerMyTournament from "./pages/HorseOwnerTournamentRegister.tsx";
-import HorseOwnerMyJockeys from "./pages/HorseOwnerMyJockeys.tsx";
-import HorseOwnerNotifications from "./pages/HorseOwnerNotifications.tsx";
-import SpectatorHome from "./pages/SpectatorHome.tsx";
-import SpectatorTournament from "./pages/SpectatorTournament.tsx";
-import SpectatorTournamentDetail from "./pages/SpectatorTournamentDetail.tsx";
-import SpectatorRaceDetail from "./pages/SpectatorRaceDetail.tsx";
-import SpectatorHorses from "./pages/SpectatorHorses.tsx";
-import SpectatorHorseDetail from "./pages/SpectatorHorseDetail.tsx";
-import SpectatorMyBets from "./pages/SpectatorMyBets.tsx";
-import RefereeHome from "./pages/RefereeHome.tsx";
-import RefereeRaces from "./pages/RefereeRaces.tsx";
-import RefereeRaceDetail from "./pages/RefereeRaceDetail.tsx";
+import AdminConfirmRegistration from "./pages/admin/AdminConfirmRegistration.tsx";
+import AdminUsers from "./pages/admin/AdminUsers.tsx";
+import JockeyProfile from "./pages/jockey/JockeyProfile.tsx";
+import HorseOwnerTournamentDetail from "./pages/horse-owner/HorseOwnerTournamentDetail.tsx";
+import HorseOwnerTournamentEntryRegister from "./pages/horse-owner/HorseOwnerTournamentEntryRegister.tsx";
+import HorseOwnerHorseDetail from "./pages/horse-owner/HorseOwnerHorseDetail.tsx";
+import JockeyHome from "./pages/jockey/JockeyHome.tsx";
+import JockeyTournaments from "./pages/jockey/JockeyTournaments.tsx";
+import JockeyTournamentDetail from "./pages/jockey/JockeyTournamentDetail.tsx";
+import JockeyRaceDetail from "./pages/jockey/JockeyRaceDetail.tsx";
+import JockeyHorseLeaderboard from "./pages/jockey/JockeyHorseLeaderboard.tsx";
+import JockeyHorseDetail from "./pages/jockey/JockeyHorseDetail.tsx";
+import JockeyMyRace from "./pages/jockey/JockeyMyRace.tsx";
+import JockeyProfileView from "./pages/jockey/JockeyProfileView.tsx";
+import JockeyProfilePage from "./pages/jockey/JockeyProfilePage.tsx";
+import JockeyInvitationPage from "./pages/jockey/JockeyInvitationPage.tsx";
+import JockeyInvitationDetail from "./pages/jockey/JockeyInvitationDetail.tsx";
+import HorseOwnerProfile from "./pages/horse-owner/HorseOwnerProfile.tsx";
+import HorseOwnerMyTournament from "./pages/horse-owner/HorseOwnerTournamentRegister.tsx";
+import HorseOwnerMyJockeys from "./pages/horse-owner/HorseOwnerMyJockeys.tsx";
+import HorseOwnerNotifications from "./pages/horse-owner/HorseOwnerNotifications.tsx";
+import SpectatorHome from "./pages/spectator/SpectatorHome.tsx";
+import SpectatorTournament from "./pages/spectator/SpectatorTournament.tsx";
+import SpectatorTournamentDetail from "./pages/spectator/SpectatorTournamentDetail.tsx";
+import SpectatorRaceDetail from "./pages/spectator/SpectatorRaceDetail.tsx";
+import SpectatorHorses from "./pages/spectator/SpectatorHorses.tsx";
+import SpectatorHorseDetail from "./pages/spectator/SpectatorHorseDetail.tsx";
+import SpectatorMyBets from "./pages/spectator/SpectatorMyBets.tsx";
+import RefereeHome from "./pages/referee/RefereeHome.tsx";
+import RefereeRaces from "./pages/referee/RefereeRaces.tsx";
+import RefereeRaceDetail from "./pages/referee/RefereeRaceDetail.tsx";
+import RefereeNotifications from "./pages/referee/RefereeNotifications.tsx";
+import AdminRaceIncidentLog from "./pages/admin/AdminRaceIncidentLog.tsx";
+import AdminRaceIncidentDetail from "./pages/admin/AdminRaceIncidentDetail.tsx";
 
 
 
@@ -79,9 +90,20 @@ export default function App() {
         <Route path="/HorseOwner/InviteJockeys/:name" element={<JockeyProfile />} />
         <Route path="/HorseOwner/InviteJockeys/:name/invite" element={<InviteJockeyForm />} />
         <Route path="/Jockey/Home" element={<JockeyHome />} />
-        <Route path="/Jockey/Profile" element={<JockeyProfilePage />} />
+        <Route path="/Jockey/Tournaments" element={<JockeyTournaments />} />
+        <Route path="/Jockey/Tournaments/:name" element={<JockeyTournamentDetail />} />
+        <Route path="/Jockey/Tournaments/:name/:race" element={<JockeyRaceDetail />} />
+        <Route path="/Jockey/HorseLeaderBoard" element={<JockeyHorseLeaderboard />} />
+        <Route path="/Jockey/Leaderboard" element={<JockeyHorseLeaderboard />} />
+        <Route path="/Jockey/Horse/:name" element={<JockeyHorseDetail />} />
+        <Route path="/Jockey/MyRace" element={<JockeyMyRace />} />
+        <Route path="/jockey/tournament/:name/:race" element={<JockeyRaceDetail />} />
+        <Route path="/Jockey/Profile/edit" element={<JockeyProfilePage />} />
+        <Route path="/Jockey/Profile" element={<JockeyProfileView />} />
         <Route path="/Jockey/Invitation" element={<JockeyInvitationPage />} />
         <Route path="/Jockey/Invitations" element={<JockeyInvitationPage />} />
+        <Route path="/Jockey/Invitation/:id" element={<JockeyInvitationDetail />} />
+        <Route path="/Jockey/Invitation/Jockey/Invitation/:tournamentname" element={<JockeyInvitationDetail />} />
         <Route path="/Referee/Home" element={<RefereeHome />} />
         <Route path="/referee/home" element={<RefereeHome />} />
         <Route path="/Referee/Races" element={<RefereeRaces />} />
@@ -92,6 +114,8 @@ export default function App() {
         <Route path="/referee/myraces" element={<RefereeRaces />} />
         <Route path="/referee/races/:name" element={<RefereeRaceDetail />} />
         <Route path="/referee/myraces/:name" element={<RefereeRaceDetail />} />
+        <Route path="/Referee/Notifications" element={<RefereeNotifications />} />
+        <Route path="/referee/notifications" element={<RefereeNotifications />} />
         <Route path="/Spectator/Home" element={<SpectatorHome />} />
         <Route path="/spectator/home" element={<SpectatorHome />} />
         <Route path="/Spectator/Horses" element={<SpectatorHorses />} />
@@ -122,6 +146,9 @@ export default function App() {
         <Route path="/Admin/ManageTournaments/:name/:racename" element={<AdminManageTournamentDetail />} />
         <Route path="/Admin/ManageTournaments/:name" element={<AdminManageTournamentDetail />} />
         <Route path="/Admin/ConfirmRegistration" element={<AdminConfirmRegistration />} />
+        <Route path="/Admin/RaceIncidentLog" element={<AdminRaceIncidentLog />} />
+        <Route path="/Admin/RaceIncidentsLog" element={<AdminRaceIncidentLog />} />
+        <Route path="/Admin/RaceIncidentsLog/:name/:racename" element={<AdminRaceIncidentDetail />} />
 
       </Routes>
     </Router>

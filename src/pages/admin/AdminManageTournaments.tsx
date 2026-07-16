@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
-import '../AdminManageTournaments.css';
+import './AdminManageTournaments.css';
 
 type TournamentStatus = 'REGISTRATION OPEN' | 'DRAFT' | 'COMPLETED' | 'CLOSING SOON';
 

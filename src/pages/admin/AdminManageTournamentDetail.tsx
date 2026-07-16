@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
 import HomeBanner from '../../assets/images/HomeBanner.png';
-import '../AdminManageTournamentDetail.css';
+import './AdminManageTournamentDetail.css';
 import './AdminRaceDetail.css';
 import './AdminRaceDetailOverrides.css';
 

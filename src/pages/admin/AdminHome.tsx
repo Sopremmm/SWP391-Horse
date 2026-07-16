@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
 
-import '../AdminHome.css';
+import './AdminHome.css';
 
 type AdminIconName = 'bell' | 'check' | 'grid' | 'help' | 'logout' | 'settings' | 'trophy' | 'user' | 'users';
 

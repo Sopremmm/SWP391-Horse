@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import './RefereeLayout.css';
 
 type SidebarLink = {
@@ -20,15 +20,9 @@ const TimerIcon = () => (
   </svg>
 );
 
-const AlertIcon = () => (
-  <svg viewBox="0 0 24 22" fill="none" aria-hidden="true">
-    <path d="M0 22L12 1L24 22H0ZM3.45 20H20.55L12 5L3.45 20ZM12 18C12.28 18 12.52 17.9 12.71 17.71C12.9 17.52 13 17.28 13 17C13 16.72 12.9 16.48 12.71 16.29C12.52 16.1 12.28 16 12 16C11.72 16 11.48 16.1 11.29 16.29C11.1 16.48 11 16.72 11 17C11 17.28 11.1 17.52 11.29 17.71C11.48 17.9 11.72 18 12 18ZM11 15H13V10H11V15Z" fill="currentColor" />
-  </svg>
-);
-
-const HistoryIcon = () => (
-  <svg viewBox="0 0 22 22" fill="none" aria-hidden="true">
-    <path d="M11 22C8.3 22 5.98 21.1 4.04 19.3C2.1 17.5 1.02 15.27 0.8 12.6H3.05C3.28 14.77 4.17 16.55 5.71 17.95C7.25 19.32 9.02 20 11 20C13.48 20 15.6 19.12 17.36 17.36C19.12 15.6 20 13.48 20 11C20 8.52 19.12 6.4 17.36 4.64C15.6 2.88 13.48 2 11 2C9.62 2 8.33 2.3 7.13 2.9C5.93 3.5 4.92 4.33 4.1 5.4H7V7.4H0.7V1.1H2.7V3.65C3.73 2.5 4.96 1.6 6.39 0.95C7.81 0.32 9.35 0 11 0C12.53 0 13.96 0.29 15.3 0.88C16.63 1.45 17.8 2.23 18.8 3.23C19.8 4.23 20.58 5.4 21.15 6.74C21.72 8.08 22 9.5 22 11C22 12.5 21.72 13.92 21.15 15.26C20.58 16.6 19.8 17.77 18.8 18.77C17.8 19.77 16.63 20.55 15.3 21.12C13.96 21.71 12.53 22 11 22ZM13.8 15.2L10 11.4V6H12V10.6L15.2 13.8L13.8 15.2Z" fill="currentColor" />
+const BellIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -38,23 +32,24 @@ const UserIcon = () => (
   </svg>
 );
 
-const PlusIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-    <path d="M6 8H0V6H6V0H8V6H14V8H8V14H6V8Z" fill="currentColor" />
+const LogoutIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5m5-4 4-4-4-4m4 4H9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 const links: SidebarLink[] = [
   { label: 'Dashboard', href: '/Referee/Home', icon: <GridIcon /> },
-  { label: 'Live Races', href: '/Referee/Races', icon: <TimerIcon /> },
-  { label: 'Incident Log', href: '/Referee/IncidentReports', icon: <AlertIcon /> },
-  { label: 'History', href: '/Referee/History', icon: <HistoryIcon /> },
+  { label: 'Assigned Races', href: '/Referee/Races', icon: <TimerIcon /> },
+  { label: 'Notifications', href: '/Referee/Notifications', icon: <BellIcon /> },
 ];
 
 export const RefereeSidebar: React.FC = () => {
   return (
     <aside className="referee-sidebar">
       <div>
+        <div className="referee-sidebar__brand">Heritage Racing</div>
+        <div className="referee-sidebar__kicker">Referee Portal</div>
         <div className="referee-sidebar__profile">
           <span className="referee-sidebar__avatar">
             <UserIcon />
@@ -80,10 +75,10 @@ export const RefereeSidebar: React.FC = () => {
       </div>
 
       <div className="referee-sidebar__report">
-        <button type="button">
-          <PlusIcon />
-          Report Incident
-        </button>
+        <Link to="/">
+          <LogoutIcon />
+          Logout
+        </Link>
       </div>
     </aside>
   );

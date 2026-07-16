@@ -84,7 +84,7 @@ export default function AdminLayout({ active, children, title, breadcrumb, topNa
     { key: 'users', label: 'Users', to: '/Admin/User', icon: 'users' },
     { key: 'tournaments', label: 'Tournaments', to: '/Admin/ManageTournaments', icon: 'trophy' },
     { key: 'registrations', label: 'Registrations', to: '/Admin/ConfirmRegistration', icon: 'check' },
-    { key: 'settings', label: 'Settings', to: '/Admin/Profile', icon: 'settings' },
+    { key: 'settings', label: 'Race Incidents', to: '/Admin/RaceIncidentsLog', icon: 'settings' },
   ] as const;
 
   return (
