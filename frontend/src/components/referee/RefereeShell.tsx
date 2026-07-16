@@ -10,10 +10,10 @@ type RefereeShellProps = {
 export const RefereeShell: React.FC<RefereeShellProps> = ({ children }) => {
   return (
     <div className="referee-shell">
-      <RefereeHeader />
       <div className="referee-layout">
         <RefereeSidebar />
         <div className="referee-main-wrap">
+          <RefereeHeader />
           <main className="referee-page">{children}</main>
           <footer className="referee-footer">
             <span>(c) 2024 Heritage Racing Management. All Rights Reserved. Confidential Official Access.</span>

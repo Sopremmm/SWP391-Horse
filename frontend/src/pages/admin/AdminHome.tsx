@@ -2,27 +2,31 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
 
-import '../AdminHome.css';
+import './AdminHome.css';
 
 type AdminIconName = 'bell' | 'check' | 'grid' | 'help' | 'logout' | 'settings' | 'trophy' | 'user' | 'users';
 
 const stats = [
-  { label: 'Registered Users', value: '166', icon: 'users', tone: 'teal', badge: '4 User Roles', to: '/Admin/User' },
-  { label: 'Managed Tournaments', value: '4', icon: 'trophy', tone: 'amber', badge: '2 Accepting Entries', to: '/Admin/ManageTournaments' },
-  { label: 'Pending Registrations', value: '8', icon: 'check', tone: 'red', badge: 'Review Required', to: '/Admin/ConfirmRegistration' },
+  { label: 'Registered Users', value: '0', icon: 'users', tone: 'teal', badge: 'No data yet', to: '/Admin/User' },
+  { label: 'Managed Tournaments', value: '0', icon: 'trophy', tone: 'amber', badge: 'No data yet', to: '/Admin/ManageTournaments' },
+  { label: 'Pending Registrations', value: '0', icon: 'check', tone: 'red', badge: 'No data yet', to: '/Admin/ConfirmRegistration' },
 ] as const;
 
-const tournaments = [
+const exampleTournaments = [
   { name: 'Royal Ascot Gold Cup', grade: 'Grade I Stakes', capacity: '18 / 20 registered', status: 'Registration Open', prize: '$2,500,000' },
   { name: 'Emerald Derby Classic', grade: 'Grade II Turf', capacity: '11 / 16 registered', status: 'Closing Soon', prize: '$1,200,000' },
 ];
 
-const registrations = [
+const tournaments: typeof exampleTournaments = [];
+
+const exampleRegistrations = [
   { horse: 'Midnight Sovereign', owner: 'Alexander Sterling', tournament: 'Royal Ascot Gold Cup', status: 'Pending' },
   { horse: 'Velvet Comet', owner: 'Claire Beaumont', tournament: 'Emerald Derby Classic', status: 'Pending' },
   { horse: 'Northern Crown', owner: 'James Whitmore', tournament: 'Heritage Breeders Cup', status: 'Pending' },
   { horse: 'Golden Gallop', owner: 'Julian Rossi', tournament: 'Preakness Stakes', status: 'Approved' },
 ];
+
+const registrations: typeof exampleRegistrations = [];
 
 function Icon({ name }: { name: AdminIconName }) {
   const paths: Record<AdminIconName, string> = {

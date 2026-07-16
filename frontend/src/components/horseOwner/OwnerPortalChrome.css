@@ -11,6 +11,26 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
+/* Unified green portal header theme. */
+.owner-profile-header{border-bottom-color:rgba(255,255,255,.1);background:#003b1f;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.owner-profile-header__brand{color:#fff}
+.owner-profile-header__link{color:rgba(255,255,255,.82)}
+.owner-profile-header__link:hover{color:#fff;background:rgba(255,255,255,.1)}
+.owner-profile-header__link.is-active{color:#003b1f;background:#fff;box-shadow:0 18px 40px rgba(0,0,0,.12)}
+.owner-profile-header__icon{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff}
+.owner-profile-header__icon:hover{background:rgba(255,255,255,.16);color:#fff}
+
+/* Protect header contrast from page-level anchor styles. */
+.owner-profile-header .owner-profile-header__brand,
+.owner-profile-header .owner-profile-header__brand:link,
+.owner-profile-header .owner-profile-header__brand:visited{color:#fff !important}
+.owner-profile-header .owner-profile-header__link,
+.owner-profile-header .owner-profile-header__link:link,
+.owner-profile-header .owner-profile-header__link:visited{color:rgba(255,255,255,.88) !important}
+.owner-profile-header .owner-profile-header__link:hover{color:#fff !important}
+.owner-profile-header .owner-profile-header__link.is-active,
+.owner-profile-header .owner-profile-header__link.is-active:visited{color:#003b1f !important;background:#fff}
+
 .owner-profile-header__inner {
   width: 100%;
   max-width: 1280px;
@@ -236,3 +256,10 @@
     gap: 14px;
   }
 }
+
+.owner-profile-header__brand{color:#fff}
+.owner-profile-header__link{color:rgba(255,255,255,.82)}
+.owner-profile-header__link:hover{color:#fff;background:rgba(255,255,255,.1)}
+.owner-profile-header__link.is-active{color:#003b1f;background:#fff;box-shadow:0 18px 40px rgba(0,0,0,.12)}
+.owner-profile-header__icon{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff}
+.owner-profile-header__icon:hover{background:rgba(255,255,255,.16);color:#fff}

@@ -1,0 +1,120 @@
+.referee-notifications { color: #404941; }
+.referee-notifications * { box-sizing: border-box; }
+
+.referee-notifications__intro {
+  margin-bottom: 34px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.referee-notifications__intro h1 {
+  margin: 0;
+  color: #172019;
+  font: 600 clamp(46px, 5vw, 66px)/1 'EB Garamond', Georgia, serif;
+}
+
+.referee-notifications__intro p { margin: 10px 0 0; color: #667067; font-size: 18px; }
+
+.referee-notifications__controls { display: flex; align-items: center; gap: 12px; }
+.referee-notifications__filter { display: flex; padding: 3px; border: 1px solid #c0c9be; border-radius: 5px; background: #fff; }
+
+.referee-notifications__filter button,
+.referee-notifications__mark {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: #404941;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.referee-notifications__filter button.is-active { background: #e5e7eb; color: #003b1b; }
+.referee-notifications__mark { border: 1px solid #c0c9be; background: #fff; }
+.referee-notifications__mark:disabled { cursor: default; opacity: .45; }
+
+.referee-notifications__list { display: grid; gap: 18px; }
+
+.referee-notification-card {
+  min-height: 150px;
+  padding: 28px 32px;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 24px;
+  border: 1px solid #b9c5b7;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.referee-notification-card.is-unread { border-left: 6px solid #006b3c; box-shadow: 0 3px 12px rgba(0, 59, 27, .08); }
+.referee-notification-card.is-read { opacity: .78; }
+
+.referee-notification-card__icon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #e8efe8;
+  color: #003b1b;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.referee-notification-card__icon--assignment { background: #dff3e4; color: #006b3c; }
+.referee-notification-card__icon--reassignment { background: #ffe0bd; color: #87520d; }
+.referee-notification-card__icon--alert { background: #fee2df; color: #b42318; }
+
+.referee-notification-card__heading { display: flex; justify-content: space-between; gap: 20px; }
+.referee-notification-card h2 { margin: 0; color: #202522; font: 600 26px 'EB Garamond', Georgia, serif; }
+.referee-notification-card time { flex: 0 0 auto; color: #59625b; font-size: 13px; font-weight: 700; }
+.referee-notification-card p { margin: 8px 0 18px; overflow-wrap: anywhere; font-size: 16px; line-height: 1.55; }
+.referee-notification-card__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+.referee-notification-card__actions button,
+.referee-notification-card__actions a {
+  min-height: 40px;
+  padding: 0 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #003b1b;
+  border-radius: 4px;
+  background: #003b1b;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.referee-notification-card__actions a { background: #fff; color: #003b1b; }
+
+.referee-notifications__state {
+  min-height: 280px;
+  padding: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed #b9c5b7;
+  border-radius: 8px;
+  background: #fafbf8;
+  color: #69736b;
+  text-align: center;
+}
+
+.referee-notifications__state--error { color: #b42318; }
+
+@media (max-width: 850px) {
+  .referee-notifications__intro { align-items: stretch; flex-direction: column; }
+  .referee-notifications__controls { align-items: stretch; flex-direction: column; }
+  .referee-notification-card { padding: 22px; grid-template-columns: 1fr; }
+  .referee-notification-card__heading { flex-direction: column; gap: 6px; }
+}
