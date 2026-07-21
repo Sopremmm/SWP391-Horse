@@ -97,6 +97,7 @@ CREATE TABLE tournament (
     end_date DATE NOT NULL,
     prize_pool DECIMAL(15,2) DEFAULT 0.00,
     max_horses INT DEFAULT 20,
+    image_url NVARCHAR(MAX),
     status VARCHAR(20) DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'OPEN', 'ONGOING', 'CLOSED')),
     created_at DATETIME2 DEFAULT GETDATE(),
     FOREIGN KEY (created_by) REFERENCES [user](id) ON DELETE NO ACTION
@@ -115,8 +116,7 @@ CREATE TABLE race (
     status VARCHAR(20) DEFAULT 'SCHEDULED' CHECK (status IN ('SCHEDULED', 'ONGOING', 'FINISHED', 'COMPLETED')),
     created_at DATETIME2 DEFAULT GETDATE(),
     FOREIGN KEY (tournament_id) REFERENCES tournament(id) ON DELETE CASCADE,
-    FOREIGN KEY (referee_id) REFERENCES [user](id) ON DELETE SET NULL,
-    CONSTRAINT uq_tournament_round UNIQUE (tournament_id, round_number)
+    FOREIGN KEY (referee_id) REFERENCES [user](id) ON DELETE SET NULL
 );
 GO
 
@@ -128,7 +128,8 @@ CREATE TABLE horse (
     age INT,
     weight_kg DECIMAL(5,2),
     color NVARCHAR(50),
-    image_url VARCHAR(255),
+    image_url NVARCHAR(MAX),
+    condition VARCHAR(20) NOT NULL DEFAULT 'PEAK' CHECK (condition IN ('PEAK', 'GOOD', 'RECOVERING')),
     total_races INT DEFAULT 0,
     total_wins INT DEFAULT 0,
     status VARCHAR(10) DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'RETIRED')),

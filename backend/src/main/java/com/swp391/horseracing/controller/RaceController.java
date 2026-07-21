@@ -1,8 +1,9 @@
 package com.swp391.horseracing.controller;
 
 import com.swp391.horseracing.entity.Race;
+import com.swp391.horseracing.dto.request.SaveTournamentBracketRequest;
 import com.swp391.horseracing.dto.response.PrizeResponse;
-import com.swp391.horseracing.dto.response.RaceResultResponse;
+import com.swp391.horseracing.dto.response.PublicRaceResultsResponse;
 import com.swp391.horseracing.service.PrizeService;
 import com.swp391.horseracing.service.RaceResultQueryService;
 import com.swp391.horseracing.service.RaceService;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -31,6 +33,14 @@ public class RaceController {
         return ResponseEntity.ok(raceService.createRace(tournamentId, race));
     }
 
+    @PutMapping("/tournament/{tournamentId}/bracket")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Race>> saveTournamentBracket(
+            @PathVariable Long tournamentId,
+            @Valid @RequestBody SaveTournamentBracketRequest request) {
+        return ResponseEntity.ok(raceService.saveTournamentBracket(tournamentId, request));
+    }
+
     @PatchMapping("/{id}/referee")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Race> assignReferee(@PathVariable Long id, @RequestParam Long refereeId) {
@@ -48,8 +58,8 @@ public class RaceController {
     }
 
     @GetMapping("/{id}/results")
-    public ResponseEntity<List<RaceResultResponse>> getRaceResults(@PathVariable Long id) {
-        return ResponseEntity.ok(raceResultQueryService.getRaceResults(id));
+    public ResponseEntity<PublicRaceResultsResponse> getRaceResults(@PathVariable Long id) {
+        return ResponseEntity.ok(raceResultQueryService.getPublicRaceResults(id));
     }
 
     @GetMapping("/{id}/prizes")

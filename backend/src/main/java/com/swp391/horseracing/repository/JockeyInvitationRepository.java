@@ -5,9 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface JockeyInvitationRepository extends JpaRepository<JockeyInvitation, Long> {
     List<JockeyInvitation> findByJockeyId(Long jockeyId);
     List<JockeyInvitation> findByOwnerId(Long ownerId);
+    Optional<JockeyInvitation> findByHorseIdAndJockeyIdAndRaceId(Long horseId, Long jockeyId, Long raceId);
 }

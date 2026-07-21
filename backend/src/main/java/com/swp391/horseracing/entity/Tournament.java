@@ -44,6 +44,10 @@ public class Tournament {
     @Column(name = "max_horses")
     private Integer maxHorses = 20;
 
+    @Lob
+    @Column(name = "image_url", columnDefinition = "NVARCHAR(MAX)")
+    private String imageUrl;
+
     @Column(length = 20)
     private String status = "DRAFT"; // DRAFT, OPEN, ONGOING, CLOSED
 
@@ -71,6 +75,8 @@ public class Tournament {
     public void setPrizePool(BigDecimal prizePool) { this.prizePool = prizePool; }
     public Integer getMaxHorses() { return maxHorses; }
     public void setMaxHorses(Integer maxHorses) { this.maxHorses = maxHorses; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }

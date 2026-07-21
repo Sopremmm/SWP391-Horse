@@ -1,5 +1,6 @@
 package com.swp391.horseracing.controller;
 
+import com.swp391.horseracing.dto.request.AdminConfigureRaceGatesRequest;
 import com.swp391.horseracing.dto.request.AdminUpdateRaceStatusRequest;
 import com.swp391.horseracing.dto.response.AdminRaceChecklistResponse;
 import com.swp391.horseracing.dto.response.AdminRaceListItemResponse;
@@ -47,6 +48,15 @@ public class AdminRaceControlController {
             @AuthenticationPrincipal UserDetailsImpl admin
     ) {
         return ResponseEntity.ok(adminRaceControlService.updateRaceStatus(admin.getId(), raceId, request.getStatus()));
+    }
+
+    @PutMapping("/{raceId}/gates")
+    public ResponseEntity<Race> configureGates(
+            @PathVariable Long raceId,
+            @Valid @RequestBody AdminConfigureRaceGatesRequest request,
+            @AuthenticationPrincipal UserDetailsImpl admin
+    ) {
+        return ResponseEntity.ok(adminRaceControlService.configureRaceGates(admin.getId(), raceId, request));
     }
 }
 

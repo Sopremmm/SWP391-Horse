@@ -39,4 +39,10 @@ public class HorseController {
     public ResponseEntity<Horse> getHorseById(@PathVariable Long id) {
         return ResponseEntity.ok(horseService.getHorseById(id));
     }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Horse>> getAllHorses() {
+        return ResponseEntity.ok(horseService.getAllHorses());
+    }
 }

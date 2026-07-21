@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface RaceRepository extends JpaRepository<Race, Long> {
     List<Race> findByTournamentId(Long tournamentId);
+    List<Race> findByTournamentIdOrderByRoundNumberAscRaceDateAscIdAsc(Long tournamentId);
 }

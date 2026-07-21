@@ -14,77 +14,37 @@ public class SchemaPatchRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        jdbcTemplate.execute("IF COL_LENGTH('dbo.[user]', 'balance') IS NULL ALTER TABLE dbo.[user] ADD balance DECIMAL(15,2) NULL");
-        jdbcTemplate.execute("UPDATE dbo.[user] SET balance = 0.00 WHERE balance IS NULL");
         jdbcTemplate.execute("""
-                IF EXISTS (
-                    SELECT 1
-                    FROM sys.columns
-                    WHERE object_id = OBJECT_ID(N'dbo.[user]')
-                      AND name = 'balance'
-                      AND is_nullable = 1
-                )
-                ALTER TABLE dbo.[user] ALTER COLUMN balance DECIMAL(15,2) NOT NULL
-                """);
-        jdbcTemplate.execute("""
-                IF NOT EXISTS (
-                    SELECT 1
-                    FROM sys.default_constraints dc
-                    INNER JOIN sys.columns c
-                        ON c.default_object_id = dc.object_id
-                    WHERE dc.parent_object_id = OBJECT_ID(N'dbo.[user]')
-                      AND c.name = 'balance'
-                )
-                ALTER TABLE dbo.[user] ADD CONSTRAINT DF_user_balance DEFAULT (0.00) FOR balance
-                """);
+                IF OBJECT_ID(N'dbo.race', N'U') IS NOT NULL
+                BEGIN
+                    DECLARE @dropRoundUnique NVARCHAR(MAX) = N'';
+                    SELECT @dropRoundUnique = STRING_AGG(
+                        N'ALTER TABLE dbo.race DROP CONSTRAINT [' + kc.name + N']', N'; ')
+                    FROM sys.key_constraints kc
+                    WHERE kc.parent_object_id = OBJECT_ID(N'dbo.race')
+                      AND kc.[type] = N'UQ'
+                      AND EXISTS (
+                          SELECT 1
+                          FROM sys.index_columns ic
+                          JOIN sys.columns c
+                            ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+                          WHERE ic.object_id = kc.parent_object_id
+                            AND ic.index_id = kc.unique_index_id
+                            AND c.name = N'tournament_id'
+                      )
+                      AND EXISTS (
+                          SELECT 1
+                          FROM sys.index_columns ic
+                          JOIN sys.columns c
+                            ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+                          WHERE ic.object_id = kc.parent_object_id
+                            AND ic.index_id = kc.unique_index_id
+                            AND c.name = N'round_number'
+                      );
 
-        jdbcTemplate.execute("""
-                IF OBJECT_ID(N'dbo.topup_request', N'U') IS NULL
-                CREATE TABLE dbo.topup_request (
-                    id BIGINT IDENTITY(1,1) PRIMARY KEY,
-                    user_id BIGINT NOT NULL,
-                    amount DECIMAL(15,2) NOT NULL,
-                    status VARCHAR(20) NOT NULL CONSTRAINT DF_topup_request_status DEFAULT 'PENDING',
-                    reference VARCHAR(64) NOT NULL,
-                    bank_txn_id VARCHAR(64) NULL,
-                    created_at DATETIME2 NOT NULL CONSTRAINT DF_topup_request_created_at DEFAULT GETDATE(),
-                    paid_at DATETIME2 NULL,
-                    CONSTRAINT FK_topup_request_user FOREIGN KEY (user_id) REFERENCES dbo.[user](id),
-                    CONSTRAINT UQ_topup_request_reference UNIQUE (reference),
-                    CONSTRAINT CK_topup_request_status CHECK (status IN ('PENDING', 'PAID', 'EXPIRED', 'CANCELLED'))
-                )
-                """);
-
-        jdbcTemplate.execute("""
-                IF EXISTS (
-                    SELECT 1
-                    FROM sys.key_constraints
-                    WHERE parent_object_id = OBJECT_ID(N'dbo.topup_request')
-                      AND name = N'UQ_topup_request_bank_txn_id'
-                )
-                ALTER TABLE dbo.topup_request DROP CONSTRAINT UQ_topup_request_bank_txn_id
-                """);
-
-        jdbcTemplate.execute("""
-                IF EXISTS (
-                    SELECT 1
-                    FROM sys.indexes
-                    WHERE object_id = OBJECT_ID(N'dbo.topup_request')
-                      AND name = N'UQ_topup_request_bank_txn_id'
-                )
-                DROP INDEX UQ_topup_request_bank_txn_id ON dbo.topup_request
-                """);
-
-        jdbcTemplate.execute("""
-                IF NOT EXISTS (
-                    SELECT 1
-                    FROM sys.indexes
-                    WHERE object_id = OBJECT_ID(N'dbo.topup_request')
-                      AND name = N'UX_topup_request_bank_txn_id'
-                )
-                CREATE UNIQUE INDEX UX_topup_request_bank_txn_id
-                    ON dbo.topup_request(bank_txn_id)
-                    WHERE bank_txn_id IS NOT NULL
+                    IF @dropRoundUnique IS NOT NULL AND LEN(@dropRoundUnique) > 0
+                        EXEC sp_executesql @dropRoundUnique;
+                END
                 """);
 
         jdbcTemplate.execute("""
@@ -118,24 +78,6 @@ public class SchemaPatchRunner implements CommandLineRunner {
                 """);
 
         jdbcTemplate.execute("""
-                IF OBJECT_ID(N'dbo.bet', N'U') IS NULL
-                CREATE TABLE dbo.bet (
-                    id BIGINT IDENTITY(1,1) PRIMARY KEY,
-                    spectator_id BIGINT NOT NULL,
-                    race_id BIGINT NOT NULL,
-                    predicted_entry_id BIGINT NOT NULL,
-                    result VARCHAR(10) NOT NULL CONSTRAINT DF_bet_result DEFAULT 'PENDING',
-                    placed_at DATETIME2 NOT NULL CONSTRAINT DF_bet_placed_at DEFAULT GETDATE(),
-                    resolved_at DATETIME2 NULL,
-                    CONSTRAINT FK_bet_spectator FOREIGN KEY (spectator_id) REFERENCES dbo.[user](id),
-                    CONSTRAINT FK_bet_race FOREIGN KEY (race_id) REFERENCES dbo.race(id) ON DELETE CASCADE,
-                    CONSTRAINT FK_bet_predicted_entry FOREIGN KEY (predicted_entry_id) REFERENCES dbo.race_entry(id) ON DELETE CASCADE,
-                    CONSTRAINT UQ_bet_spectator_race UNIQUE (spectator_id, race_id),
-                    CONSTRAINT CK_bet_result CHECK (result IN ('PENDING', 'WIN', 'LOSE'))
-                )
-                """);
-
-        jdbcTemplate.execute("""
                 IF OBJECT_ID(N'dbo.notification', N'U') IS NOT NULL
                 BEGIN
                     DECLARE @dropNotificationChecks NVARCHAR(MAX) = N'';
@@ -162,14 +104,40 @@ public class SchemaPatchRunner implements CommandLineRunner {
                                 'REG_APPROVED',
                                 'REG_REJECTED',
                                 'RACE_RESULT',
-                                'BET_WIN',
-                                'BET_LOSE',
-                                'SYSTEM',
-                                'TOPUP_SUCCESS',
-                                'TOPUP_APPROVED'
+                                'SYSTEM'
                             )
                         );
                     END
+                END
+                """);
+
+        jdbcTemplate.execute("""
+                IF OBJECT_ID(N'dbo.race_entry', N'U') IS NOT NULL
+                   AND COL_LENGTH(N'dbo.race_entry', N'gate_number') IS NULL
+                BEGIN
+                    ALTER TABLE dbo.race_entry ADD gate_number INT NULL;
+                END
+                """);
+
+        jdbcTemplate.execute("""
+                IF OBJECT_ID(N'dbo.tournament', N'U') IS NOT NULL
+                   AND COL_LENGTH(N'dbo.tournament', N'image_url') IS NULL
+                BEGIN
+                    ALTER TABLE dbo.tournament ADD image_url NVARCHAR(MAX) NULL;
+                END
+                """);
+
+        jdbcTemplate.execute("""
+                IF OBJECT_ID(N'dbo.horse', N'U') IS NOT NULL
+                BEGIN
+                    IF COL_LENGTH(N'dbo.horse', N'condition') IS NULL
+                        ALTER TABLE dbo.horse ADD condition VARCHAR(20) NULL;
+
+                    UPDATE dbo.horse SET condition = 'PEAK'
+                    WHERE condition IS NULL OR LTRIM(RTRIM(condition)) = '';
+
+                    ALTER TABLE dbo.horse ALTER COLUMN condition VARCHAR(20) NOT NULL;
+                    ALTER TABLE dbo.horse ALTER COLUMN image_url NVARCHAR(MAX) NULL;
                 END
                 """);
     }

@@ -1,0 +1,346 @@
+:root {
+  --reg-green-950: #052f1f;
+  --reg-teal-950: #003f35;
+  --reg-stone-50: #f7f6f1;
+  --reg-stone-200: #e1dfd4;
+  --reg-stone-300: #cfcbbf;
+  --reg-text: #1c201d;
+  --reg-muted: #8a928c;
+  --reg-link: #775a19;
+  --reg-card-shadow: 0px 24px 48px -12px rgba(0, 0, 0, 0.05);
+}
+
+.register-page {
+  min-height: 100vh;
+  background: var(--reg-stone-50);
+  color: var(--reg-green-950);
+  font-family: Manrope, Inter, "Segoe UI", sans-serif;
+}
+
+.register-page * {
+  box-sizing: border-box;
+}
+
+.register-page__main {
+  position: relative;
+  min-height: calc(100vh - 80px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  padding: clamp(64px, 9vw, 112px) 24px;
+}
+
+.register-page__image-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(32vw, 320px);
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.register-page__image-panel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.16;
+  filter: saturate(0.55);
+}
+
+.register-page__container {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 560px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.register-page__brand {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.register-page__brand h1 {
+  margin: 0;
+  font-family: "EB Garamond", Georgia, serif;
+  color: var(--reg-green-950);
+  font-size: clamp(3rem, 6vw, 4.5rem);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.register-page__brand span {
+  color: #1c201d;
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.register-page__card {
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--reg-stone-200);
+  border-radius: 2px;
+  box-shadow: var(--reg-card-shadow);
+  overflow: hidden;
+}
+
+.register-page__intro {
+  padding: 48px 48px 0;
+  display: grid;
+  gap: 8px;
+}
+
+.register-page__intro h2 {
+  margin: 0;
+  font-family: "EB Garamond", Georgia, serif;
+  text-align: center;
+  color: #0a3b26;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 600;
+}
+
+.register-page__intro p {
+  margin: 0;
+  text-align: center;
+  color: var(--reg-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.register-page__form {
+  padding: 28px 48px 44px;
+  display: grid;
+  gap: 22px;
+}
+
+.register-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 24px;
+}
+
+@media (max-width: 720px) {
+  .register-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .register-page__intro {
+    padding: 36px 24px 0;
+  }
+
+  .register-page__form {
+    padding: 24px 24px 36px;
+  }
+
+  .register-page__image-panel {
+    display: none;
+  }
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field--full {
+  grid-column: 1 / -1;
+}
+
+.field > span {
+  color: var(--reg-text);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.field input {
+  width: 100%;
+  min-height: 48px;
+  padding: 13px 14px;
+  color: #202520;
+  background: var(--reg-stone-50);
+  border: 1px solid var(--reg-stone-300);
+  border-radius: 2px;
+  outline: 0;
+  font: inherit;
+  font-size: 0.88rem;
+}
+
+.field input:focus {
+  border-color: var(--reg-green-950);
+  box-shadow: 0 0 0 3px rgba(0, 42, 21, 0.08);
+}
+
+.role-section {
+  display: grid;
+  gap: 12px;
+}
+
+.role-section__label {
+  color: var(--reg-text);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.role-section__toggle {
+  background: var(--reg-stone-50);
+  border: 1px solid var(--reg-stone-300);
+  border-radius: 2px;
+  padding: 6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.role-pill {
+  border: 0;
+  background: transparent;
+  border-radius: 2px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--reg-text);
+  transition: background 120ms ease, color 120ms ease;
+  min-width: 0;
+}
+
+.role-pill.is-active {
+  background: var(--reg-teal-950);
+  color: #fff;
+}
+
+.password-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 24px;
+}
+
+@media (max-width: 720px) {
+  .password-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.terms-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--reg-text);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.terms-row input {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+}
+
+.terms-row a {
+  color: var(--reg-teal-950);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.form-error {
+  color: #b00020;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.cta {
+  width: 100%;
+  min-height: 56px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--reg-teal-950);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.cta:not(:disabled):hover {
+  background: #052f1f;
+  transform: translateY(-1px);
+}
+
+.cta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.already {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  color: var(--reg-muted);
+  font-size: 0.9rem;
+  padding-top: 8px;
+}
+
+.already__link {
+  color: var(--reg-link);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.already__link:hover {
+  text-decoration: underline;
+}
+
+.register-page__footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80px;
+  padding: 24px;
+  background: #052f1f;
+  color: rgba(255, 255, 255, 0.75);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: center;
+}
+
+.role-pill:focus-visible,
+.cta:focus-visible,
+.already__link:focus-visible,
+.terms-row a:focus-visible,
+.register-page__brand:focus-visible,
+.field input:focus-visible {
+  outline: 3px solid rgba(0, 63, 53, 0.18);
+  outline-offset: 3px;
+}
+
+@media (max-width: 520px) {
+  .register-page__main {
+    padding: 40px 16px;
+  }
+
+  .register-page__brand h1 {
+    font-size: 2.55rem;
+  }
+
+  .role-section__toggle {
+    grid-template-columns: 1fr;
+  }
+}
+

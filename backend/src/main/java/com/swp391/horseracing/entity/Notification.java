@@ -28,7 +28,7 @@ public class Notification {
     private String message;
 
     @Column(nullable = false, length = 30)
-    private String type; // JOCKEY_INVITE, REG_APPROVED, REG_REJECTED, RACE_RESULT, BET_WIN, BET_LOSE, SYSTEM
+    private String type; // JOCKEY_INVITE, REG_APPROVED, REG_REJECTED, RACE_RESULT, SYSTEM
 
     @Column(name = "ref_id")
     private Long refId;

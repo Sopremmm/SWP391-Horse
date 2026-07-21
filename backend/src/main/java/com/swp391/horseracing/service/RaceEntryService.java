@@ -40,8 +40,19 @@ public class RaceEntryService {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new RuntimeException("Error: Tournament not found!"));
 
+        if (!"OPEN".equalsIgnoreCase(tournament.getStatus())) {
+            throw new RuntimeException("Error: Tournament registration is not open!");
+        }
+        if (raceEntryRepository.findByTournamentIdAndHorseId(tournamentId, horseId) != null) {
+            throw new RuntimeException("Error: This horse is already registered for the tournament!");
+        }
+        int registeredCount = raceEntryRepository.findByTournamentId(tournamentId).size();
+        if (tournament.getMaxHorses() != null && registeredCount >= tournament.getMaxHorses()) {
+            throw new RuntimeException("Error: Tournament has reached its horse limit!");
+        }
+
         // REG-01: Registration deadline <= raceStart - 24h (Applying to first race or tournament start)
-        if (tournament.getStartDate().atStartOfDay().isBefore(LocalDateTime.now().plusHours(24))) {
+        if (tournament.getStartDate() == null || tournament.getStartDate().atStartOfDay().isBefore(LocalDateTime.now().plusHours(24))) {
             throw new RuntimeException("Error: Registration deadline passed (REG-01)");
         }
 

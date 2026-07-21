@@ -1,0 +1,519 @@
+.referee-home-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.referee-home-heading h1 {
+  margin: 0;
+  color: #003b1b;
+  font-family: Georgia, 'Libre Caslon Text', 'Times New Roman', serif;
+  font-size: clamp(42px, 5vw, 56px);
+  line-height: 1.05;
+}
+
+.referee-home-heading p {
+  margin: 8px 0 0;
+  color: #404941;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.referee-home-stats {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.referee-home-stats div {
+  min-width: 96px;
+  padding: 10px 16px;
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  text-align: center;
+}
+
+.referee-home-stats span {
+  display: block;
+  color: #191c19;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.referee-home-stats strong {
+  display: block;
+  color: #003b1b;
+  font-size: 22px;
+  line-height: 26px;
+}
+
+.referee-home-stats div:last-child strong {
+  color: #855316;
+}
+
+.referee-home-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) 376px;
+  gap: 24px;
+  align-items: stretch;
+  margin-bottom: 28px;
+}
+
+.referee-live-card,
+.referee-notifications,
+.referee-schedule {
+  overflow: hidden;
+  border: 1px solid #c0c9be;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.referee-live-card header {
+  min-height: 52px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #14532d;
+  color: #ffffff;
+}
+
+.referee-live-card header span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.referee-live-card__media {
+  position: relative;
+  min-height: 480px;
+  overflow: hidden;
+}
+
+.referee-live-card__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.referee-live-card__media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.72) 55%, rgba(0, 0, 0, 0.96) 100%);
+}
+
+.referee-live-card__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 28px 18px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 28px;
+  color: #ffffff;
+}
+
+.referee-live-card__title {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.referee-live-card__title span {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 16px;
+  letter-spacing: 0.18em;
+  line-height: 24px;
+  text-transform: uppercase;
+}
+
+.referee-live-card__title h2 {
+  margin: 4px 0 0;
+  color: #ffffff;
+  font-family: Georgia, 'Libre Caslon Text', 'Times New Roman', serif;
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 46px;
+}
+
+.referee-live-card__participants {
+  min-width: 206px;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(6px);
+}
+
+.referee-live-card__participants span {
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 10px;
+  letter-spacing: 0;
+  line-height: 12px;
+}
+
+.referee-live-card__participants strong {
+  display: block;
+  font-size: 20px;
+  line-height: 24px;
+}
+
+.referee-live-card__details {
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 216px;
+  gap: 16px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(2px);
+}
+
+.referee-live-card__details > div {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.referee-live-card__details dt {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10px;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.referee-live-card__details dd {
+  margin: 0;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 21px;
+}
+
+.referee-live-card__button {
+  min-height: 64px;
+  padding: 0 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #003b1b;
+  font-size: 17px;
+  line-height: 24px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.referee-side-stack {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 24px;
+}
+
+.referee-notifications {
+  padding: 28px 24px 24px;
+}
+
+.referee-notifications h2,
+.referee-schedule h2,
+.referee-weather h2 {
+  margin: 0;
+  color: #003b1b;
+  font-family: Georgia, 'Libre Caslon Text', 'Times New Roman', serif;
+  font-size: 28px;
+  line-height: 34px;
+}
+
+.referee-notification {
+  margin-top: 18px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  border-left: 5px solid #717970;
+  border-radius: 4px;
+  background: #f0f2ef;
+  color: #404941;
+}
+
+.referee-notification.is-primary {
+  border-left-color: #003b1b;
+}
+
+.referee-notification svg {
+  flex: 0 0 auto;
+  color: #003b1b;
+}
+
+.referee-notification strong {
+  display: block;
+  color: #191c19;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.referee-notification p {
+  margin: 2px 0 0;
+  color: #5d665d;
+  font-size: 16px;
+  line-height: 22px;
+}
+
+.referee-notifications > a {
+  min-height: 42px;
+  margin-top: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #717970;
+  border-radius: 4px;
+  color: #404941;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.referee-weather {
+  position: relative;
+  min-height: 164px;
+  overflow: hidden;
+  padding: 28px 24px;
+  border-radius: 8px;
+  background: #14532d;
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.referee-weather h2 {
+  color: rgba(186, 229, 195, 0.76);
+}
+
+.referee-weather p {
+  max-width: 288px;
+  margin: 14px 0 22px;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.referee-weather strong {
+  color: rgba(186, 229, 195, 0.82);
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.referee-weather svg {
+  position: absolute;
+  right: -28px;
+  bottom: -44px;
+  color: rgba(186, 229, 195, 0.08);
+}
+
+.referee-schedule header {
+  min-height: 72px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid #c0c9be;
+  background: #f8faf4;
+}
+
+.referee-schedule__legend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  color: #191c19;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.referee-schedule__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.referee-schedule__legend i {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.referee-schedule__legend i.is-upcoming {
+  background: #ffbc76;
+}
+
+.referee-schedule__legend i.is-progress {
+  background: #14532d;
+}
+
+.referee-schedule__table {
+  min-width: 850px;
+}
+
+.referee-schedule__row {
+  min-height: 76px;
+  display: grid;
+  grid-template-columns: 130px 1.35fr 1.55fr 1.1fr 110px;
+  align-items: center;
+  gap: 20px;
+  padding: 0 24px;
+  border-top: 1px solid #c0c9be;
+}
+
+.referee-schedule__row:first-child {
+  border-top: 0;
+}
+
+.referee-schedule__row--head {
+  min-height: 48px;
+  color: #404941;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 16px;
+}
+
+.referee-schedule__row > strong {
+  color: #191c19;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.referee-schedule__row div strong {
+  display: block;
+  color: #003b1b;
+  font-size: 17px;
+  line-height: 24px;
+}
+
+.referee-schedule__row span {
+  color: #404941;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.referee-schedule__status {
+  width: max-content;
+  min-width: 126px;
+  padding: 5px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #c0c9be;
+  border-radius: 999px;
+  background: #e1e3dd;
+  color: #404941 !important;
+  font-size: 13px !important;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.referee-schedule__status.is-in-progress {
+  border-color: #14532d;
+  background: #14532d;
+  color: #ffffff !important;
+}
+
+.referee-schedule__status.is-upcoming {
+  background: #f1f3ee;
+}
+
+.referee-schedule__status i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.referee-schedule__row > a {
+  justify-self: end;
+  color: #14532d;
+  font-size: 18px;
+  text-decoration: none;
+}
+
+.referee-schedule__row > a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 1120px) {
+  .referee-home-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .referee-side-stack {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: none;
+  }
+
+  .referee-schedule {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .referee-home-heading,
+  .referee-live-card__title,
+  .referee-schedule header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .referee-home-stats {
+    width: 100%;
+  }
+
+  .referee-home-stats div {
+    flex: 1;
+  }
+
+  .referee-side-stack,
+  .referee-live-card__details {
+    grid-template-columns: 1fr;
+  }
+
+  .referee-live-card__media {
+    min-height: 560px;
+  }
+
+  .referee-live-card__details > div {
+    border-right: 0;
+  }
+}
+.referee-home-empty {
+  min-height: 120px;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  color: #69736b;
+  text-align: center;
+}

@@ -21,9 +21,6 @@ public class AdminRaceResultService {
     private PrizeService prizeService;
 
     @Autowired
-    private ResultMatchingService resultMatchingService;
-
-    @Autowired
     private AuditLogService auditLogService;
 
     public RefereeReport getRefereeReport(Long raceId) {
@@ -71,7 +68,6 @@ public class AdminRaceResultService {
         Race saved = raceRepository.save(race);
 
         prizeService.calculateTop3ForRace(raceId);
-        resultMatchingService.resolveBetsForRace(raceId);
 
         auditLogService.log(actorAdminId, "ADMIN_PUBLISH_RESULTS", "RACE", raceId, "status=COMPLETED");
         return saved;

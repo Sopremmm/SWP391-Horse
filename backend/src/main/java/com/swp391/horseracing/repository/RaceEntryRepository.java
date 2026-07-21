@@ -11,4 +11,5 @@ public interface RaceEntryRepository extends JpaRepository<RaceEntry, Long> {
     List<RaceEntry> findByTournamentId(Long tournamentId);
     List<RaceEntry> findByRaceId(Long raceId);
     List<RaceEntry> findByHorseId(Long horseId);
+    RaceEntry findByTournamentIdAndHorseId(Long tournamentId, Long horseId);
 }

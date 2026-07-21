@@ -34,8 +34,12 @@ public class Horse {
     @Column(length = 50)
     private String color;
 
-    @Column(name = "image_url")
+    @Lob
+    @Column(name = "image_url", columnDefinition = "NVARCHAR(MAX)")
     private String imageUrl;
+
+    @Column(length = 20)
+    private String condition = "PEAK"; // PEAK, GOOD, RECOVERING
 
     @Column(name = "total_races")
     private Integer totalRaces = 0;
@@ -68,6 +72,8 @@ public class Horse {
     public void setColor(String color) { this.color = color; }
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public String getCondition() { return condition; }
+    public void setCondition(String condition) { this.condition = condition; }
     public Integer getTotalRaces() { return totalRaces; }
     public void setTotalRaces(Integer totalRaces) { this.totalRaces = totalRaces; }
     public Integer getTotalWins() { return totalWins; }

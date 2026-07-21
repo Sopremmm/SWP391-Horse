@@ -54,6 +54,9 @@ public class RaceEntry {
     @Column(name = "no_show_at")
     private LocalDateTime noShowAt;
 
+    @Column(name = "gate_number")
+    private Integer gateNumber;
+
     public RaceEntry() {}
 
     public RaceEntry(Horse horse, User jockey, Tournament tournament, Race race, String status) {
@@ -109,4 +112,6 @@ public class RaceEntry {
     public void setNoShow(Boolean noShow) { this.noShow = noShow; }
     public LocalDateTime getNoShowAt() { return noShowAt; }
     public void setNoShowAt(LocalDateTime noShowAt) { this.noShowAt = noShowAt; }
+    public Integer getGateNumber() { return gateNumber; }
+    public void setGateNumber(Integer gateNumber) { this.gateNumber = gateNumber; }
 }

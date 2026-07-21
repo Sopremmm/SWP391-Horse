@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -44,9 +43,6 @@ public class User {
 
     @Column(name = "avatar_url")
     private String avatarUrl;
-
-    @Column(name = "balance", nullable = false, precision = 15, scale = 2)
-    private BigDecimal balance = BigDecimal.ZERO;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -106,8 +102,6 @@ public class User {
     public void setStatus(UserStatus status) { this.status = status; }
     public String getAvatarUrl() { return avatarUrl; }
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
-    public BigDecimal getBalance() { return balance; }
-    public void setBalance(BigDecimal balance) { this.balance = balance; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

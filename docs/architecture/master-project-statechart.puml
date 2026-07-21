@@ -1,0 +1,152 @@
+@startuml
+title Horse Racing Management System - Master Project Statechart
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam state {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  ArrowColor #334155
+  FontColor #0F172A
+}
+
+legend left
+  |= Actor |= Responsibility |
+  | ADMIN | Manage users, tournaments, races, entries, reports, publishing |
+  | HORSE_OWNER | Manage horses, register entries, invite jockeys |
+  | JOCKEY | Maintain profile, accept/decline invitations |
+  | REFEREE | Check-in, results, violations, submit/confirm report |
+  | SPECTATOR | Predict race winner, view result, wallet/top-up |
+  | BANK/ADMIN | Confirm a top-up payment |
+endlegend
+
+state "Master Project" as MASTER {
+
+  state "User Account" as USER {
+    [*] --> Active : signup/admin creates user
+    Active --> Inactive : ADMIN changes status
+    Active --> Banned : ADMIN changes status
+    Inactive --> Active : ADMIN reactivates
+    Inactive --> Banned : ADMIN bans
+    Banned --> Active : ADMIN unbans
+    Banned --> Inactive : ADMIN changes status
+    Active --> Authenticated : sign in\n[email/password valid]
+    Authenticated --> Active : sign out / token expires
+    Inactive --> Inactive : sign in rejected
+    Banned --> Banned : sign in rejected
+  }
+
+  --
+
+  state "Tournament Lifecycle" as TOURNAMENT {
+    [*] --> Draft : ADMIN creates tournament\n[start >= creation + 7 days]
+    Draft --> Open : ADMIN publishes\n[at least 2 scheduled races]
+    Open --> Ongoing : ADMIN updates status
+    Ongoing --> Closed : ADMIN closes tournament
+  }
+
+  --
+
+  state "Horse & Race Entry" as ENTRY {
+    state "Horse" as HORSE {
+      [*] --> HorseActive : HORSE_OWNER creates horse
+      HorseActive --> Retired : owner updates status
+      Retired --> HorseActive : owner updates status
+    }
+
+    state "Registration" as REGISTRATION {
+      [*] --> NotRegistered
+      NotRegistered --> Pending : HORSE_OWNER registers\n[owns horse and before deadline]
+      Pending --> Approved : ADMIN approves\n[race has capacity and owner limit not exceeded]
+      Pending --> Rejected : ADMIN rejects
+      Approved --> Confirmed : jockey assigned / confirmed
+      Approved --> Withdrawn : REFEREE marks no-show
+      Confirmed --> Withdrawn : REFEREE marks no-show
+      Approved --> CheckedIn : REFEREE checks in\n[jockey assigned]
+      Confirmed --> CheckedIn : REFEREE checks in\n[jockey assigned]
+      CheckedIn --> Approved : REFEREE cancels check-in
+    }
+  }
+
+  --
+
+  state "Jockey Invitation" as INVITATION {
+    [*] --> NoInvitation
+    NoInvitation --> InvitationPending : HORSE_OWNER invites jockey\n[owns horse; jockey not assigned in race]
+    InvitationPending --> Accepted : JOCKEY responds ACCEPTED\n[owner/jockey/race entry valid; <= 24h]
+    InvitationPending --> Declined : JOCKEY responds DECLINED\n[invitation belongs to jockey; <= 24h]
+    InvitationPending --> Expired : JOCKEY responds after expiresAt
+    Accepted : entry.jockey is assigned
+    Accepted --> [*]
+    Declined --> [*]
+    Expired --> [*]
+  }
+
+  --
+
+  state "Race Lifecycle" as RACE {
+    [*] --> Scheduled : ADMIN creates race
+    Scheduled --> Scheduled : ADMIN assigns referee / configures gates
+    Scheduled --> Ongoing : ADMIN starts race\n[referee assigned; >=2 approved entries; all have jockey]
+    Ongoing --> Scheduled : ADMIN reverts status
+    Ongoing --> Finished : REFEREE submits report
+    Ongoing --> Finished : ADMIN sets FINISHED\n[report submitted]
+    Scheduled --> Finished : ADMIN sets FINISHED\n[report submitted]
+    Finished --> Completed : ADMIN publishes results\n[report confirmed]
+    Completed --> [*]
+  }
+
+  --
+
+  state "Referee Processing" as OFFICIATING {
+    [*] --> ReportDraft : assigned REFEREE opens/saves report
+    ReportDraft --> ResultsRecorded : REFEREE records results\n[all eligible horses processed; valid unique ranks]
+    ResultsRecorded --> ReportSubmitted : REFEREE submits report
+    ReportDraft --> ReportSubmitted : REFEREE submits report\n[all eligible horses processed]
+    ReportSubmitted --> ReportConfirmed : REFEREE confirms within deadline
+    ReportSubmitted --> ReportConfirmed : ADMIN confirms report
+    ReportConfirmed --> ResultsPublished : ADMIN publishes race results
+    ResultsPublished --> [*]
+  }
+
+  --
+
+  state "Spectator Prediction" as BETTING {
+    [*] --> NoPrediction
+    NoPrediction --> BetPending : SPECTATOR predicts entry\n[race SCHEDULED; one prediction/race; entry belongs to race]
+    BetPending --> BetWin : results published\n[predicted entry is rank 1]
+    BetPending --> BetLose : results published\n[predicted entry is not rank 1]
+    BetWin --> [*]
+    BetLose --> [*]
+  }
+
+  --
+
+  state "Wallet Top-up" as WALLET {
+    [*] --> TopUpPending : authenticated user creates request\n[amount > 0]
+    TopUpPending --> Paid : BANK webhook SUCCESS/PAID\n[secret, reference, amount and transaction valid]
+    TopUpPending --> Paid : ADMIN marks paid
+    Paid : credit user balance exactly once\nnotify user and write audit when ADMIN acts
+    Paid --> Paid : duplicate payment callback ignored
+    Paid --> [*]
+  }
+}
+
+note right of RACE
+  COMPLETED can only be reached through
+  publish-results. Direct status update to
+  COMPLETED is rejected.
+end note
+
+note right of OFFICIATING
+  Published results are immutable (RS-02).
+  Confirmation after the deadline is rejected (RS-01).
+end note
+
+note bottom of MASTER
+  "Master Project" is a system-level viewpoint, not a backend Role enum.
+  Actual roles: ADMIN, HORSE_OWNER, JOCKEY, REFEREE, SPECTATOR.
+  Invalid guards currently raise RuntimeException and are mapped to HTTP 400.
+end note
+
+@enduml

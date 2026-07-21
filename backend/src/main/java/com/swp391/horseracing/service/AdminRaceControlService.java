@@ -1,12 +1,15 @@
 package com.swp391.horseracing.service;
 
+import com.swp391.horseracing.dto.request.AdminConfigureRaceGatesRequest;
 import com.swp391.horseracing.dto.response.AdminRaceChecklistResponse;
 import com.swp391.horseracing.dto.response.AdminRaceListItemResponse;
+import com.swp391.horseracing.entity.Horse;
 import com.swp391.horseracing.entity.Race;
 import com.swp391.horseracing.entity.RaceEntry;
 import com.swp391.horseracing.entity.RefereeReport;
 import com.swp391.horseracing.entity.RaceResult;
 import com.swp391.horseracing.entity.enums.RaceStatus;
+import com.swp391.horseracing.repository.HorseRepository;
 import com.swp391.horseracing.repository.RaceEntryRepository;
 import com.swp391.horseracing.repository.RaceRepository;
 import com.swp391.horseracing.repository.RaceResultRepository;
@@ -17,8 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class AdminRaceControlService {
@@ -36,6 +43,9 @@ public class AdminRaceControlService {
 
     @Autowired
     private AuditLogService auditLogService;
+
+    @Autowired
+    private HorseRepository horseRepository;
 
     public List<AdminRaceListItemResponse> listRaces(Long tournamentId, String status, String q, LocalDateTime from, LocalDateTime to) {
         List<Race> races = tournamentId != null ? raceRepository.findByTournamentId(tournamentId) : raceRepository.findAll();
@@ -175,6 +185,136 @@ public class AdminRaceControlService {
 
         Race saved = raceRepository.save(race);
         auditLogService.log(actorAdminId, "ADMIN_UPDATE_RACE_STATUS", "RACE", raceId, "status=" + saved.getStatus());
+        return saved;
+    }
+
+    @Transactional
+    public Race configureRaceGates(Long actorAdminId, Long raceId, AdminConfigureRaceGatesRequest request) {
+        Race race = raceRepository.findById(raceId)
+                .orElseThrow(() -> new RuntimeException("Error: Race not found!"));
+        if (race.getTournament() == null || race.getTournament().getId() == null) {
+            throw new RuntimeException("Error: Race tournament not found!");
+        }
+
+        int gateCount = request.getGateCount() == null ? 0 : request.getGateCount();
+        if (gateCount < 1) {
+            throw new RuntimeException("Error: Gate count must be at least 1!");
+        }
+
+        List<AdminConfigureRaceGatesRequest.GateAssignment> assignments =
+                request.getAssignments() == null ? List.of() : request.getAssignments();
+
+        Set<String> seenHorseKeys = new HashSet<>();
+        Set<Integer> seenGateNumbers = new HashSet<>();
+        Map<Long, RaceEntry> tournamentEntries = new HashMap<>();
+        Map<Long, RaceEntry> tournamentEntriesByHorseId = new HashMap<>();
+        for (RaceEntry entry : raceEntryRepository.findByTournamentId(race.getTournament().getId())) {
+            if (entry != null && entry.getId() != null) {
+                tournamentEntries.put(entry.getId(), entry);
+                if (entry.getHorse() != null && entry.getHorse().getId() != null) {
+                    RaceEntry previous = tournamentEntriesByHorseId.putIfAbsent(entry.getHorse().getId(), entry);
+                    if (previous != null && !previous.getId().equals(entry.getId())) {
+                        throw new RuntimeException("Error: Duplicate tournament entry found for horse #" + entry.getHorse().getId() + "!");
+                    }
+                }
+            }
+        }
+
+        for (AdminConfigureRaceGatesRequest.GateAssignment assignment : assignments) {
+            if (assignment == null || assignment.getGateNumber() == null) {
+                throw new RuntimeException("Error: Invalid gate assignment!");
+            }
+            if (assignment.getGateNumber() < 1 || assignment.getGateNumber() > gateCount) {
+                throw new RuntimeException("Error: Gate number is out of configured range!");
+            }
+            Long horseId = assignment.getHorseId();
+            if (horseId == null && assignment.getEntryId() != null) {
+                RaceEntry mappedEntry = tournamentEntries.get(assignment.getEntryId());
+                horseId = mappedEntry != null && mappedEntry.getHorse() != null ? mappedEntry.getHorse().getId() : null;
+            }
+            if (horseId == null) {
+                throw new RuntimeException("Error: Gate assignment must include an entry or horse!");
+            }
+            if (!seenHorseKeys.add("horse:" + horseId)) {
+                throw new RuntimeException("Error: Duplicate horse in gate assignments!");
+            }
+            if (!seenGateNumbers.add(assignment.getGateNumber())) {
+                throw new RuntimeException("Error: Duplicate gate number in gate assignments!");
+            }
+
+            if (assignment.getEntryId() != null) {
+                RaceEntry entry = tournamentEntries.get(assignment.getEntryId());
+                if (entry == null) {
+                    throw new RuntimeException("Error: Race entry does not belong to this tournament!");
+                }
+                String status = entry.getStatus();
+                if (status != null && status.equalsIgnoreCase("REJECTED")) {
+                    throw new RuntimeException("Error: Rejected entries cannot be assigned to gates!");
+                }
+            } else {
+                Horse horse = horseRepository.findById(horseId)
+                        .orElseThrow(() -> new RuntimeException("Error: Horse not found!"));
+                if (horse.getStatus() != null && horse.getStatus().equalsIgnoreCase("RETIRED")) {
+                    throw new RuntimeException("Error: Retired horses cannot be assigned to gates!");
+                }
+                RaceEntry existingEntry = tournamentEntriesByHorseId.get(horseId);
+                if (existingEntry != null) {
+                    String status = existingEntry.getStatus();
+                    if (status != null && status.equalsIgnoreCase("REJECTED")) {
+                        throw new RuntimeException("Error: Rejected entries cannot be assigned to gates!");
+                    }
+                }
+            }
+        }
+
+        List<RaceEntry> currentRaceEntries = raceEntryRepository.findByRaceId(raceId);
+        Set<Long> selectedIds = new HashSet<>();
+        for (RaceEntry entry : currentRaceEntries) {
+            if (entry == null || entry.getId() == null) continue;
+            if (!selectedIds.contains(entry.getId())) {
+                entry.setGateNumber(null);
+                entry.setRace(null);
+                raceEntryRepository.save(entry);
+            }
+        }
+
+        for (AdminConfigureRaceGatesRequest.GateAssignment assignment : assignments) {
+            RaceEntry entry = assignment.getEntryId() != null ? tournamentEntries.get(assignment.getEntryId()) : null;
+            if (entry == null && assignment.getHorseId() != null) {
+                entry = tournamentEntriesByHorseId.get(assignment.getHorseId());
+                if (entry == null) {
+                    Horse horse = horseRepository.findById(assignment.getHorseId())
+                            .orElseThrow(() -> new RuntimeException("Error: Horse not found!"));
+                    entry = RaceEntry.builder()
+                            .horse(horse)
+                            .tournament(race.getTournament())
+                            .status("APPROVED")
+                            .approvedAt(LocalDateTime.now())
+                            .build();
+                }
+            }
+            if (entry == null) {
+                throw new RuntimeException("Error: Unable to resolve horse entry for gate assignment!");
+            }
+            entry.setRace(race);
+            entry.setGateNumber(assignment.getGateNumber());
+            String status = entry.getStatus();
+            if (status == null || status.equalsIgnoreCase("PENDING")) {
+                entry.setStatus("APPROVED");
+                if (entry.getApprovedAt() == null) {
+                    entry.setApprovedAt(LocalDateTime.now());
+                }
+            }
+            RaceEntry savedEntry = raceEntryRepository.save(entry);
+            selectedIds.add(savedEntry.getId());
+            if (savedEntry.getHorse() != null && savedEntry.getHorse().getId() != null) {
+                tournamentEntriesByHorseId.put(savedEntry.getHorse().getId(), savedEntry);
+            }
+        }
+
+        race.setMaxParticipants(gateCount);
+        Race saved = raceRepository.save(race);
+        auditLogService.log(actorAdminId, "ADMIN_CONFIGURE_RACE_GATES", "RACE", raceId, "gateCount=" + gateCount + ", assignments=" + assignments.size());
         return saved;
     }
 }

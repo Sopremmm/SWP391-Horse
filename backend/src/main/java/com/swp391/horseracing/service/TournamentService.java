@@ -19,6 +19,12 @@ public class TournamentService {
     private UserRepository userRepository;
 
     public Tournament createTournament(Tournament tournament, Long adminId) {
+        if (tournament.getStartDate() == null || tournament.getEndDate() == null) {
+            throw new RuntimeException("Error: Tournament start date and end date are required!");
+        }
+        if (tournament.getEndDate().isBefore(tournament.getStartDate())) {
+            throw new RuntimeException("Error: Tournament end date cannot be before its start date!");
+        }
         // TM-01: tournamentStart >= created + 7 days
         if (tournament.getStartDate().isBefore(LocalDate.now().plusDays(7))) {
             throw new RuntimeException("Error: Tournament start date must be at least 7 days after creation (TM-01)");
@@ -28,6 +34,9 @@ public class TournamentService {
                 .orElseThrow(() -> new RuntimeException("Error: Admin not found!"));
         tournament.setCreatedBy(admin);
         tournament.setStatus("DRAFT");
+        if (tournament.getMaxHorses() == null || tournament.getMaxHorses() < 1) {
+            tournament.setMaxHorses(20);
+        }
         return tournamentRepository.save(tournament);
     }
 
@@ -45,7 +54,7 @@ public class TournamentService {
 
     public Tournament updateStatus(Long id, String status) {
         Tournament tournament = getTournamentById(id);
-        
+
         // TM-02: Minimum Races >= 2 before publishing (OPEN)
         if ("OPEN".equals(status)) {
             long raceCount = raceRepository.findByTournamentId(id).size();
@@ -53,7 +62,7 @@ public class TournamentService {
                 throw new RuntimeException("Error: Tournament must have at least 2 scheduled races to be published (TM-02)");
             }
         }
-        
+
         tournament.setStatus(status);
         return tournamentRepository.save(tournament);
     }
