@@ -1,5 +1,12 @@
 import React from 'react';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
+import {
+  approveTournamentEntry,
+  fetchAllTournaments,
+  fetchEntriesByTournament,
+  fetchRacesByTournament,
+  rejectTournamentEntry,
+} from '../../services/integration.ts';
 import './AdminConfirmRegistration.css';
 
 type RegistrationStatus = 'Pending' | 'Approved' | 'Declined';
@@ -15,28 +22,6 @@ type Registration = {
   status: RegistrationStatus;
 };
 
-const exampleRegistrations: Registration[] = [
-  { id: 1, tournament: 'Royal Ascot Gold Cup', horse: 'Midnight Sovereign', breedAge: 'Thoroughbred · 5yo Stallion', owner: 'Alexander Sterling', accent: '#775a19', status: 'Pending' },
-  { id: 2, tournament: 'The Dubai World Cup', horse: 'Silver Shadow', breedAge: 'Arabian · 4yo Mare', owner: 'Arthur Sterling', accent: '#004225', status: 'Declined' },
-  { id: 3, tournament: 'Preakness Stakes', horse: 'Golden Gallop', breedAge: 'Thoroughbred · 6yo Stallion', owner: 'Julian Rossi', accent: '#002a15', status: 'Approved' },
-  { id: 4, tournament: 'Emerald Derby Classic', horse: 'Velvet Comet', breedAge: 'Thoroughbred · 3yo Mare', owner: 'Claire Beaumont', accent: '#526d50', status: 'Pending' },
-  { id: 5, tournament: 'Heritage Breeders Cup', horse: 'Northern Crown', breedAge: 'Warmblood · 5yo Stallion', owner: 'James Whitmore', accent: '#895f32', status: 'Pending' },
-  { id: 6, tournament: 'Winter Solstice Sprint', horse: 'Crimson Legacy', breedAge: 'Thoroughbred · 4yo Gelding', owner: 'Sofia Moretti', accent: '#7c2d12', status: 'Approved' },
-  { id: 7, tournament: 'King George Stakes', horse: 'Windswept Honor', breedAge: 'Arabian Cross · 5yo Mare', owner: 'George Fairchild', accent: '#365314', status: 'Pending' },
-  { id: 8, tournament: 'Belmont Heritage Run', horse: 'Noble Whisper', breedAge: 'Thoroughbred · 3yo Stallion', owner: 'Isabelle Laurent', accent: '#475569', status: 'Approved' },
-  { id: 9, tournament: 'Grand National Trial', horse: 'Ironwood Prince', breedAge: 'Warmblood · 6yo Gelding', owner: 'Henry Ashford', accent: '#713f12', status: 'Declined' },
-  { id: 10, tournament: 'Royal Ascot Gold Cup', horse: 'Dawn’s Promise', breedAge: 'Thoroughbred · 4yo Mare', owner: 'Victoria Wells', accent: '#9f1239', status: 'Pending' },
-  { id: 11, tournament: 'The Dubai World Cup', horse: 'Desert Anthem', breedAge: 'Arabian · 5yo Stallion', owner: 'Omar Al-Fayed', accent: '#a16207', status: 'Pending' },
-  { id: 12, tournament: 'Preakness Stakes', horse: 'Secretariat Blue', breedAge: 'Thoroughbred · 3yo Stallion', owner: 'Oliver Price', accent: '#1e3a8a', status: 'Pending' },
-  { id: 13, tournament: 'Emerald Derby Classic', horse: 'Autumn Regent', breedAge: 'Thoroughbred · 5yo Gelding', owner: 'Helena Ward', accent: '#166534', status: 'Approved' },
-  { id: 14, tournament: 'Heritage Breeders Cup', horse: 'Ivory Monarch', breedAge: 'Arabian Cross · 4yo Stallion', owner: 'Edward Sinclair', accent: '#854d0e', status: 'Declined' },
-  { id: 15, tournament: 'King George Stakes', horse: 'Rosewood Star', breedAge: 'Thoroughbred · 3yo Mare', owner: 'Beatrice Cole', accent: '#be123c', status: 'Pending' },
-  { id: 16, tournament: 'Belmont Heritage Run', horse: 'Sapphire Crest', breedAge: 'Warmblood · 5yo Mare', owner: 'Nathaniel Brooks', accent: '#1d4ed8', status: 'Approved' },
-];
-
-// Data is intentionally empty until it is supplied by the registration data source.
-const initialRegistrations: Registration[] = [];
-void exampleRegistrations;
 const PAGE_SIZE = 7;
 const filters: StatusFilter[] = ['All Entries', 'Pending', 'Approved', 'Declined'];
 
@@ -60,11 +45,12 @@ function RegistrationIcon({ name }: { name: 'clipboard' | 'approved' | 'declined
 }
 
 export default function AdminConfirmRegistration() {
-  const [registrations, setRegistrations] = React.useState(initialRegistrations);
+  const [registrations, setRegistrations] = React.useState<(Registration & { raceId?: number })[]>([]);
   const [filter, setFilter] = React.useState<StatusFilter>('All Entries');
   const [page, setPage] = React.useState(1);
-  const [selected, setSelected] = React.useState<Registration | null>(null);
+  const [selected, setSelected] = React.useState<(Registration & { raceId?: number }) | null>(null);
   const [toast, setToast] = React.useState('');
+  const [loading, setLoading] = React.useState(true);
 
   const visibleRegistrations = registrations.filter((item) => filter === 'All Entries' || item.status === filter);
   const pageCount = Math.max(1, Math.ceil(visibleRegistrations.length / PAGE_SIZE));
@@ -75,13 +61,48 @@ export default function AdminConfirmRegistration() {
   const declinedCount = registrations.filter((item) => item.status === 'Declined').length;
 
   React.useEffect(() => {
-    setRegistrations((current) =>
-      current.map((item) =>
-        String(item.status).toLowerCase() === 'rejected'
-          ? { ...item, status: 'Declined' }
-          : item,
-      ),
-    );
+    let cancelled = false;
+
+    const load = async () => {
+      setLoading(true);
+      try {
+        const tournaments = await fetchAllTournaments().catch(() => []);
+        const entriesByTournament = await Promise.all(
+          tournaments.map(async (tournament) => {
+            const [entries, races] = await Promise.all([
+              fetchEntriesByTournament(tournament.id).catch(() => []),
+              fetchRacesByTournament(tournament.id).catch(() => []),
+            ]);
+
+            return entries.map((entry) => ({
+              id: Number(entry.id),
+              tournament: tournament.name,
+              horse: entry.horse?.name || 'Horse',
+              breedAge: [entry.horse?.breed, entry.horse?.age ? `${entry.horse.age}yo` : ''].filter(Boolean).join(' · '),
+              owner: entry.horse?.owner?.fullName || 'Owner',
+              accent: '#775a19',
+              status:
+                entry.status === 'APPROVED'
+                  ? 'Approved'
+                  : entry.status === 'REJECTED'
+                    ? 'Declined'
+                    : 'Pending',
+              raceId: entry.race?.id || races[0]?.id,
+            }));
+          }),
+        );
+
+        if (!cancelled) setRegistrations(entriesByTournament.flat());
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   React.useEffect(() => {
@@ -95,11 +116,25 @@ export default function AdminConfirmRegistration() {
     setPage(1);
   };
 
-  const updateStatus = (id: number, status: RegistrationStatus) => {
+  const updateStatus = async (id: number, status: RegistrationStatus) => {
     const registration = registrations.find((item) => item.id === id);
-    setRegistrations((current) => current.map((item) => (item.id === id ? { ...item, status } : item)));
-    setSelected((current) => (current?.id === id ? { ...current, status } : current));
-    setToast(`${registration?.horse ?? 'Registration'} has been ${status.toLowerCase()}.`);
+    try {
+      if (status === 'Approved') {
+        if (!registration?.raceId) {
+          setToast('This registration has no race assignment yet.');
+          return;
+        }
+        await approveTournamentEntry(id, registration.raceId);
+      } else if (status === 'Declined') {
+        await rejectTournamentEntry(id);
+      }
+
+      setRegistrations((current) => current.map((item) => (item.id === id ? { ...item, status } : item)));
+      setSelected((current) => (current?.id === id ? { ...current, status } : current));
+      setToast(`${registration?.horse ?? 'Registration'} has been ${status.toLowerCase()}.`);
+    } catch (err) {
+      setToast(err instanceof Error ? err.message : 'Failed to update registration.');
+    }
   };
 
   return (
@@ -108,7 +143,7 @@ export default function AdminConfirmRegistration() {
       title="Registration Approvals"
       topNavActive="overview"
     >
-      <div className="admin-confirm-registration">
+      <div className="admin-confirm-registration" aria-busy={loading}>
         <section className="admin-confirm-registration__canvas">
           <header className="admin-confirm-registration__heading">
             <h1>Registration Approvals</h1>
@@ -170,8 +205,8 @@ export default function AdminConfirmRegistration() {
                       <div className="admin-confirm-registration__row-actions">
                         {registration.status === 'Pending' ? (
                           <>
-                            <button className="is-decline" type="button" onClick={() => updateStatus(registration.id, 'Declined')}>Decline</button>
-                            <button className="is-accept" type="button" onClick={() => updateStatus(registration.id, 'Approved')}>Accept</button>
+                            <button className="is-decline" type="button" onClick={() => void updateStatus(registration.id, 'Declined')}>Decline</button>
+                            <button className="is-accept" type="button" onClick={() => void updateStatus(registration.id, 'Approved')}>Accept</button>
                           </>
                         ) : (
                           <span className={`admin-confirm-registration__status is-${registration.status.toLowerCase()}`}>{registration.status}</span>
@@ -182,7 +217,7 @@ export default function AdminConfirmRegistration() {
                       </div>
                     </article>
                   )) : (
-                    <div className="admin-confirm-registration__empty">No registrations match this status.</div>
+                    <div className="admin-confirm-registration__empty">{loading ? 'Loading registrations...' : 'No registrations match this status.'}</div>
                   )}
                 </div>
               </div>
@@ -223,8 +258,8 @@ export default function AdminConfirmRegistration() {
               </dl>
               {selected.status === 'Pending' ? (
                 <div className="admin-confirm-registration__modal-actions">
-                  <button type="button" onClick={() => updateStatus(selected.id, 'Declined')}>Decline registration</button>
-                  <button type="button" onClick={() => updateStatus(selected.id, 'Approved')}>Approve registration</button>
+                  <button type="button" onClick={() => void updateStatus(selected.id, 'Declined')}>Decline registration</button>
+                  <button type="button" onClick={() => void updateStatus(selected.id, 'Approved')}>Approve registration</button>
                 </div>
               ) : null}
             </section>

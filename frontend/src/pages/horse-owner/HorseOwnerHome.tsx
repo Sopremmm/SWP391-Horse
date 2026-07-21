@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/common/Header.tsx';
+import { getHorseOwnerHomeData } from '../../services/integration.ts';
 import './HorseOwnerHome.css';
 
 type OwnerTournament = {
@@ -111,38 +112,15 @@ const normalizeOwnerHomeData = (raw?: RawOwnerHomeData | null): OwnerHomeData =>
   };
 };
 
-const readOwnerHomeFromLocalStorage = (): RawOwnerHomeData | null => {
-  try {
-    const raw = window.localStorage.getItem('horse_owner_home_data');
-    return raw ? (JSON.parse(raw) as RawOwnerHomeData) : null;
-  } catch {
-    return null;
-  }
-};
-
-const readOwnerHomeFromApi = async (): Promise<RawOwnerHomeData | null> => {
-  try {
-    const endpoint = process.env.REACT_APP_HORSE_OWNER_HOME_API || '/api/horse-owner/home';
-    const response = await fetch(endpoint, { method: 'GET' });
-    if (!response.ok) return null;
-    return (await response.json()) as RawOwnerHomeData;
-  } catch {
-    return null;
-  }
-};
-
 export const HorseOwnerHome: React.FC = () => {
-  const [dashboard, setDashboard] = React.useState<OwnerHomeData>(() =>
-    normalizeOwnerHomeData(readOwnerHomeFromLocalStorage()),
-  );
+  const [dashboard, setDashboard] = React.useState<OwnerHomeData>(() => normalizeOwnerHomeData(null));
 
   React.useEffect(() => {
     let cancelled = false;
 
     const loadDashboard = async () => {
-      const apiData = await readOwnerHomeFromApi();
-      const localData = readOwnerHomeFromLocalStorage();
-      if (!cancelled) setDashboard(normalizeOwnerHomeData(apiData ?? localData));
+      const apiData = await getHorseOwnerHomeData().catch(() => null);
+      if (!cancelled) setDashboard(normalizeOwnerHomeData(apiData));
     };
 
     void loadDashboard();

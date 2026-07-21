@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Header } from '../../components/common/Header.tsx';
+import { fetchJockeys, slugify } from '../../services/integration.ts';
 import './JockeyProfile.css';
 
 type RacePerformance = {
@@ -68,10 +69,6 @@ type RawJockeyResponse = {
 };
 
 const PLACEHOLDER_IMG = 'https://placehold.co/560x680';
-
-function normalizeSlug(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-}
 
 function pickString(...values: unknown[]) {
   const value = values.find((item) => typeof item === 'string' && item.trim().length > 0);
@@ -158,27 +155,27 @@ function readJockeysFromLocalStorage(): RawJockeyResponse | null {
 }
 
 async function readJockeysFromApi(name: string): Promise<RawJockeyResponse | null> {
-  const encoded = encodeURIComponent(name);
-  const detailEndpoint = process.env.REACT_APP_INVITE_JOCKEY_DETAIL_API?.replace(':name', encoded);
-  const listEndpoint = process.env.REACT_APP_INVITE_JOCKEYS_API || '/api/horse-owner/jockeys';
-
-  for (const endpoint of [detailEndpoint, listEndpoint].filter(Boolean) as string[]) {
-    try {
-      const response = await fetch(endpoint, { method: 'GET' });
-      if (response.ok) return (await response.json()) as RawJockeyResponse;
-    } catch {
-      // Try next configured source.
-    }
-  }
-
-  return null;
+  const jockeys = await fetchJockeys().catch(() => []);
+  return {
+    jockeys: jockeys
+      .filter((item) => slugify(item.fullName || item.email) === slugify(name) || String(item.id) === name)
+      .map((item) => ({
+        id: String(item.id),
+        name: item.fullName || item.email,
+        imageUrl: item.avatarUrl,
+        bio: 'Professional jockey profile synced from the backend user directory.',
+        totalRaces: 0,
+        winRate: 'TBA',
+        hiringPrice: 'TBA',
+      })),
+  };
 }
 
 function findJockey(raw: RawJockey[], name: string) {
-  const target = normalizeSlug(name);
+  const target = slugify(name);
   return raw.find((jockey) => (
-    normalizeSlug(String(jockey.id || jockey.name || '')) === target ||
-    normalizeSlug(String(jockey.name || '')) === target
+    slugify(String(jockey.id || jockey.name || '')) === target ||
+    slugify(String(jockey.name || '')) === target
   ));
 }
 
@@ -220,10 +217,7 @@ export default function JockeyProfile() {
         <main className="jockey-profile__main jockey-profile__main--empty">
           <section className="jockey-profile__empty">
             <h1>Jockey profile data is empty.</h1>
-            <p>
-              Connect `/api/horse-owner/jockeys`, set `REACT_APP_INVITE_JOCKEYS_API`, or provide
-              `invite_jockeys_data` in localStorage to render this profile.
-            </p>
+            <p>Jockey data is not available from the backend directory.</p>
             <Link to="/HorseOwner/InviteJockeys">Back to jockeys</Link>
           </section>
         </main>

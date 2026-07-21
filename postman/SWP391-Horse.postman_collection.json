@@ -1,0 +1,630 @@
+{
+  "info": {
+    "name": "SWP391 Horse Racing API",
+    "_postman_id": "a9c1b1b2-9c54-4f9d-bc45-3f514e2b9caa",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [{ "key": "refereeUserId", "value": "" }, { "key": "jockeyUserId", "value": "" }],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signin - Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/signin",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('token', json.token);",
+                  "pm.environment.set('adminToken', json.token);",
+                  "pm.environment.set('currentRole', 'ADMIN');",
+                  "pm.environment.set('currentUserId', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Signin - Horse Owner",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/signin",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{ownerEmail}}\",\n  \"password\": \"{{ownerPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('token', json.token);",
+                  "pm.environment.set('ownerToken', json.token);",
+                  "pm.environment.set('currentRole', 'HORSE_OWNER');",
+                  "pm.environment.set('currentUserId', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Signin - Jockey",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/signin",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{jockeyEmail}}\",\n  \"password\": \"{{jockeyPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('token', json.token);",
+                  "pm.environment.set('jockeyToken', json.token);",
+                  "pm.environment.set('currentRole', 'JOCKEY');",
+                  "pm.environment.set('currentUserId', json.id);",
+                  "pm.environment.set('jockeyUserId', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Signin - Referee",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/signin",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{refereeEmail}}\",\n  \"password\": \"{{refereePassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('token', json.token);",
+                  "pm.environment.set('refereeToken', json.token);",
+                  "pm.environment.set('currentRole', 'REFEREE');",
+                  "pm.environment.set('currentUserId', json.id);",
+                  "pm.environment.set('refereeUserId', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Signin - Spectator",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/signin",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{spectatorEmail}}\",\n  \"password\": \"{{spectatorPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('token', json.token);",
+                  "pm.environment.set('spectatorToken', json.token);",
+                  "pm.environment.set('currentRole', 'SPECTATOR');",
+                  "pm.environment.set('currentUserId', json.id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tournament",
+      "item": [
+        {
+          "name": "Get all tournaments",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{spectatorToken}}" }],
+            "url": "{{baseUrl}}/api/tournaments"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const list = pm.response.json();",
+                  "if (Array.isArray(list) && list.length > 0) { pm.environment.set('tournamentId', String(list[0].id)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get tournament by id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{spectatorToken}}" }],
+            "url": "{{baseUrl}}/api/tournaments/{{tournamentId}}"
+          }
+        },
+        {
+          "name": "Create tournament (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/tournaments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Giải thử nghiệm Postman\",\n  \"location\": \"TP. HCM\",\n  \"description\": \"Tạo từ Postman\",\n  \"startDate\": \"2026-08-01\",\n  \"endDate\": \"2026-08-03\",\n  \"prizePool\": 100000000,\n  \"maxHorses\": 20,\n  \"status\": \"DRAFT\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const t = pm.response.json();",
+                  "if (t && t.id) pm.environment.set('tournamentId', String(t.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update tournament status (ADMIN)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/tournaments/{{tournamentId}}/status?status=OPEN"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Race",
+      "item": [
+        {
+          "name": "Get races by tournament",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{spectatorToken}}" }],
+            "url": "{{baseUrl}}/api/races/tournament/{{tournamentId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const list = pm.response.json();",
+                  "if (Array.isArray(list) && list.length > 0) pm.environment.set('raceId', String(list[0].id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get race by id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{spectatorToken}}" }],
+            "url": "{{baseUrl}}/api/races/{{raceId}}"
+          }
+        },
+        {
+          "name": "Create race (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/races/tournament/{{tournamentId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Chặng đua Postman\",\n  \"roundNumber\": 2,\n  \"raceDate\": \"2026-08-01T09:00:00\",\n  \"distanceM\": 1200,\n  \"maxParticipants\": 12,\n  \"status\": \"SCHEDULED\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const r = pm.response.json();",
+                  "if (r && r.id) pm.environment.set('raceId', String(r.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assign referee (ADMIN)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/races/{{raceId}}/referee?refereeId={{refereeUserId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Horse (HORSE_OWNER)",
+      "item": [
+        {
+          "name": "Get my horses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": "{{baseUrl}}/api/horses/my"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const list = pm.response.json();",
+                  "if (Array.isArray(list) && list.length > 0) pm.environment.set('horseId', String(list[0].id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add horse",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/horses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Thunder\",\n  \"breed\": \"Thoroughbred\",\n  \"age\": 4,\n  \"weightKg\": 480,\n  \"color\": \"Nâu\",\n  \"imageUrl\": \"\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const h = pm.response.json();",
+                  "if (h && h.id) pm.environment.set('horseId', String(h.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update horse",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/horses/{{horseId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Thunder (Updated)\",\n  \"breed\": \"Thoroughbred\",\n  \"age\": 5,\n  \"weightKg\": 485,\n  \"color\": \"Nâu đen\",\n  \"imageUrl\": \"\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Entry",
+      "item": [
+        {
+          "name": "Register horse to tournament (HORSE_OWNER)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": "{{baseUrl}}/api/entries/register?horseId={{horseId}}&tournamentId={{tournamentId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const e = pm.response.json();",
+                  "if (e && e.id) pm.environment.set('entryId', String(e.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Approve entry (ADMIN)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/entries/{{entryId}}/approve?raceId={{raceId}}"
+          }
+        },
+        {
+          "name": "Reject entry (ADMIN)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/entries/{{entryId}}/reject"
+          }
+        },
+        {
+          "name": "Get entries by tournament",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{spectatorToken}}" }],
+            "url": "{{baseUrl}}/api/entries/tournament/{{tournamentId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invitation",
+      "item": [
+        {
+          "name": "Invite jockey (HORSE_OWNER)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": "{{baseUrl}}/api/invitations?horseId={{horseId}}&jockeyId={{jockeyUserId}}&raceId={{raceId}}&message=Tham%20gia%20ch%E1%BA%B7ng%20%C4%91ua"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const inv = pm.response.json();",
+                  "if (inv && inv.id) pm.environment.set('invitationId', String(inv.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get my invitations (JOCKEY)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jockeyToken}}" }],
+            "url": "{{baseUrl}}/api/invitations/my"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const list = pm.response.json();",
+                  "if (Array.isArray(list) && list.length > 0) pm.environment.set('invitationId', String(list[0].id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Respond invitation (JOCKEY)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jockeyToken}}" }],
+            "url": "{{baseUrl}}/api/invitations/{{invitationId}}/respond?status=ACCEPTED"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Referee",
+      "item": [
+        {
+          "name": "Get entries for race (REFEREE)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{refereeToken}}" }],
+            "url": "{{baseUrl}}/api/referee/races/{{raceId}}/entries"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const list = pm.response.json();",
+                  "if (Array.isArray(list) && list.length > 0) pm.environment.set('entryId', String(list[0].id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Check-in entry (REFEREE)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{refereeToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/referee/races/{{raceId}}/checkin",
+            "body": { "mode": "raw", "raw": "{\n  \"entryId\": {{entryId}},\n  \"checkedIn\": true\n}" }
+          }
+        },
+        {
+          "name": "Mark no-show (REFEREE)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{refereeToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/referee/races/{{raceId}}/no-show",
+            "body": { "mode": "raw", "raw": "{\n  \"entryId\": {{entryId}},\n  \"reason\": \"Không đến đúng giờ\"\n}" }
+          }
+        },
+        {
+          "name": "Record violation (REFEREE)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{refereeToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/referee/races/{{raceId}}/violations",
+            "body": { "mode": "raw", "raw": "{\n  \"entryId\": {{entryId}},\n  \"message\": \"Vi phạm lane\"\n}" }
+          }
+        },
+        {
+          "name": "Get results (REFEREE)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{refereeToken}}" }],
+            "url": "{{baseUrl}}/api/referee/races/{{raceId}}/results"
+          }
+        },
+        {
+          "name": "Upsert results (REFEREE)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{refereeToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/referee/races/{{raceId}}/results",
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"entryId\": {{entryId}},\n    \"finishRank\": 1,\n    \"finishTimeMs\": 72550\n  }\n]"
+            }
+          }
+        },
+        {
+          "name": "Get report (REFEREE)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{refereeToken}}" }],
+            "url": "{{baseUrl}}/api/referee/races/{{raceId}}/report"
+          }
+        },
+        {
+          "name": "Save draft report (REFEREE)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{refereeToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/referee/races/{{raceId}}/report",
+            "body": { "mode": "raw", "raw": "{\n  \"notes\": \"Báo cáo nháp từ Postman\"\n}" }
+          }
+        },
+        {
+          "name": "Submit report (REFEREE)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{refereeToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/referee/races/{{raceId}}/report/submit",
+            "body": { "mode": "raw", "raw": "{\n  \"notes\": \"Nộp báo cáo từ Postman\"\n}" }
+          }
+        },
+        {
+          "name": "Confirm report (REFEREE)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{refereeToken}}" }],
+            "url": "{{baseUrl}}/api/referee/races/{{raceId}}/report/confirm"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get my notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{spectatorToken}}" }],
+            "url": "{{baseUrl}}/api/notifications/my"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const list = pm.response.json();",
+                  "if (Array.isArray(list) && list.length > 0) pm.environment.set('notificationId', String(list[0].id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark notification read",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{spectatorToken}}" }],
+            "url": "{{baseUrl}}/api/notifications/{{notificationId}}/read"
+          }
+        }
+      ]
+    }
+  ]
+}

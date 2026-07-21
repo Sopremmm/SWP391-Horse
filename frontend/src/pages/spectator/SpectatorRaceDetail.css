@@ -110,7 +110,7 @@
 }
 
 .spectator-lineup,
-.spectator-active-bet {
+.spectator-race-aside {
   overflow: hidden;
   border: 1px solid #c0c9be;
   border-radius: 8px;
@@ -130,7 +130,7 @@
 }
 
 .spectator-lineup__header h2,
-.spectator-active-bet h2 {
+.spectator-race-aside h2 {
   margin: 0;
   font-family: Georgia, 'Libre Caslon Text', 'Times New Roman', serif;
 }
@@ -285,12 +285,12 @@
   text-align: right;
 }
 
-.spectator-active-bet {
+.spectator-race-aside {
   position: sticky;
   top: 104px;
 }
 
-.spectator-active-bet header {
+.spectator-race-aside header {
   min-height: 82px;
   padding: 0 24px;
   display: flex;
@@ -300,21 +300,21 @@
   color: #ffffff;
 }
 
-.spectator-active-bet h2 {
+.spectator-race-aside h2 {
   color: #ffffff;
   font-size: 28px;
   line-height: 34px;
 }
 
-.spectator-active-bet__body {
+.spectator-race-aside__body {
   padding: 24px;
 }
 
-.spectator-active-bet dl {
+.spectator-race-aside dl {
   margin: 0;
 }
 
-.spectator-active-bet dl > div {
+.spectator-race-aside dl > div {
   min-height: 52px;
   display: flex;
   align-items: center;
@@ -323,7 +323,7 @@
   border-bottom: 1px solid #e1e3dd;
 }
 
-.spectator-active-bet dt {
+.spectator-race-aside dt {
   color: #5f685f;
   font-size: 12px;
   font-weight: 800;
@@ -332,7 +332,7 @@
   text-transform: uppercase;
 }
 
-.spectator-active-bet dd {
+.spectator-race-aside dd {
   margin: 0;
   color: #404941;
   font-size: 16px;
@@ -340,45 +340,7 @@
   text-align: right;
 }
 
-.spectator-active-bet__payout {
-  min-height: 58px;
-  margin-top: 16px;
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  border: 1px solid #e1e3dd;
-  border-radius: 4px;
-  background: #f2f4ee;
-}
-
-.spectator-active-bet__payout span {
-  color: #5f685f;
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.spectator-active-bet__payout strong {
-  color: #004b23;
-  font-size: 22px;
-  line-height: 28px;
-}
-
-.spectator-active-bet button {
-  width: 100%;
-  min-height: 58px;
-  margin-top: 16px;
-  border: 1px solid #004b23;
-  border-radius: 4px;
-  background: #ffffff;
-  color: #004b23;
-  font: inherit;
-  font-weight: 800;
-}
-
-.spectator-active-bet p {
+.spectator-race-aside p {
   margin: 18px 0 0;
   color: rgba(64, 73, 65, 0.45);
   font-size: 12px;
@@ -387,201 +349,19 @@
   text-align: center;
 }
 
-.spectator-active-bet__empty {
+.spectator-race-aside__note {
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
-.spectator-active-bet__empty p {
+.spectator-race-aside__note p {
   margin: 0;
   color: #596159;
   font-size: 15px;
   font-weight: 500;
   line-height: 22px;
   text-align: left;
-}
-
-.spectator-bet-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  padding: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 25, 11, 0.58);
-}
-
-.spectator-bet-modal__panel {
-  width: min(460px, 100%);
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: 0 24px 72px rgba(0, 25, 11, 0.28);
-  overflow: hidden;
-}
-
-.spectator-bet-modal__panel form,
-.spectator-bet-confirm {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.spectator-bet-modal__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
-}
-
-.spectator-bet-modal__header span,
-.spectator-bet-confirm > span {
-  display: block;
-  color: #855316;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  line-height: 16px;
-  text-transform: uppercase;
-}
-
-.spectator-bet-modal h2,
-.spectator-bet-confirm h2 {
-  margin: 0;
-  color: #003b1b;
-  font-family: Georgia, 'Libre Caslon Text', 'Times New Roman', serif;
-  font-size: 30px;
-  line-height: 36px;
-}
-
-.spectator-bet-modal__header > button {
-  width: 32px;
-  height: 32px;
-  border: 0;
-  border-radius: 999px;
-  background: #f2f4ee;
-  color: #404941;
-  font-size: 18px;
-  line-height: 1;
-}
-
-.spectator-bet-modal label {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.spectator-bet-modal label span {
-  color: #596159;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  line-height: 16px;
-  text-transform: uppercase;
-}
-
-.spectator-bet-modal select,
-.spectator-bet-modal input {
-  width: 100%;
-  min-height: 48px;
-  padding: 0 14px;
-  border: 1px solid #c0c9be;
-  border-radius: 4px;
-  background: #ffffff;
-  color: #191c19;
-  font: inherit;
-  font-size: 16px;
-}
-
-.spectator-bet-modal select:focus,
-.spectator-bet-modal input:focus {
-  outline: 3px solid rgba(0, 59, 27, 0.16);
-  border-color: #003b1b;
-}
-
-.spectator-bet-modal__hint {
-  margin: -4px 0 0;
-  color: #6a736a;
-  font-size: 13px;
-  line-height: 19px;
-}
-
-.spectator-bet-modal__preview {
-  min-height: 58px;
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  border: 1px solid #e1e3dd;
-  border-radius: 4px;
-  background: #f2f4ee;
-}
-
-.spectator-bet-modal__preview span,
-.spectator-bet-confirm dt {
-  color: #5f685f;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.spectator-bet-modal__preview strong {
-  color: #004b23;
-  font-size: 22px;
-}
-
-.spectator-bet-modal__actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.spectator-bet-modal__actions button {
-  min-height: 50px;
-  border: 1px solid #004b23;
-  border-radius: 4px;
-  background: #ffffff;
-  color: #004b23;
-  font: inherit;
-  font-weight: 800;
-}
-
-.spectator-bet-modal__actions button:last-child {
-  background: #004b23;
-  color: #ffffff;
-}
-
-.spectator-bet-modal__actions button:disabled {
-  cursor: not-allowed;
-  border-color: #c0c9be;
-  background: #e7e9e3;
-  color: #8a938a;
-}
-
-.spectator-bet-confirm dl {
-  margin: 0;
-  border-top: 1px solid #e1e3dd;
-}
-
-.spectator-bet-confirm dl > div {
-  min-height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  border-bottom: 1px solid #e1e3dd;
-}
-
-.spectator-bet-confirm dd {
-  margin: 0;
-  color: #191c19;
-  font-size: 16px;
-  font-weight: 700;
-  text-align: right;
 }
 
 @media (max-width: 1040px) {
@@ -599,7 +379,7 @@
     overflow-x: auto;
   }
 
-  .spectator-active-bet {
+  .spectator-race-aside {
     position: static;
   }
 }

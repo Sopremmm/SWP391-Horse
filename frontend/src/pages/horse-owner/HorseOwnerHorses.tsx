@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/common/Header.tsx';
+import { getHorseOwnerHorseLeaderboardData } from '../../services/integration.ts';
 import './HorseOwnerHorses.css';
 
 export type LeaderboardHorse = {
@@ -64,26 +65,6 @@ const normalizeHorsesData = (raw?: RawHorsesLeaderboardData | null): HorsesLeade
   };
 };
 
-const readHorsesFromLocalStorage = (): RawHorsesLeaderboardData | null => {
-  try {
-    const raw = window.localStorage.getItem('horse_owner_horses_data');
-    return raw ? (JSON.parse(raw) as RawHorsesLeaderboardData) : null;
-  } catch {
-    return null;
-  }
-};
-
-const readHorsesFromApi = async (): Promise<RawHorsesLeaderboardData | null> => {
-  try {
-    const endpoint = process.env.REACT_APP_HORSE_OWNER_HORSES_API || '/api/horse-owner/horses';
-    const response = await fetch(endpoint, { method: 'GET' });
-    if (!response.ok) return null;
-    return (await response.json()) as RawHorsesLeaderboardData;
-  } catch {
-    return null;
-  }
-};
-
 const resultTone = (position?: string) => {
   const text = String(position || '').toLowerCase();
   if (text.includes('1')) return 'first';
@@ -94,9 +75,7 @@ const resultTone = (position?: string) => {
 const horseHref = (horse: LeaderboardHorse) => `/HorseOwner/Horses/${encodeURIComponent(horse.id || horse.name)}`;
 
 export default function HorseOwnerHorses() {
-  const [data, setData] = React.useState<HorsesLeaderboardData>(() =>
-    normalizeHorsesData(readHorsesFromLocalStorage()),
-  );
+  const [data, setData] = React.useState<HorsesLeaderboardData>(() => normalizeHorsesData(null));
   const [page, setPage] = React.useState(1);
   const pageSize = 10;
 
@@ -104,9 +83,8 @@ export default function HorseOwnerHorses() {
     let cancelled = false;
 
     const load = async () => {
-      const apiData = await readHorsesFromApi();
-      const localData = readHorsesFromLocalStorage();
-      if (!cancelled) setData(normalizeHorsesData(apiData ?? localData));
+      const apiData = await getHorseOwnerHorseLeaderboardData().catch(() => null);
+      if (!cancelled) setData(normalizeHorsesData(apiData));
     };
 
     void load();
@@ -216,8 +194,7 @@ export default function HorseOwnerHorses() {
             </>
           ) : (
             <div className="horse-leaderboard__empty">
-              Horse leaderboard data is empty. Connect `/api/horse-owner/horses`, set
-              `REACT_APP_HORSE_OWNER_HORSES_API`, or provide `horse_owner_horses_data` in localStorage.
+              Horse leaderboard data is empty.
             </div>
           )}
         </section>

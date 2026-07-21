@@ -1,0 +1,71 @@
+@startuml
+title HORSE_OWNER Role - StateChart
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam roundcorner 0
+top to bottom direction
+skinparam nodesep 90
+skinparam ranksep 110
+skinparam wrapWidth 220
+skinparam defaultTextAlignment center
+skinparam Padding 12
+skinparam ArrowFontSize 11
+skinparam state {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  ArrowColor #334155
+  FontSize 13
+  FontStyle bold
+}
+
+[*] --> LoggedOut
+LoggedOut --> Authenticated : sign in [ACTIVE HORSE_OWNER]
+LoggedOut --> AccessDenied : invalid credentials/status/role
+AccessDenied --> LoggedOut : retry
+
+state Authenticated {
+  [*] --> OwnerDashboard
+
+  OwnerDashboard --> ManagingHorses : open my horses
+  ManagingHorses --> HorseActive : create horse
+  HorseActive --> HorseActive : update horse information
+  HorseActive --> HorseRetired : retire horse
+  HorseRetired --> HorseActive : reactivate horse
+  HorseActive --> ManagingHorses : return
+
+  OwnerDashboard --> SelectingTournament : browse tournaments
+  SelectingTournament --> RegistrationPending : register owned horse\n[before deadline]
+  RegistrationPending --> RegistrationApproved : ADMIN approves
+  RegistrationPending --> RegistrationRejected : ADMIN rejects
+  RegistrationRejected --> SelectingTournament : select another tournament
+
+  RegistrationApproved --> SelectingJockey : choose jockey
+  SelectingJockey --> InvitationPending : invite [jockey free in race]
+  InvitationPending --> JockeyAssigned : jockey accepts [within 24h]
+  InvitationPending --> InvitationDeclined : jockey declines
+  InvitationPending --> InvitationExpired : response after expiration
+  InvitationDeclined --> SelectingJockey : choose another jockey
+  InvitationExpired --> SelectingJockey : invite again / choose another
+
+  JockeyAssigned --> AwaitingRace : entry ready
+  AwaitingRace --> ViewingResult : race results published
+  ViewingResult --> OwnerDashboard : finish
+
+  OwnerDashboard --> Notifications : view notifications
+  Notifications --> OwnerDashboard : mark read / return
+}
+
+Authenticated --> LoggedOut : sign out / token expires
+
+note right of RegistrationPending
+  Registration fails when the horse is not owned
+  by the current account or REG-01 is violated.
+end note
+
+note right of InvitationPending
+  JKY-01 prevents one jockey from being assigned
+  to more than one horse in the same race.
+end note
+
+@enduml

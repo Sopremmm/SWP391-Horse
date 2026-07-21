@@ -3,12 +3,14 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Header } from '../../components/common/Header.tsx';
 import { Footer } from '../../components/common/Footer.tsx';
 import { getPageData } from '../../data/pageData.ts';
+import { fetchMyHorses, saveHorse } from '../../services/integration.ts';
 import './AddHorse.css';
 
 type HorseAgeClass = 'Colt' | 'Stallion' | 'Gelding' | 'Filly' | 'Mare' | 'Dam';
 type HorseCondition = 'Peak' | 'Good' | 'Recovering';
 
 type StoredHorse = {
+  id?: number;
   name: string;
   meta: string;
   imageSrc: string;
@@ -117,8 +119,42 @@ export default function AddHorse({ mode = 'add' }: AddHorseProps) {
   const [certified, setCertified] = React.useState(isEdit);
   const [photoPreview, setPhotoPreview] = React.useState<string>(initialValues.imageSrc);
   const [showToast, setShowToast] = React.useState(false);
+  const [backendHorseId, setBackendHorseId] = React.useState<number | undefined>(undefined);
+  const [submitting, setSubmitting] = React.useState(false);
+  const [error, setError] = React.useState('');
 
   const canSubmit = horseName.trim() !== '' && breed.trim() !== '' && age !== '' && certified;
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      if (!isEdit || !decodedName) return;
+      const horses = await fetchMyHorses().catch(() => []);
+      const matched = horses.find((horse) => normalize(horse.name) === normalize(decodedName));
+      if (!matched || cancelled) return;
+
+      setBackendHorseId(matched.id);
+      setHorseName(matched.name || '');
+      setBreed(matched.breed || '');
+      setAge(matched.age ? String(matched.age) : '');
+      setAgeClass(((matched.color as HorseAgeClass) || 'Colt'));
+      const savedCondition = String(matched.condition || 'PEAK').toLowerCase();
+      setCondition((savedCondition.charAt(0).toUpperCase() + savedCondition.slice(1)) as HorseCondition);
+      setWinRate(
+        matched.totalRaces && matched.totalRaces > 0
+          ? String(Math.round(((matched.totalWins || 0) / matched.totalRaces) * 100))
+          : '0',
+      );
+      setPhotoPreview(matched.imageUrl || '');
+    };
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [decodedName, isEdit]);
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -131,35 +167,55 @@ export default function AddHorse({ mode = 'add' }: AddHorseProps) {
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!canSubmit) return;
+    setSubmitting(true);
+    setError('');
 
-    const existing = readStoredData();
-    const horses = existing.horses ?? getPageData().myHorses.horses;
-    const nextHorse: StoredHorse = {
-      name: horseName.trim(),
-      meta: `${breed.trim()} - ${age}yo - ${ageClass} - ${condition} condition - ${winRate}% win rate - ${Number(earnings || 0).toLocaleString()} credits`,
-      imageSrc: photoPreview || DEFAULT_PHOTO,
-    };
-    const nextHorses = isEdit
-      ? horses.map((horse) => (normalize(horse.name) === normalize(decodedName) ? nextHorse : horse))
-      : [...horses, nextHorse];
+    try {
+      const savedHorse = await saveHorse({
+        id: backendHorseId,
+        name: horseName.trim(),
+        breed: breed.trim(),
+        age: Number(age),
+        color: ageClass,
+        status: 'ACTIVE',
+        condition: condition.toUpperCase(),
+        imageUrl: photoPreview || undefined,
+      });
 
-    window.localStorage.setItem(
-      'my_horses_data',
-      JSON.stringify({
-        ...existing,
-        horses: nextHorses,
-        stats: {
-          ...existing.stats,
-          stableSize: `${String(nextHorses.length).padStart(2, '0')} Thoroughbreds`,
-        },
-      })
-    );
+      const existing = readStoredData();
+      const horses = existing.horses ?? getPageData().myHorses.horses;
+      const nextHorse: StoredHorse = {
+        id: savedHorse.id,
+        name: savedHorse.name.trim(),
+        meta: `${breed.trim()} - ${age}yo - ${ageClass} - ${condition} condition - ${winRate}% win rate - ${Number(earnings || 0).toLocaleString()} credits`,
+        imageSrc: photoPreview || DEFAULT_PHOTO,
+      };
+      const nextHorses = isEdit
+        ? horses.map((horse) => (normalize(horse.name) === normalize(decodedName) ? nextHorse : horse))
+        : [...horses, nextHorse];
 
-    setShowToast(true);
-    window.setTimeout(() => navigate(isEdit ? `/HorseOwner/MyHorses/${encodeURIComponent(nextHorse.name)}` : '/HorseOwner/MyHorses'), 650);
+      window.localStorage.setItem(
+        'my_horses_data',
+        JSON.stringify({
+          ...existing,
+          horses: nextHorses,
+          stats: {
+            ...existing.stats,
+            stableSize: `${String(nextHorses.length).padStart(2, '0')} Thoroughbreds`,
+          },
+        })
+      );
+
+      setShowToast(true);
+      window.setTimeout(() => navigate(isEdit ? `/HorseOwner/MyHorses/${encodeURIComponent(nextHorse.name)}` : '/HorseOwner/MyHorses'), 650);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to save horse.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -175,6 +231,7 @@ export default function AddHorse({ mode = 'add' }: AddHorseProps) {
         <section className="add-horse__page-head">
           <h1>{isEdit ? 'Edit Horse Details' : 'Register New Horse'}</h1>
           <p>{isEdit ? 'Update the profile and performance details for this horse.' : 'Add a new contender to your elite stable collection.'}</p>
+          {error ? <p>{error}</p> : null}
         </section>
 
         <form className="add-horse__form" onSubmit={handleSubmit}>
@@ -258,8 +315,8 @@ export default function AddHorse({ mode = 'add' }: AddHorseProps) {
           </label>
 
           <div className="add-horse__actions">
-            <button className="add-horse__submit" type="submit" disabled={!canSubmit}>
-              {isEdit ? 'Save Horse Details' : 'Add Horse to Stable'}
+            <button className="add-horse__submit" type="submit" disabled={!canSubmit || submitting}>
+              {submitting ? 'Saving...' : isEdit ? 'Save Horse Details' : 'Add Horse to Stable'}
             </button>
             <Link className="add-horse__cancel" to={isEdit && initialHorse ? `/HorseOwner/MyHorses/${encodeURIComponent(initialHorse.name)}` : '/HorseOwner/MyHorses'}>
               Cancel

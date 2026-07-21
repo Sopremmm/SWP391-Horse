@@ -1,0 +1,218 @@
+@startuml
+title Horse Racing Management System - ERD
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam roundcorner 0
+skinparam nodesep 70
+skinparam ranksep 90
+hide circle
+
+entity "user" as users {
+  * id : BIGINT <<PK>>
+  --
+  * email : VARCHAR(100) <<UQ>>
+  * password_hash : VARCHAR
+  * full_name : VARCHAR(100)
+  phone : VARCHAR(20)
+  * role : VARCHAR(20)
+  * status : VARCHAR(10)
+  avatar_url : VARCHAR
+  created_at : DATETIME
+  updated_at : DATETIME
+}
+
+entity "jockey_profile" as jockey_profile {
+  * id : BIGINT <<PK>>
+  --
+  * user_id : BIGINT <<FK, UQ>>
+  * license_number : VARCHAR(50) <<UQ>>
+  weight_kg : FLOAT
+  experience_years : INT
+  total_races : INT
+  total_wins : INT
+  bio : VARCHAR
+}
+
+entity "horse" as horse {
+  * id : BIGINT <<PK>>
+  --
+  * owner_id : BIGINT <<FK>>
+  * name : VARCHAR(100)
+  breed : VARCHAR(100)
+  age : INT
+  weight_kg : FLOAT
+  color : VARCHAR(50)
+  image_url : VARCHAR
+  total_races : INT
+  total_wins : INT
+  status : VARCHAR(10)
+  created_at : DATETIME
+}
+
+entity "tournament" as tournament {
+  * id : BIGINT <<PK>>
+  --
+  * created_by : BIGINT <<FK>>
+  * name : VARCHAR(200)
+  location : VARCHAR(200)
+  description : VARCHAR
+  * start_date : DATE
+  * end_date : DATE
+  prize_pool : DECIMAL
+  max_horses : INT
+  status : VARCHAR(20)
+  created_at : DATETIME
+}
+
+entity "race" as race {
+  * id : BIGINT <<PK>>
+  --
+  * tournament_id : BIGINT <<FK>>
+  referee_id : BIGINT <<FK>>
+  * name : VARCHAR(200)
+  round_number : INT
+  * race_date : DATETIME
+  * distance_m : INT
+  max_participants : INT
+  status : VARCHAR(20)
+  created_at : DATETIME
+  --
+  tournament_id + round_number <<UQ>>
+}
+
+entity "race_entry" as race_entry {
+  * id : BIGINT <<PK>>
+  --
+  * horse_id : BIGINT <<FK>>
+  jockey_id : BIGINT <<FK>>
+  * tournament_id : BIGINT <<FK>>
+  race_id : BIGINT <<FK>>
+  status : VARCHAR(15)
+  registered_at : DATETIME
+  approved_at : DATETIME
+  checked_in : BOOLEAN
+  checked_in_at : DATETIME
+  no_show : BOOLEAN
+  no_show_at : DATETIME
+  gate_number : INT
+  --
+  horse_id + tournament_id <<UQ>>
+}
+
+entity "jockey_invitation" as jockey_invitation {
+  * id : BIGINT <<PK>>
+  --
+  * horse_id : BIGINT <<FK>>
+  * owner_id : BIGINT <<FK>>
+  * jockey_id : BIGINT <<FK>>
+  * race_id : BIGINT <<FK>>
+  status : VARCHAR(15)
+  message : VARCHAR
+  invited_at : DATETIME
+  responded_at : DATETIME
+  expires_at : DATETIME
+  --
+  horse_id + jockey_id + race_id <<UQ>>
+}
+
+entity "race_result" as race_result {
+  * id : BIGINT <<PK>>
+  --
+  * race_id : BIGINT <<FK>>
+  * entry_id : BIGINT <<FK, UQ>>
+  * finish_rank : INT
+  finish_time_ms : BIGINT
+  disqualified : BOOLEAN
+  violation_notes : VARCHAR
+  recorded_at : DATETIME
+}
+
+entity "referee_report" as referee_report {
+  * id : BIGINT <<PK>>
+  --
+  * race_id : BIGINT <<FK, UQ>>
+  referee_id : BIGINT <<FK>>
+  violations : VARCHAR
+  notes : VARCHAR
+  submitted : BOOLEAN
+  submitted_at : DATETIME
+  confirmed : BOOLEAN
+  confirmed_at : DATETIME
+}
+
+entity "prize" as prize {
+  * id : BIGINT <<PK>>
+  --
+  * race_id : BIGINT <<FK>>
+  * entry_id : BIGINT <<FK>>
+  * finish_rank : INT
+  * amount : DECIMAL
+  paid_at : DATETIME
+  created_at : DATETIME
+  --
+  race_id + entry_id <<UQ>>
+}
+
+entity "notification" as notification {
+  * id : BIGINT <<PK>>
+  --
+  * user_id : BIGINT <<FK>>
+  * title : VARCHAR(200)
+  * message : VARCHAR
+  * type : VARCHAR(30)
+  ref_id : BIGINT
+  ref_type : VARCHAR(50)
+  is_read : BOOLEAN
+  email_sent : BOOLEAN
+  created_at : DATETIME
+}
+
+entity "audit_log" as audit_log {
+  * id : BIGINT <<PK>>
+  --
+  * actor_user_id : BIGINT <<FK>>
+  * action : VARCHAR(50)
+  ref_type : VARCHAR(50)
+  ref_id : BIGINT
+  details : VARCHAR
+  created_at : DATETIME
+}
+
+users ||--o| jockey_profile : has
+users ||--o{ horse : owns
+users ||--o{ tournament : creates
+users |o--o{ race : referees
+users |o--o{ race_entry : rides
+users ||--o{ jockey_invitation : sends as owner
+users ||--o{ jockey_invitation : receives as jockey
+users |o--o{ referee_report : authors
+users ||--o{ notification : receives
+users ||--o{ audit_log : performs
+
+tournament ||--o{ race : contains
+tournament ||--o{ race_entry : receives
+horse ||--o{ race_entry : registers
+race |o--o{ race_entry : includes
+
+horse ||--o{ jockey_invitation : concerns
+race ||--o{ jockey_invitation : targets
+
+race ||--o{ race_result : produces
+race_entry ||--o| race_result : receives
+race ||--o| referee_report : has
+race ||--o{ prize : awards
+race_entry ||--o| prize : receives
+
+note bottom of notification
+  ref_type and ref_id form a logical polymorphic reference.
+  They are not declared as a database foreign key.
+end note
+
+note bottom of audit_log
+  ref_type and ref_id identify the audited business object.
+  They are not declared as a database foreign key.
+end note
+
+@enduml

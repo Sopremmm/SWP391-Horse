@@ -1,32 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
+import { fetchAdminPendingReports, fetchAdminUsers, fetchAllTournaments, formatCurrency } from '../../services/integration.ts';
 
 import './AdminHome.css';
 
 type AdminIconName = 'bell' | 'check' | 'grid' | 'help' | 'logout' | 'settings' | 'trophy' | 'user' | 'users';
-
-const stats = [
-  { label: 'Registered Users', value: '0', icon: 'users', tone: 'teal', badge: 'No data yet', to: '/Admin/User' },
-  { label: 'Managed Tournaments', value: '0', icon: 'trophy', tone: 'amber', badge: 'No data yet', to: '/Admin/ManageTournaments' },
-  { label: 'Pending Registrations', value: '0', icon: 'check', tone: 'red', badge: 'No data yet', to: '/Admin/ConfirmRegistration' },
-] as const;
-
-const exampleTournaments = [
-  { name: 'Royal Ascot Gold Cup', grade: 'Grade I Stakes', capacity: '18 / 20 registered', status: 'Registration Open', prize: '$2,500,000' },
-  { name: 'Emerald Derby Classic', grade: 'Grade II Turf', capacity: '11 / 16 registered', status: 'Closing Soon', prize: '$1,200,000' },
-];
-
-const tournaments: typeof exampleTournaments = [];
-
-const exampleRegistrations = [
-  { horse: 'Midnight Sovereign', owner: 'Alexander Sterling', tournament: 'Royal Ascot Gold Cup', status: 'Pending' },
-  { horse: 'Velvet Comet', owner: 'Claire Beaumont', tournament: 'Emerald Derby Classic', status: 'Pending' },
-  { horse: 'Northern Crown', owner: 'James Whitmore', tournament: 'Heritage Breeders Cup', status: 'Pending' },
-  { horse: 'Golden Gallop', owner: 'Julian Rossi', tournament: 'Preakness Stakes', status: 'Approved' },
-];
-
-const registrations: typeof exampleRegistrations = [];
 
 function Icon({ name }: { name: AdminIconName }) {
   const paths: Record<AdminIconName, string> = {
@@ -65,6 +44,56 @@ function Icon({ name }: { name: AdminIconName }) {
 }
 
 export default function AdminHome() {
+  const [stats, setStats] = React.useState([
+    { label: 'Registered Users', value: '0', icon: 'users', tone: 'teal', badge: 'Syncing', to: '/Admin/User' },
+    { label: 'Managed Tournaments', value: '0', icon: 'trophy', tone: 'amber', badge: 'Syncing', to: '/Admin/ManageTournaments' },
+    { label: 'Pending Registrations', value: '0', icon: 'check', tone: 'red', badge: 'Syncing', to: '/Admin/ConfirmRegistration' },
+  ] as const);
+  const [tournaments, setTournaments] = React.useState<Array<{ name: string; grade: string; capacity: string; status: string; prize: string }>>([]);
+  const [registrations, setRegistrations] = React.useState<Array<{ horse: string; owner: string; tournament: string; status: string }>>([]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      const [users, tournamentItems, pendingReports] = await Promise.all([
+        fetchAdminUsers().catch(() => []),
+        fetchAllTournaments().catch(() => []),
+        fetchAdminPendingReports().catch(() => []),
+      ]);
+      if (cancelled) return;
+
+      setStats([
+        { label: 'Registered Users', value: String(users.length), icon: 'users', tone: 'teal', badge: 'Live', to: '/Admin/User' },
+        { label: 'Managed Tournaments', value: String(tournamentItems.length), icon: 'trophy', tone: 'amber', badge: 'Live', to: '/Admin/ManageTournaments' },
+        { label: 'Pending Registrations', value: String(pendingReports.length), icon: 'check', tone: 'red', badge: 'Needs review', to: '/Admin/ConfirmRegistration' },
+      ]);
+      setTournaments(
+        tournamentItems.slice(0, 4).map((item) => ({
+          name: item.name,
+          grade: item.description || 'Tournament',
+          capacity: `${item.maxHorses || 0} max entries`,
+          status: item.status || 'Draft',
+          prize: formatCurrency(item.prizePool),
+        })),
+      );
+      setRegistrations(
+        pendingReports.slice(0, 4).map((item) => ({
+          horse: item.race?.name || 'Race report',
+          owner: item.referee?.fullName || 'Referee',
+          tournament: item.race?.tournament?.name || 'Tournament',
+          status: item.confirmed ? 'Approved' : 'Pending',
+        })),
+      );
+    };
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <AdminLayout active="dashboard" title="Admin Dashboard" topNavActive="overview">
       <div className="admin-home">

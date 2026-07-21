@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import HorseRaceCartoon from '../assets/images/RunningHorse.jpg';
+import { signup, type AppRole } from '../services/auth.ts';
 import './Register.css';
 
 type Role = 'horse owner' | 'jockey' | 'spectator';
@@ -17,18 +18,41 @@ const Register: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const backendRole = useMemo<AppRole>(() => {
+    if (role === 'horse owner') return 'HORSE_OWNER';
+    if (role === 'jockey') return 'JOCKEY';
+    return 'SPECTATOR';
+  }, [role]);
 
   const isPasswordMatched = useMemo(() => {
     if (!password || !confirmPassword) return true;
     return password === confirmPassword;
   }, [password, confirmPassword]);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!agreeToTerms || !isPasswordMatched) return;
+    setSubmitting(true);
+    setError('');
 
-    navigate('/HorseOwner/Home');
+    try {
+      await signup({
+        email: email.trim(),
+        password,
+        fullName: fullName.trim(),
+        phone: phone.trim() || undefined,
+        role: backendRole,
+      });
+      navigate(`/login?registered=${encodeURIComponent(backendRole)}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to create account.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -70,9 +94,8 @@ const Register: React.FC = () => {
                     type="text"
                     value={username}
                     onChange={(event) => setUsername(event.target.value)}
-                    placeholder="e.g. alistair_racing"
+                    placeholder="Email is used for sign in"
                     autoComplete="username"
-                    required
                   />
                 </label>
 
@@ -187,8 +210,10 @@ const Register: React.FC = () => {
                 </div>
               ) : null}
 
-              <button className="cta" type="submit" disabled={!agreeToTerms || !isPasswordMatched}>
-                Create Account
+              {error ? <div className="form-error">{error}</div> : null}
+
+              <button className="cta" type="submit" disabled={!agreeToTerms || !isPasswordMatched || submitting}>
+                {submitting ? 'Creating Account...' : 'Create Account'}
               </button>
 
               <div className="already">

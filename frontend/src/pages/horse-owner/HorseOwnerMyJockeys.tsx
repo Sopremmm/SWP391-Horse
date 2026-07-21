@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OwnerPortalHeader } from '../../components/horseOwner/OwnerPortalChrome.tsx';
+import { getCachedOwnerSentInvitationsData } from '../../services/integration.ts';
 import './HorseOwnerMyJockeys.css';
 
 type InvitationStatus = 'Pending' | 'Accepted' | 'Declined';
@@ -66,26 +67,6 @@ const normalizeInvitations = (raw?: Array<Partial<JockeyInvitation>>): JockeyInv
       image: item.image,
     }));
 
-const readInvitationsFromLocalStorage = (): MyJockeyInvitationsData | null => {
-  try {
-    const raw = window.localStorage.getItem('horse_owner_jockey_invitations_data');
-    return raw ? (JSON.parse(raw) as MyJockeyInvitationsData) : null;
-  } catch {
-    return null;
-  }
-};
-
-const readInvitationsFromApi = async (): Promise<MyJockeyInvitationsData | null> => {
-  try {
-    const endpoint = process.env.REACT_APP_HORSE_OWNER_MY_JOCKEYS_API || '/api/horse-owner/jockey-invitations';
-    const response = await fetch(endpoint, { method: 'GET' });
-    if (!response.ok) return null;
-    return (await response.json()) as MyJockeyInvitationsData;
-  } catch {
-    return null;
-  }
-};
-
 const buildMetrics = (data: MyJockeyInvitationsData | null, invitations: JockeyInvitation[]): InvitationMetric[] => {
   if (data?.metrics?.length) return data.metrics;
   if (!invitations.length) return [];
@@ -97,7 +78,7 @@ const buildMetrics = (data: MyJockeyInvitationsData | null, invitations: JockeyI
 };
 
 export default function HorseOwnerMyJockeys() {
-  const initialData = React.useMemo(() => readInvitationsFromLocalStorage(), []);
+  const initialData = React.useMemo(() => getCachedOwnerSentInvitationsData() as MyJockeyInvitationsData, []);
   const [pageData, setPageData] = React.useState<MyJockeyInvitationsData | null>(initialData);
   const [invitations, setInvitations] = React.useState<JockeyInvitation[]>(() =>
     normalizeInvitations(initialData?.invitations),
@@ -112,9 +93,7 @@ export default function HorseOwnerMyJockeys() {
   React.useEffect(() => {
     let cancelled = false;
     const loadInvitations = async () => {
-      const apiData = await readInvitationsFromApi();
-      const localData = readInvitationsFromLocalStorage();
-      const data = apiData ?? localData;
+      const data = getCachedOwnerSentInvitationsData() as MyJockeyInvitationsData;
       if (!cancelled) {
         setPageData(data);
         setInvitations(normalizeInvitations(data?.invitations));

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Header } from '../../components/common/Header.tsx';
 import { getPageData, MyHorse } from '../../data/pageData.ts';
+import { fetchTournamentBySlug, registerTournamentEntry } from '../../services/integration.ts';
 import './HorseOwnerTournamentEntryRegister.css';
 
 type RuleIcon = 'shield' | 'gavel' | 'trophy';
@@ -23,7 +24,7 @@ type TournamentRegisterData = {
 type RawRegisterData = Partial<TournamentRegisterData>;
 
 type HorsesPayload = {
-  horses?: Array<Partial<MyHorse>>;
+  horses?: Array<Partial<MyHorse> & { id?: number | string }>;
 };
 
 const EMPTY_REGISTER_DATA: TournamentRegisterData = {
@@ -78,11 +79,12 @@ function normalizeRegisterData(raw?: RawRegisterData | null): TournamentRegister
   };
 }
 
-function normalizeHorses(raw?: Array<Partial<MyHorse>>): MyHorse[] {
+function normalizeHorses(raw?: Array<Partial<MyHorse> & { id?: number | string }>): Array<MyHorse & { id?: number | string }> {
   return Array.isArray(raw)
     ? raw
-        .filter((horse): horse is MyHorse => Boolean(horse.name))
+        .filter((horse): horse is MyHorse & { id?: number | string } => Boolean(horse.name))
         .map((horse) => ({
+          id: horse.id,
           name: horse.name,
           meta: horse.meta || '',
           imageSrc: horse.imageSrc || '',
@@ -219,14 +221,16 @@ export default function HorseOwnerTournamentEntryRegister() {
   const [data, setData] = React.useState<TournamentRegisterData>(() =>
     normalizeRegisterData(readRegisterFromLocalStorage(slug) ?? fallbackData),
   );
-  const [horses, setHorses] = React.useState<MyHorse[]>(() => {
+  const [horses, setHorses] = React.useState<Array<MyHorse & { id?: number | string }>>(() => {
     const local = readHorsesFromLocalStorage();
     return local ? normalizeHorses(local.horses) : normalizeHorses(myHorses.horses);
   });
-  const [selectedHorse, setSelectedHorse] = React.useState<MyHorse | null>(null);
+  const [selectedHorse, setSelectedHorse] = React.useState<(MyHorse & { id?: number | string }) | null>(null);
   const [allHorsesOpen, setAllHorsesOpen] = React.useState(false);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   const [submitted, setSubmitted] = React.useState(false);
+  const [submitting, setSubmitting] = React.useState(false);
+  const [error, setError] = React.useState('');
 
   React.useEffect(() => {
     let cancelled = false;
@@ -258,9 +262,28 @@ export default function HorseOwnerTournamentEntryRegister() {
     setConfirmOpen(true);
   };
 
-  const handleConfirmRegistration = () => {
-    setSubmitted(true);
-    setConfirmOpen(false);
+  const handleConfirmRegistration = async () => {
+    if (!selectedHorse?.id) {
+      setError('Selected horse is missing an id.');
+      return;
+    }
+
+    setSubmitting(true);
+    setError('');
+    try {
+      const tournament = await fetchTournamentBySlug(slug);
+      if (!tournament) {
+        setError('Tournament not found.');
+        return;
+      }
+      await registerTournamentEntry(Number(selectedHorse.id), tournament.id);
+      setSubmitted(true);
+      setConfirmOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to submit registration.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleSelectFromModal = (horse: MyHorse) => {
@@ -278,6 +301,7 @@ export default function HorseOwnerTournamentEntryRegister() {
             <p>{data.classLabel}</p>
             <h1>{data.title}</h1>
             <span>{data.description}</span>
+            {error ? <strong>{error}</strong> : null}
           </div>
           <dl className="ho-register-hero__stats">
             {data.stats.map((stat) => (
@@ -443,8 +467,8 @@ export default function HorseOwnerTournamentEntryRegister() {
               <button type="button" onClick={() => setConfirmOpen(false)}>
                 Cancel
               </button>
-              <button type="button" onClick={handleConfirmRegistration}>
-                Confirm
+              <button type="button" onClick={() => void handleConfirmRegistration()} disabled={submitting}>
+                {submitting ? 'Submitting...' : 'Confirm'}
               </button>
             </div>
           </section>

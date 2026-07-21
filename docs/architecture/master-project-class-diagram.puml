@@ -1,0 +1,120 @@
+@startuml
+title Horse Racing Management System - Master Project Class Diagram
+
+left to right direction
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  ArrowColor #334155
+  FontColor #0F172A
+}
+hide methods
+hide circle
+
+legend left
+  Master Project = system-wide domain viewpoint.
+  Methods, IDs, timestamps, persistence annotations,
+  DTOs and other implementation variables are intentionally omitted.
+endlegend
+
+package "Identity & Access" #EEF2FF {
+  class User <<Domain Entity>>
+  class JockeyProfile <<Domain Entity>>
+  enum Role {
+    ADMIN
+    HORSE_OWNER
+    JOCKEY
+    REFEREE
+    SPECTATOR
+  }
+  enum UserStatus {
+    ACTIVE
+    INACTIVE
+    BANNED
+  }
+
+  User "1" *-- "0..1" JockeyProfile : has jockey profile
+  User --> Role : assigned role
+  User --> UserStatus : account state
+}
+
+package "Tournament & Racing" #ECFDF5 {
+  class Tournament <<Aggregate Root>>
+  class Race <<Domain Entity>>
+  class Horse <<Domain Entity>>
+  class RaceEntry <<Association Entity>>
+  class RaceResult <<Domain Entity>>
+  class RefereeReport <<Domain Entity>>
+  class Prize <<Domain Entity>>
+
+  Tournament "1" *-- "0..*" Race : contains
+  Tournament "1" -- "0..*" RaceEntry : receives registrations
+  Horse "1" -- "0..*" RaceEntry : participates through
+  Race "0..1" -- "0..*" RaceEntry : assigns participants
+  User "0..1" -- "0..*" RaceEntry : rides as jockey
+  User "1" -- "0..*" Horse : owns
+  User "1" -- "0..*" Tournament : creates as admin
+  User "0..1" -- "0..*" Race : officiates as referee
+
+  Race "1" *-- "0..*" RaceResult : produces
+  RaceEntry "1" -- "0..1" RaceResult : receives result
+  Race "1" *-- "0..1" RefereeReport : has report
+  User "1" -- "0..*" RefereeReport : authors as referee
+  Race "1" *-- "0..3" Prize : awards
+  RaceEntry "1" -- "0..1" Prize : may receive
+}
+
+package "Jockey Collaboration" #FFF7ED {
+  class JockeyInvitation <<Domain Entity>>
+
+  Horse "1" -- "0..*" JockeyInvitation : invitation concerns
+  Race "1" -- "0..*" JockeyInvitation : invitation for
+  User "1" -- "0..*" JockeyInvitation : sends as owner
+  User "1" -- "0..*" JockeyInvitation : receives as jockey
+  JockeyInvitation ..> RaceEntry : acceptance assigns jockey
+}
+
+package "Spectator Prediction" #FDF2F8 {
+  class Bet <<Domain Entity>>
+
+  User "1" -- "0..*" Bet : places as spectator
+  Race "1" -- "0..*" Bet : receives predictions
+  RaceEntry "1" -- "0..*" Bet : predicted participant
+  RaceResult ..> Bet : published winner resolves
+}
+
+package "Wallet & Payment" #EFF6FF {
+  class TopUpRequest <<Domain Entity>>
+
+  User "1" -- "0..*" TopUpRequest : requests top-up
+}
+
+package "Communication & Governance" #F9FAFB {
+  class Notification <<Domain Entity>>
+  class AuditLog <<Domain Entity>>
+
+  User "1" -- "0..*" Notification : receives
+  User "1" -- "0..*" AuditLog : performs audited action
+  JockeyInvitation ..> Notification : triggers
+  RaceEntry ..> Notification : approval/rejection triggers
+  RaceResult ..> Notification : publication triggers
+  TopUpRequest ..> Notification : payment triggers
+  Tournament ..> AuditLog : admin changes recorded
+  Race ..> AuditLog : admin changes recorded
+  TopUpRequest ..> AuditLog : manual approval recorded
+}
+
+note bottom of RaceEntry
+  Central association connecting horse,
+  tournament, race and assigned jockey.
+end note
+
+note bottom of User
+  One User entity represents every account.
+  Role determines the business responsibility.
+end note
+
+@enduml

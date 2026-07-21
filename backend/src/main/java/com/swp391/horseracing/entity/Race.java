@@ -10,7 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "race", uniqueConstraints = {@UniqueConstraint(columnNames = {"tournament_id", "round_number"})})
+@Table(name = "race")
 public class Race {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

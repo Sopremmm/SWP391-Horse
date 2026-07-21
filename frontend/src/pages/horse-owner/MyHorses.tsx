@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Footer } from '../../components/common/Footer.tsx';
 import { OwnerPortalHeader } from '../../components/horseOwner/OwnerPortalChrome.tsx';
+import { getHorseOwnerMyHorsesData } from '../../services/integration.ts';
 import './MyHorses.css';
 
 type Horse = {
@@ -52,28 +53,6 @@ const normalizeStats = (data: MyHorsesData | null | undefined, horses: Horse[]):
   };
 };
 
-const readMyHorsesFromLocalStorage = (): MyHorsesData | null => {
-  try {
-    const raw = window.localStorage.getItem('my_horses_data');
-    if (!raw) return null;
-    return JSON.parse(raw) as MyHorsesData;
-  } catch {
-    return null;
-  }
-};
-
-const readMyHorsesFromApi = async (): Promise<MyHorsesData | null> => {
-  try {
-    const endpoint = process.env.REACT_APP_HORSE_OWNER_MY_HORSES_API || '/api/horse-owner/my-horses';
-    const res = await fetch(endpoint, { method: 'GET' });
-    if (!res.ok) return null;
-    const json = (await res.json()) as MyHorsesData;
-    return json ?? null;
-  } catch {
-    return null;
-  }
-};
-
 export const MyHorses: React.FC = () => {
   const [isManaging, setIsManaging] = React.useState(false);
   const [page, setPage] = React.useState(1);
@@ -81,23 +60,13 @@ export const MyHorses: React.FC = () => {
   const [state, setState] = React.useState<{
     horses: Horse[];
     stats: MyHorsesStats;
-  }>(() => {
-    const initialData = readMyHorsesFromLocalStorage();
-    const horses = normalizeHorses(initialData?.horses);
-    return {
-      horses,
-      stats: normalizeStats(initialData, horses),
-    };
-  });
+  }>(() => ({ horses: [], stats: normalizeStats(null, []) }));
 
   React.useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
-      // API-first, fallback to localStorage
-      const apiData = await readMyHorsesFromApi();
-      const fallbackData = readMyHorsesFromLocalStorage();
-      const data = apiData ?? fallbackData;
+      const data = await getHorseOwnerMyHorsesData().catch(() => null);
 
       const horses = normalizeHorses(data?.horses);
       const stats = normalizeStats(data, horses);
@@ -252,7 +221,7 @@ export const MyHorses: React.FC = () => {
 
           {state.horses.length === 0 ? (
             <div className="my-horses__empty">
-              Stable data is empty. Connect `/api/my-horses` or provide `my_horses_data` in localStorage.
+              Stable data is empty.
             </div>
           ) : null}
         </section>

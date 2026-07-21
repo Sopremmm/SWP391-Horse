@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
+import { fetchAllTournaments, formatCurrency, formatDate, fetchAdminRaceControlList } from '../../services/integration.ts';
 import './AdminManageTournaments.css';
 
 type TournamentStatus = 'REGISTRATION OPEN' | 'DRAFT' | 'COMPLETED' | 'CLOSING SOON';
@@ -14,55 +15,6 @@ type ManagedTournament = {
   closes: string;
   prizePool: string;
 };
-
-const exampleTournaments: ManagedTournament[] = [
-  {
-    name: 'Royal Ascot Gold Cup',
-    grade: 'Grade I Stakes',
-    registered: '18 / 20 registered',
-    status: 'REGISTRATION OPEN',
-    starts: 'Jun 18, 2024',
-    closes: 'Jun 10, 2024',
-    prizePool: '$2,500,000',
-  },
-  {
-    name: 'Emerald Derby Classic',
-    grade: 'Grade II Turf',
-    registered: '11 / 16 registered',
-    status: 'CLOSING SOON',
-    starts: 'Jul 02, 2024',
-    closes: 'Jun 20, 2024',
-    prizePool: '$1,200,000',
-  },
-  {
-    name: 'Heritage Breeders Cup',
-    grade: 'Grade III',
-    registered: '24 / 24 registered',
-    status: 'COMPLETED',
-    starts: 'May 12, 2024',
-    closes: 'Apr 30, 2024',
-    prizePool: '$750,000',
-  },
-  {
-    name: 'Winter Solstice Sprint',
-    grade: 'Invitational',
-    registered: '0 / 14 registered',
-    status: 'DRAFT',
-    starts: 'Dec 05, 2024',
-    closes: 'Nov 22, 2024',
-    prizePool: '$500,000',
-  },
-];
-
-// Data is intentionally empty until it is supplied by the tournament data source.
-const tournaments: ManagedTournament[] = [];
-void exampleTournaments;
-
-const insights = [
-  { label: 'Active Tournaments', value: '0', copy: 'No active tournaments yet.' },
-  { label: 'Prize Pool Live', value: '$0', copy: 'No prize pool has been published yet.' },
-  { label: 'Upcoming Deadlines', value: '0', copy: 'No registration deadlines are scheduled.' },
-];
 
 function Icon({ name }: { name: 'bell' | 'user' | 'grid' | 'users' | 'trophy' | 'check' | 'settings' | 'plus' | 'filter' | 'star' | 'logout' | 'help' }) {
   const paths: Record<string, string> = {
@@ -101,6 +53,82 @@ function statusClass(status: TournamentStatus) {
 }
 
 export default function AdminManageTournaments() {
+  const [statusFilter, setStatusFilter] = React.useState('all');
+  const [sort, setSort] = React.useState('date');
+  const [tournaments, setTournaments] = React.useState<ManagedTournament[]>([]);
+  const [insights, setInsights] = React.useState([
+    { label: 'Active Tournaments', value: '0', copy: 'No active tournaments yet.' },
+    { label: 'Prize Pool Live', value: '$0', copy: 'No prize pool has been published yet.' },
+    { label: 'Upcoming Deadlines', value: '0', copy: 'No registration deadlines are scheduled.' },
+  ]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      const [items, races] = await Promise.all([
+        fetchAllTournaments().catch(() => []),
+        fetchAdminRaceControlList().catch(() => []),
+      ]);
+      if (cancelled) return;
+
+      const registrationMap = races.reduce<Record<number, number>>((acc, race) => {
+        if (!race.tournamentId) return acc;
+        const count = race.checklist?.approvedEntries || 0;
+        acc[race.tournamentId] = Math.max(acc[race.tournamentId] || 0, count);
+        return acc;
+      }, {});
+
+      const mapped = items.map((item) => ({
+        name: item.name,
+        grade: item.description || 'Tournament',
+        registered: `${registrationMap[item.id] || 0} / ${item.maxHorses || 0} registered`,
+        status: (String(item.status || 'DRAFT').replace(/_/g, ' ').toUpperCase() as TournamentStatus),
+        starts: formatDate(item.startDate),
+        closes: formatDate(item.endDate),
+        prizePool: formatCurrency(item.prizePool),
+      }));
+
+      setTournaments(mapped);
+      setInsights([
+        {
+          label: 'Active Tournaments',
+          value: String(items.filter((item) => ['OPEN', 'ONGOING'].includes(String(item.status || '').toUpperCase())).length),
+          copy: 'Tournaments currently open or in progress.',
+        },
+        {
+          label: 'Prize Pool Live',
+          value: formatCurrency(items.reduce((sum, item) => sum + Number(item.prizePool || 0), 0)),
+          copy: 'Combined published prize pools.',
+        },
+        {
+          label: 'Upcoming Deadlines',
+          value: String(items.filter((item) => new Date(item.endDate || '').getTime() >= Date.now()).length),
+          copy: 'Upcoming tournament end dates still visible.',
+        },
+      ]);
+    };
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const filteredTournaments = [...tournaments]
+    .filter((item) => {
+      if (statusFilter === 'all') return true;
+      if (statusFilter === 'open') return item.status.includes('OPEN');
+      if (statusFilter === 'draft') return item.status === 'DRAFT';
+      if (statusFilter === 'completed') return item.status === 'COMPLETED';
+      return true;
+    })
+    .sort((a, b) => {
+      if (sort === 'prize') return (Number(b.prizePool.replace(/[^\d.]/g, '')) || 0) - (Number(a.prizePool.replace(/[^\d.]/g, '')) || 0);
+      return Date.parse(a.starts) - Date.parse(b.starts);
+    });
+
   return (
     <AdminLayout active="tournaments" title="Manage Tournaments" topNavActive="reports">
       <div className="admin-manage-tournaments">
@@ -119,7 +147,7 @@ export default function AdminManageTournaments() {
           <div className="admin-manage-tournaments__filters" aria-label="Filter and sort tournaments">
             <label>
               <span>Status:</span>
-              <select defaultValue="all">
+              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
                 <option value="all">All Statuses</option>
                 <option value="open">Registration Open</option>
                 <option value="draft">Draft</option>
@@ -129,10 +157,9 @@ export default function AdminManageTournaments() {
             <label>
               <Icon name="filter" />
               <span>Sort By:</span>
-              <select defaultValue="date">
+              <select value={sort} onChange={(event) => setSort(event.target.value)}>
                 <option value="date">Date (Upcoming)</option>
                 <option value="prize">Prize Pool</option>
-                <option value="entries">Entries</option>
               </select>
             </label>
           </div>
@@ -145,7 +172,7 @@ export default function AdminManageTournaments() {
               <span>Prize Pool</span>
               <span>Actions</span>
             </div>
-            {tournaments.map((tournament) => (
+            {filteredTournaments.map((tournament) => (
               <article className="admin-manage-tournaments__row" key={tournament.name}>
                 <div className="admin-manage-tournaments__name-cell">
                   <div className="admin-manage-tournaments__mark"><Icon name="star" /></div>

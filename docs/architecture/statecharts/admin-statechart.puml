@@ -1,0 +1,72 @@
+@startuml
+title ADMIN Role - StateChart
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam roundcorner 0
+top to bottom direction
+skinparam nodesep 90
+skinparam ranksep 110
+skinparam wrapWidth 220
+skinparam defaultTextAlignment center
+skinparam Padding 12
+skinparam ArrowFontSize 11
+skinparam state {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  ArrowColor #334155
+  FontSize 13
+  FontStyle bold
+}
+
+[*] --> LoggedOut
+LoggedOut --> Authenticated : sign in [ACTIVE account]
+LoggedOut --> AccessDenied : sign in [INACTIVE/BANNED/invalid credentials]
+AccessDenied --> LoggedOut : retry
+
+state Authenticated {
+  [*] --> Dashboard
+
+  Dashboard --> ManagingUsers : open user management
+  ManagingUsers --> ManagingUsers : create/update/status/delete user
+  ManagingUsers --> Dashboard : finish
+
+  Dashboard --> TournamentDraft : create tournament\n[start date >= 7 days]
+  TournamentDraft --> TournamentDraft : add scheduled races
+  TournamentDraft --> TournamentOpen : publish [at least 2 races]
+  TournamentOpen --> TournamentOngoing : update status
+  TournamentOngoing --> TournamentClosed : close tournament
+
+  TournamentOpen --> ReviewingEntries : review registrations
+  ReviewingEntries --> EntryApproved : approve [capacity and owner limit valid]
+  ReviewingEntries --> EntryRejected : reject
+  EntryApproved --> ReviewingEntries : review another entry
+  EntryRejected --> ReviewingEntries : review another entry
+
+  TournamentOpen --> ConfiguringRace : select race
+  ConfiguringRace --> ConfiguringRace : assign referee / configure gates
+  ConfiguringRace --> RaceOngoing : start [referee + >=2 entries + all jockeys]
+  RaceOngoing --> RaceScheduled : revert to scheduled
+  RaceScheduled --> ConfiguringRace : continue preparation
+  RaceOngoing --> ReportReview : referee submits report
+  ReportReview --> ReportConfirmed : confirm [report submitted]
+  ReportConfirmed --> ResultsPublished : publish results
+  ResultsPublished : race COMPLETED\nprizes calculated\nbets resolved
+
+  Dashboard --> ReviewingTopUps : open top-up management
+  ReviewingTopUps --> TopUpPaid : mark paid [valid transaction]
+  TopUpPaid --> ReviewingTopUps : review another request
+
+  Dashboard --> ViewingAudit : view audit logs
+  ViewingAudit --> Dashboard : close audit view
+}
+
+Authenticated --> LoggedOut : sign out / token expires
+TournamentClosed --> [*]
+
+note right of ResultsPublished
+  Direct status update to COMPLETED is rejected.
+  ADMIN must use publish-results.
+end note
+
+@enduml

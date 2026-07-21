@@ -1,0 +1,62 @@
+@startuml
+title REFEREE Role - StateChart
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam roundcorner 0
+top to bottom direction
+skinparam nodesep 90
+skinparam ranksep 110
+skinparam wrapWidth 220
+skinparam defaultTextAlignment center
+skinparam Padding 12
+skinparam ArrowFontSize 11
+skinparam state {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  ArrowColor #334155
+  FontSize 13
+  FontStyle bold
+}
+
+[*] --> LoggedOut
+LoggedOut --> Authenticated : sign in [ACTIVE REFEREE]
+LoggedOut --> AccessDenied : invalid credentials/status/role
+AccessDenied --> LoggedOut : retry
+
+state Authenticated {
+  [*] --> RefereeDashboard
+  RefereeDashboard --> AssignedRace : open assigned race
+  RefereeDashboard --> UnauthorizedRace : open unassigned race
+  UnauthorizedRace --> RefereeDashboard : access rejected
+
+  AssignedRace --> ReviewingEntries : load race entries
+  ReviewingEntries --> EntryCheckedIn : check in\n[APPROVED/CONFIRMED and jockey assigned]
+  ReviewingEntries --> EntryNoShow : mark no-show
+  EntryCheckedIn --> ReviewingEntries : process next entry
+  EntryNoShow --> ReviewingEntries : entry WITHDRAWN; record reason
+
+  ReviewingEntries --> AttendanceComplete : all eligible entries processed
+  AttendanceComplete --> RecordingResults : enter rank and time
+  RecordingResults --> RecordingResults : update another result
+  RecordingResults --> ResultValidationFailed : invalid/duplicate rank or time
+  ResultValidationFailed --> RecordingResults : correct results
+  RecordingResults --> ReportDraft : save valid results
+
+  ReportDraft --> ReportDraft : edit notes / record violation
+  ReportDraft --> ReportSubmitted : submit [RD-03 satisfied]
+  ReportSubmitted --> ReportConfirmed : confirm [within deadline RS-01]
+  ReportSubmitted --> ConfirmationRejected : deadline passed
+  ConfirmationRejected --> RefereeDashboard : contact ADMIN
+  ReportConfirmed --> AwaitingPublication : race FINISHED
+  AwaitingPublication --> ResultsPublished : ADMIN publishes
+  ResultsPublished --> RefereeDashboard : finish
+}
+
+Authenticated --> LoggedOut : sign out / token expires
+
+note right of RecordingResults
+  Results cannot be modified after publication (RS-02).
+end note
+
+@enduml

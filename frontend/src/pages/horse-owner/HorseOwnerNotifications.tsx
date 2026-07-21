@@ -1,4 +1,5 @@
 import React from 'react';
+import { getHorseOwnerNotificationsData, markNotificationRead } from '../../services/integration.ts';
 import {
   OwnerPortalFooter,
   OwnerPortalHeader,
@@ -24,26 +25,6 @@ type OwnerNotificationsData = {
   notifications?: OwnerNotification[];
 };
 
-const readNotificationsFromLocalStorage = (): OwnerNotificationsData | null => {
-  try {
-    const raw = window.localStorage.getItem('horse_owner_notifications_data');
-    return raw ? (JSON.parse(raw) as OwnerNotificationsData) : null;
-  } catch {
-    return null;
-  }
-};
-
-const readNotificationsFromApi = async (): Promise<OwnerNotificationsData | null> => {
-  try {
-    const endpoint = process.env.REACT_APP_HORSE_OWNER_NOTIFICATIONS_API || '/api/horse-owner/notifications';
-    const response = await fetch(endpoint, { method: 'GET' });
-    if (!response.ok) return null;
-    return (await response.json()) as OwnerNotificationsData;
-  } catch {
-    return null;
-  }
-};
-
 const normalizeNotifications = (data?: OwnerNotificationsData | null): OwnerNotification[] =>
   (data?.notifications || [])
     .filter((item) => item.title)
@@ -58,16 +39,13 @@ const normalizeNotifications = (data?: OwnerNotificationsData | null): OwnerNoti
 export default function HorseOwnerNotifications() {
   const [view, setView] = React.useState<'all' | 'unread'>('all');
   const [sort, setSort] = React.useState<'newest' | 'oldest'>('newest');
-  const [notifications, setNotifications] = React.useState<OwnerNotification[]>(() =>
-    normalizeNotifications(readNotificationsFromLocalStorage()),
-  );
+  const [notifications, setNotifications] = React.useState<OwnerNotification[]>([]);
 
   React.useEffect(() => {
     let cancelled = false;
     const loadNotifications = async () => {
-      const apiData = await readNotificationsFromApi();
-      const localData = readNotificationsFromLocalStorage();
-      if (!cancelled) setNotifications(normalizeNotifications(apiData ?? localData));
+      const apiData = await getHorseOwnerNotificationsData().catch(() => null);
+      if (!cancelled) setNotifications(normalizeNotifications(apiData));
     };
 
     void loadNotifications();
@@ -85,6 +63,14 @@ export default function HorseOwnerNotifications() {
       return sort === 'newest' ? second - first : first - second;
     });
   }, [notifications, sort, view]);
+
+  const handleMarkRead = async (notification: OwnerNotification) => {
+    if (!notification.unread || !notification.id) return;
+    await markNotificationRead(Number(notification.id)).catch(() => undefined);
+    setNotifications((current) =>
+      current.map((item) => (item.id === notification.id ? { ...item, unread: false } : item)),
+    );
+  };
 
   return (
     <div className="horse-owner-notifications">
@@ -128,7 +114,11 @@ export default function HorseOwnerNotifications() {
         <section className="owner-notifications-list" aria-label="Notification list">
           {visibleNotifications.length ? (
             visibleNotifications.map((notification) => (
-              <article className="owner-notification-item" key={notification.id || `${notification.title}-${notification.time}`}>
+              <article
+                className="owner-notification-item"
+                key={notification.id || `${notification.title}-${notification.time}`}
+                onClick={() => void handleMarkRead(notification)}
+              >
                 <div className={`owner-notification-icon owner-notification-icon--${notification.tone}`}>
                   <OwnerPortalIcon name={notification.icon || 'badge'} />
                 </div>

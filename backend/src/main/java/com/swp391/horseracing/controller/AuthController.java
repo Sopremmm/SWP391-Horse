@@ -6,6 +6,8 @@ import com.swp391.horseracing.dto.response.JwtResponse;
 import com.swp391.horseracing.dto.response.MessageResponse;
 import com.swp391.horseracing.service.AuthService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+
     @Autowired
     AuthService authService;
 
@@ -23,6 +27,7 @@ public class AuthController {
             JwtResponse jwtResponse = authService.authenticateUser(loginRequest);
             return ResponseEntity.ok(jwtResponse);
         } catch (Exception e) {
+            log.error("Signin failed for {}", loginRequest.getEmail(), e);
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Invalid email or password!"));
         }
     }

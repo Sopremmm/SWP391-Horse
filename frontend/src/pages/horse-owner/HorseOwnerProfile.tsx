@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { updateCurrentUserProfile } from '../../services/auth.ts';
+import { getHorseOwnerProfileData } from '../../services/integration.ts';
 import {
   OwnerPortalFooter,
   OwnerPortalHeader,
@@ -53,26 +55,6 @@ const normalizeProfile = (raw?: OwnerProfileData | null): OwnerProfileForm => ({
   avatarUrl: raw?.profile?.avatarUrl,
   initials: raw?.profile?.initials,
 });
-
-const readOwnerProfileFromLocalStorage = (): OwnerProfileData | null => {
-  try {
-    const raw = window.localStorage.getItem('horse_owner_profile_data');
-    return raw ? (JSON.parse(raw) as OwnerProfileData) : null;
-  } catch {
-    return null;
-  }
-};
-
-const readOwnerProfileFromApi = async (): Promise<OwnerProfileData | null> => {
-  try {
-    const endpoint = process.env.REACT_APP_HORSE_OWNER_PROFILE_API || '/api/horse-owner/profile';
-    const response = await fetch(endpoint, { method: 'GET' });
-    if (!response.ok) return null;
-    return (await response.json()) as OwnerProfileData;
-  } catch {
-    return null;
-  }
-};
 
 const profileInitials = (profile: OwnerProfileForm) => {
   if (profile.initials) return profile.initials;
@@ -273,20 +255,15 @@ function ProfileEdit({
 }
 
 export default function HorseOwnerProfile() {
-  const localData = React.useMemo(() => readOwnerProfileFromLocalStorage(), []);
-  const [profile, setProfile] = React.useState<OwnerProfileForm>(() => normalizeProfile(localData) || EMPTY_PROFILE);
-  const [stats, setStats] = React.useState<OwnerProfileStat[]>(() => localData?.stats || []);
-  const [readonlyStats, setReadonlyStats] = React.useState<Array<{ label: string; value: string }>>(
-    () => localData?.readonlyStats || [],
-  );
+  const [profile, setProfile] = React.useState<OwnerProfileForm>(EMPTY_PROFILE);
+  const [stats, setStats] = React.useState<OwnerProfileStat[]>([]);
+  const [readonlyStats, setReadonlyStats] = React.useState<Array<{ label: string; value: string }>>([]);
   const [editing, setEditing] = React.useState(false);
 
   React.useEffect(() => {
     let cancelled = false;
     const loadProfile = async () => {
-      const apiData = await readOwnerProfileFromApi();
-      const fallbackData = readOwnerProfileFromLocalStorage();
-      const data = apiData ?? fallbackData;
+      const data = await getHorseOwnerProfileData().catch(() => null);
       if (!cancelled && data) {
         setProfile(normalizeProfile(data));
         setStats(data.stats || []);
@@ -301,6 +278,10 @@ export default function HorseOwnerProfile() {
   }, []);
 
   const handleSave = (nextProfile: OwnerProfileForm) => {
+    updateCurrentUserProfile({
+      fullName: nextProfile.fullName,
+      email: nextProfile.username,
+    });
     setProfile(nextProfile);
     setEditing(false);
   };

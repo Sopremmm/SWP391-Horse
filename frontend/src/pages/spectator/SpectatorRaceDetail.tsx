@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { SpectatorFooter, SpectatorHeader } from '../../components/spectator/index.ts';
 import horse1 from '../../assets/images/horse1.webp';
@@ -14,14 +14,9 @@ type Runner = {
   jockey: string;
   weight: string;
   image?: string;
+  finishTime?: string;
+  rank?: string;
 };
-
-type Bet = {
-  horse: string;
-  stake: number;
-};
-
-type BetMode = 'place' | 'edit';
 
 const runners: Runner[] = [
   {
@@ -146,56 +141,25 @@ const CheckIcon = () => (
   </svg>
 );
 
-const formatMoney = (value: number) =>
-  value.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  });
-
 type SpectatorRaceData = { description?: string; date?: string; time?: string; distance?: string; runnerCount?: number };
-type SpectatorRaceDetailProps = { data?: SpectatorRaceData | null; runners?: Runner[]; loading?: boolean; error?: string };
+type SpectatorRaceDetailProps = {
+  data?: SpectatorRaceData | null;
+  runners?: Runner[];
+  incidents?: string[];
+  loading?: boolean;
+  error?: string;
+};
 
-export const SpectatorRaceDetail: React.FC<SpectatorRaceDetailProps> = ({ data, runners = [], loading = false, error }) => {
+export const SpectatorRaceDetail: React.FC<SpectatorRaceDetailProps> = ({
+  data,
+  runners = [],
+  incidents = [],
+  loading = false,
+  error,
+}) => {
   const { name, racename } = useParams();
   const tournamentName = titleCaseFromParam(name, 'The Royal Heritage Cup');
   const raceName = titleCaseFromParam(racename, 'Qualifier A');
-  const [bet, setBet] = useState<Bet | null>(null);
-  const [betMode, setBetMode] = useState<BetMode>('place');
-  const [isBetFormOpen, setIsBetFormOpen] = useState(false);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [draftHorse, setDraftHorse] = useState(runners[0]?.horse ?? '');
-  const [draftStake, setDraftStake] = useState('100');
-
-  const draftStakeNumber = Number(draftStake);
-  const minimumStake = betMode === 'edit' && bet ? bet.stake : 1;
-  const isDraftValid = draftHorse.trim().length > 0 && Number.isFinite(draftStakeNumber) && draftStakeNumber >= minimumStake;
-  const payout = useMemo(() => (bet ? bet.stake * 5 : 0), [bet]);
-  const draftPayout = Number.isFinite(draftStakeNumber) ? draftStakeNumber * 5 : 0;
-
-  const openBetForm = (mode: BetMode) => {
-    setBetMode(mode);
-    setDraftHorse(bet?.horse || runners[0]?.horse || '');
-    setDraftStake(String(bet?.stake || 100));
-    setIsBetFormOpen(true);
-  };
-
-  const closeBetFlow = () => {
-    setIsBetFormOpen(false);
-    setIsConfirmOpen(false);
-  };
-
-  const requestConfirmation = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!isDraftValid) return;
-    setIsConfirmOpen(true);
-  };
-
-  const confirmBet = () => {
-    if (!isDraftValid) return;
-    setBet({ horse: draftHorse, stake: draftStakeNumber });
-    closeBetFlow();
-  };
 
   if (!data) return <div className="spectator-race-page"><SpectatorHeader /><main className="spectator-race-api-empty">{loading ? 'Loading race data...' : error || 'No race data is available.'}</main></div>;
 
@@ -268,145 +232,54 @@ export const SpectatorRaceDetail: React.FC<SpectatorRaceDetailProps> = ({ data, 
                     <strong>{runner.jockey}</strong>
                     <span>{runner.weight}</span>
                   </div>
-                  <span className="spectator-lineup__pending">Pending</span>
-                  <span className="spectator-lineup__rank">-</span>
+                  <span className="spectator-lineup__pending">{runner.finishTime || 'Pending'}</span>
+                  <span className="spectator-lineup__rank">{runner.rank || '-'}</span>
                 </div>
               ))}
             </div>
           </article>
 
-          <aside className="spectator-active-bet" aria-label="Active bet">
+          <aside className="spectator-race-aside" aria-label="Race overview">
             <header>
               <CheckIcon />
-              <h2>Active Bet</h2>
+              <h2>Race Overview</h2>
             </header>
-            <div className="spectator-active-bet__body">
-              {bet ? (
-                <>
-                  <dl>
-                    <div>
-                      <dt>Selected Horse</dt>
-                      <dd>{bet.horse}</dd>
-                    </div>
-                    <div>
-                      <dt>Stake Amount</dt>
-                      <dd>{formatMoney(bet.stake)}</dd>
-                    </div>
-                  </dl>
-                  <div className="spectator-active-bet__payout">
-                    <span>Est. Payout</span>
-                    <strong>{formatMoney(payout)}</strong>
-                  </div>
-                  <button type="button" onClick={() => openBetForm('edit')}>
-                    Edit Bet
-                  </button>
-                  <p>Bet ID: #HR-2024-9921. T&amp;Cs Apply.</p>
-                </>
-              ) : (
-                <div className="spectator-active-bet__empty">
-                  <p>Select a runner from this race and place your first stake before the gates open.</p>
-                  <button type="button" onClick={() => openBetForm('place')}>
-                    Place Bet
-                  </button>
+            <div className="spectator-race-aside__body">
+              <dl>
+                <div>
+                  <dt>Tournament</dt>
+                  <dd>{tournamentName}</dd>
                 </div>
-              )}
+                <div>
+                  <dt>Race</dt>
+                  <dd>{raceName}</dd>
+                </div>
+                <div>
+                  <dt>Distance</dt>
+                  <dd>{data.distance || 'Pending'}</dd>
+                </div>
+                <div>
+                  <dt>Runners</dt>
+                  <dd>{data.runnerCount ?? runners.length}</dd>
+                </div>
+              </dl>
+              <div className="spectator-race-aside__note">
+                <p>Review the official lineup and results for this race. The spectator role is view-only.</p>
+              </div>
+              {incidents.length ? (
+                <div className="spectator-race-aside__note">
+                  <p>Incidents &amp; violations</p>
+                  <ul>
+                    {incidents.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
             </div>
           </aside>
         </section>
       </main>
-
-      {isBetFormOpen && (
-        <div className="spectator-bet-modal" role="dialog" aria-modal="true" aria-labelledby="bet-form-title">
-          <div className="spectator-bet-modal__panel">
-            <form onSubmit={requestConfirmation}>
-              <div className="spectator-bet-modal__header">
-                <div>
-                  <span>{betMode === 'edit' ? 'Update Stake' : 'New Bet'}</span>
-                  <h2 id="bet-form-title">{betMode === 'edit' ? 'Edit Bet' : 'Place Bet'}</h2>
-                </div>
-                <button type="button" onClick={closeBetFlow} aria-label="Close bet form">
-                  x
-                </button>
-              </div>
-
-              <label>
-                <span>Horse</span>
-                <select value={draftHorse} onChange={(event) => setDraftHorse(event.target.value)}>
-                  {runners.map((runner) => (
-                    <option key={runner.horse} value={runner.horse}>
-                      Gate {runner.gate} - {runner.horse}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label>
-                <span>Stake Amount</span>
-                <input
-                  type="number"
-                  min={minimumStake}
-                  step="1"
-                  value={draftStake}
-                  onChange={(event) => setDraftStake(event.target.value)}
-                />
-              </label>
-
-              {betMode === 'edit' && bet && (
-                <p className="spectator-bet-modal__hint">
-                  Current stake is {formatMoney(bet.stake)}. You can switch horses or increase the stake, but not reduce it.
-                </p>
-              )}
-
-              <div className="spectator-bet-modal__preview">
-                <span>Estimated payout</span>
-                <strong>{isDraftValid ? formatMoney(draftPayout) : '-'}</strong>
-              </div>
-
-              <div className="spectator-bet-modal__actions">
-                <button type="button" onClick={closeBetFlow}>
-                  Cancel
-                </button>
-                <button type="submit" disabled={!isDraftValid}>
-                  {betMode === 'edit' ? 'Update Bet' : 'Place Bet'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {isConfirmOpen && (
-        <div className="spectator-bet-modal" role="dialog" aria-modal="true" aria-labelledby="bet-confirm-title">
-          <div className="spectator-bet-modal__panel spectator-bet-modal__panel--confirm">
-            <div className="spectator-bet-confirm">
-              <span>Confirmation</span>
-              <h2 id="bet-confirm-title">Confirm Your Bet</h2>
-              <dl>
-                <div>
-                  <dt>Horse</dt>
-                  <dd>{draftHorse}</dd>
-                </div>
-                <div>
-                  <dt>Stake</dt>
-                  <dd>{formatMoney(draftStakeNumber)}</dd>
-                </div>
-                <div>
-                  <dt>Estimated Payout</dt>
-                  <dd>{formatMoney(draftPayout)}</dd>
-                </div>
-              </dl>
-              <div className="spectator-bet-modal__actions">
-                <button type="button" onClick={() => setIsConfirmOpen(false)}>
-                  Back
-                </button>
-                <button type="button" onClick={confirmBet}>
-                  Confirm Bet
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <SpectatorFooter />
     </div>

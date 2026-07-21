@@ -83,7 +83,9 @@ export default function JockeyHeader({ brandName = 'Heritage Racing' }: JockeyHe
         </div>
 
         <div className="jockey-header__actions">
-          <button type="button" className="jockey-header__icon-button" aria-label="Notifications"><JockeyHeaderIcon name="bell" /></button>
+          <Link to="/Jockey/Notifications" className="jockey-header__icon-button" aria-label="Notifications">
+            <JockeyHeaderIcon name="bell" />
+          </Link>
           <JockeyProfileDropdown />
         </div>
       </div>

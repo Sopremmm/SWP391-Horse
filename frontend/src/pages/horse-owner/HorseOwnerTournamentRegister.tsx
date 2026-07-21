@@ -4,6 +4,7 @@ import {
   OwnerPortalHeader,
   OwnerPortalIcon,
 } from '../../components/horseOwner/OwnerPortalChrome.tsx';
+import { getHorseOwnerRegisteredTournamentsData } from '../../services/integration.ts';
 import './HorseOwnerMyTournament.css';
 
 type RegisteredTournament = {
@@ -74,26 +75,6 @@ function normalizeData(raw?: RawMyTournamentData | null) {
   };
 }
 
-function readMyTournamentsFromLocalStorage(): RawMyTournamentData | null {
-  try {
-    const raw = window.localStorage.getItem('horse_owner_my_tournaments_data');
-    return raw ? (JSON.parse(raw) as RawMyTournamentData) : null;
-  } catch {
-    return null;
-  }
-}
-
-async function readMyTournamentsFromApi(): Promise<RawMyTournamentData | null> {
-  try {
-    const endpoint = process.env.REACT_APP_HORSE_OWNER_MY_TOURNAMENTS_API || '/api/horse-owner/my-tournaments';
-    const response = await fetch(endpoint, { method: 'GET' });
-    if (!response.ok) return null;
-    return (await response.json()) as RawMyTournamentData;
-  } catch {
-    return null;
-  }
-}
-
 function entryTone(status?: string) {
   const text = String(status || '').toLowerCase();
   if (text.includes('reject')) return 'rejected';
@@ -115,16 +96,15 @@ function StatusChip({ value }: { value?: string }) {
 
 export default function HorseOwnerMyTournament() {
   const [page, setPage] = React.useState(1);
-  const [data, setData] = React.useState(() => normalizeData(readMyTournamentsFromLocalStorage()));
+  const [data, setData] = React.useState(() => normalizeData(null));
 
   React.useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
-      const apiData = await readMyTournamentsFromApi();
-      const localData = readMyTournamentsFromLocalStorage();
+      const apiData = await getHorseOwnerRegisteredTournamentsData().catch(() => null);
       if (!cancelled) {
-        setData(normalizeData(apiData ?? localData));
+        setData(normalizeData(apiData));
         setPage(1);
       }
     };
@@ -206,9 +186,7 @@ export default function HorseOwnerMyTournament() {
 
             {data.tournaments.length === 0 ? (
               <div className="owner-tournament-empty">
-                Registered tournament data is empty. Connect `/api/horse-owner/my-tournaments`, set
-                `REACT_APP_HORSE_OWNER_MY_TOURNAMENTS_API`, or provide `horse_owner_my_tournaments_data`
-                in localStorage.
+                Registered tournament data is empty.
               </div>
             ) : null}
           </div>

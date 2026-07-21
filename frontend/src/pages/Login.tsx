@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import HorseRaceCartoon from '../assets/images/RunningHorse.jpg';
+import { login, redirectPathForRole } from '../services/auth.ts';
 import './Login.css';
 
 const UserIcon = () => (
@@ -41,10 +42,25 @@ const Login: React.FC = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    navigate('/HorseOwner/Home');
+    setSubmitting(true);
+    setError('');
+
+    try {
+      await login({
+        email: identifier.trim(),
+        password,
+      });
+      navigate(redirectPathForRole());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to sign in.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -68,14 +84,14 @@ const Login: React.FC = () => {
 
             <form className="login-page__form" onSubmit={handleSubmit}>
               <label className="login-page__field">
-                <span>Email or Username</span>
+                <span>Email</span>
                 <div className="login-page__input-wrap">
                   <input
-                    type="text"
+                    type="email"
                     value={identifier}
                     onChange={(event) => setIdentifier(event.target.value)}
-                    placeholder="Enter your credentials"
-                    autoComplete="username"
+                    placeholder="Enter your email"
+                    autoComplete="email"
                     required
                   />
                   <UserIcon />
@@ -107,8 +123,10 @@ const Login: React.FC = () => {
                 </div>
               </label>
 
-              <button className="login-page__submit" type="submit">
-                Sign In
+              {error ? <div className="form-error">{error}</div> : null}
+
+              <button className="login-page__submit" type="submit" disabled={submitting}>
+                {submitting ? 'Signing In...' : 'Sign In'}
                 <ArrowIcon />
               </button>
             </form>

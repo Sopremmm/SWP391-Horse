@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/common/Header.tsx';
-import { Jockey } from '../../data/pageData.ts';
+import { fetchJockeys } from '../../services/integration.ts';
 import './InviteJockeys.css';
 
 type DisplayJockey = {
@@ -14,7 +14,7 @@ type DisplayJockey = {
   invited?: boolean;
 };
 
-type RawJockey = Partial<Jockey> & Partial<DisplayJockey> & {
+type RawJockey = Partial<DisplayJockey> & {
   ageText?: string;
   imageUrl?: string;
   avatarUrl?: string;
@@ -75,8 +75,19 @@ function normalizeJockey(raw: RawJockey, index: number): DisplayJockey {
   };
 }
 
+function readSentInvitationJockeys(): Set<string> {
+  try {
+    const raw = window.localStorage.getItem('horse_owner_jockey_invitations_data');
+    const parsed = raw ? (JSON.parse(raw) as { invitations?: Array<{ jockey?: string }> }) : null;
+    return new Set((parsed?.invitations || []).map((item) => String(item.jockey || '').trim().toLowerCase()).filter(Boolean));
+  } catch {
+    return new Set();
+  }
+}
+
 function normalizeData(raw?: RawInviteJockeysData | null) {
   const source = raw?.jockeys || raw?.items || raw?.professionals || [];
+  const invitedNames = readSentInvitationJockeys();
   const jockeys = source.map(normalizeJockey);
 
   return {
@@ -85,7 +96,10 @@ function normalizeData(raw?: RawInviteJockeysData | null) {
       raw?.subtitle ||
       "Partner with the industry's most prestigious athletes. Review detailed performance metrics and invite elite jockeys to represent your stable in upcoming high-stakes tournaments.",
     total: raw?.total ?? jockeys.length,
-    jockeys,
+    jockeys: jockeys.map((jockey) => ({
+      ...jockey,
+      invited: jockey.invited || invitedNames.has(jockey.name.trim().toLowerCase()),
+    })),
   };
 }
 
@@ -99,14 +113,18 @@ function readInviteJockeysFromLocalStorage(): RawInviteJockeysData | null {
 }
 
 async function readInviteJockeysFromApi(): Promise<RawInviteJockeysData | null> {
-  try {
-    const endpoint = process.env.REACT_APP_INVITE_JOCKEYS_API || '/api/horse-owner/jockeys';
-    const response = await fetch(endpoint, { method: 'GET' });
-    if (!response.ok) return null;
-    return (await response.json()) as RawInviteJockeysData;
-  } catch {
-    return null;
-  }
+  const jockeys = await fetchJockeys().catch(() => []);
+  return {
+    jockeys: jockeys.map((item) => ({
+      id: String(item.id),
+      name: item.fullName || item.email,
+      age: 'TBA',
+      gender: 'TBA',
+      totalRaces: 0,
+      imageUrl: item.avatarUrl,
+    })),
+    total: jockeys.length,
+  };
 }
 
 function JockeyCard({ jockey }: { jockey: DisplayJockey }) {
@@ -252,8 +270,7 @@ export default function InviteJockeys() {
           </section>
         ) : (
           <section className="invite-jockeys__empty">
-            No jockeys match the current filters. Connect `/api/horse-owner/jockeys`, set
-            `REACT_APP_INVITE_JOCKEYS_API`, or provide `invite_jockeys_data` in localStorage.
+            No jockeys match the current filters.
           </section>
         )}
 

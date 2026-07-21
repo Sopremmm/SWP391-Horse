@@ -1,8 +1,24 @@
 import React from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Header } from '../../components/common/Header.tsx';
-import { getPageData, Jockey } from '../../data/pageData.ts';
+import {
+  fetchAllTournaments,
+  fetchEntriesByTournament,
+  fetchJockeys,
+  fetchMyHorses,
+  sendJockeyInvitation,
+  slugify,
+} from '../../services/integration.ts';
 import './InviteJockeyForm.css';
+
+type Jockey = {
+  id: number;
+  name: string;
+  imageSrc?: string;
+  totalRaces?: number;
+  winRate?: string;
+  priceText?: string;
+};
 
 function InviteIcon({ name }: { name: 'arrow-left' | 'arrow-right' | 'bell' | 'info' | 'star' | 'money' }) {
   const paths: Record<typeof name, string> = {
@@ -21,33 +37,100 @@ function InviteIcon({ name }: { name: 'arrow-left' | 'arrow-right' | 'bell' | 'i
 }
 
 function fallbackWinRate(jockey: Jockey) {
-  return jockey.profile?.winRate ?? (jockey.level.includes('MASTER') ? '92%' : '84%');
+  return jockey.winRate || '84%';
 }
 
 function dailyRate(jockey: Jockey) {
-  const amount = jockey.priceText.match(/[\d,]+/)?.[0] ?? '2,500';
+  const amount = jockey.priceText?.match(/[\d,]+/)?.[0] ?? '2,500';
   return `${amount} G / Day`;
 }
 
 export default function InviteJockeyForm() {
   const { name } = useParams<{ name?: string }>();
   const navigate = useNavigate();
-  const { inviteJockeys, tournamentPage, myHorses } = getPageData();
   const decodedName = decodeURIComponent(name ?? '').trim();
-  const jockey = inviteJockeys.jockeys.find((item) => item.name.toLowerCase() === decodedName.toLowerCase()) ?? inviteJockeys.jockeys[0];
+  const [jockey, setJockey] = React.useState<Jockey | null>(null);
+  const [tournaments, setTournaments] = React.useState<Array<{ id: number; title: string }>>([]);
+  const [eligibleHorses, setEligibleHorses] = React.useState<Record<string, Array<{ id: number; name: string; raceId: number }>>>({});
   const [tournamentId, setTournamentId] = React.useState('');
   const [horseName, setHorseName] = React.useState('');
   const [message, setMessage] = React.useState('');
   const [notice, setNotice] = React.useState('');
+  const [submitting, setSubmitting] = React.useState(false);
 
-  const submitInvitation = (event: React.FormEvent) => {
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      const [jockeys, tournamentItems, myHorseItems] = await Promise.all([
+        fetchJockeys().catch(() => []),
+        fetchAllTournaments().catch(() => []),
+        fetchMyHorses().catch(() => []),
+      ]);
+
+      if (cancelled) return;
+
+      const mappedJockeys = jockeys.map((item) => ({
+        id: item.id,
+        name: item.fullName || item.email,
+        imageSrc: item.avatarUrl,
+        totalRaces: 0,
+        priceText: '2,500 G / race',
+      }));
+      setJockey(
+        mappedJockeys.find(
+          (item) => String(item.id) === decodedName || slugify(item.name) === slugify(decodedName),
+        ) || mappedJockeys[0] || null,
+      );
+      setTournaments(tournamentItems.map((item) => ({ id: item.id, title: item.name })));
+      const myHorseIds = new Set(myHorseItems.map((item) => item.id));
+      const tournamentEntries = await Promise.all(
+        tournamentItems.map(async (item) => {
+          const entries = await fetchEntriesByTournament(item.id).catch(() => []);
+          const eligible = entries
+            .filter((entry) => entry.status === 'APPROVED' && entry.race?.id && entry.horse?.id && myHorseIds.has(entry.horse.id))
+            .map((entry) => ({ id: entry.horse!.id, name: entry.horse!.name, raceId: entry.race!.id }));
+          return [String(item.id), eligible] as const;
+        }),
+      );
+      if (!cancelled) setEligibleHorses(Object.fromEntries(tournamentEntries));
+    };
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [decodedName]);
+
+  const submitInvitation = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!tournamentId || !horseName) {
+    if (!tournamentId || !horseName || !jockey?.id) {
       setNotice('Please select both a tournament and a horse.');
       return;
     }
-    const tournament = tournamentPage.tournaments.find((item) => item.id === tournamentId);
-    setNotice(`Official invitation sent to ${jockey.name} for ${tournament?.title.replace('\n', ' ') ?? 'the selected event'}.`);
+    const horse = (eligibleHorses[tournamentId] || []).find((item) => item.name === horseName);
+    const tournament = tournaments.find((item) => String(item.id) === tournamentId);
+
+    if (!horse?.id || !horse.raceId) {
+      setNotice('This horse must be registered and approved for a race before inviting a jockey.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await sendJockeyInvitation({
+        horseId: horse.id,
+        jockeyId: jockey.id,
+        raceId: horse.raceId,
+        message,
+      });
+      setNotice(`Official invitation sent to ${jockey.name} for ${tournament?.title ?? 'the selected event'}.`);
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : 'Unable to send invitation.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   React.useEffect(() => {
@@ -55,6 +138,8 @@ export default function InviteJockeyForm() {
     const timeout = window.setTimeout(() => setNotice(''), 3200);
     return () => window.clearTimeout(timeout);
   }, [notice]);
+
+  const profileTarget = encodeURIComponent(jockey?.id ? String(jockey.id) : decodedName);
 
   return (
     <div className="invite-jockey-form-page">
@@ -66,19 +151,19 @@ export default function InviteJockeyForm() {
 
         <section className="invite-jockey-form-page__card" aria-labelledby="invite-jockey-title">
           <header>
-            <Link to={`/HorseOwner/InviteJockeys/${encodeURIComponent(jockey.name)}`}>
+            <Link to={`/HorseOwner/InviteJockeys/${profileTarget}`}>
               <InviteIcon name="arrow-left" /> Back to profiles
             </Link>
             <h1 id="invite-jockey-title">Invite Jockey</h1>
-            <p>Official Invitation for {jockey.name}</p>
+            <p>Official Invitation for {jockey?.name || 'Selected Jockey'}</p>
           </header>
 
           <form onSubmit={submitInvitation}>
             <section className="invite-jockey-form-page__jockey-summary">
-              <img src={jockey.imageSrc} alt={jockey.name} />
+              <img src={jockey?.imageSrc || 'https://placehold.co/180x180'} alt={jockey?.name || 'Jockey'} />
               <div>
-                <h2>{jockey.name}</h2>
-                <p><span><InviteIcon name="star" /> {fallbackWinRate(jockey)} Win Rate</span><span><InviteIcon name="money" /> {dailyRate(jockey)}</span></p>
+                <h2>{jockey?.name || 'Jockey'}</h2>
+                <p><span><InviteIcon name="star" /> {jockey ? fallbackWinRate(jockey) : '84%'} Win Rate</span><span><InviteIcon name="money" /> {jockey ? dailyRate(jockey) : '2,500 G / Day'}</span></p>
               </div>
             </section>
 
@@ -87,8 +172,8 @@ export default function InviteJockeyForm() {
                 <span>Select tournament</span>
                 <select value={tournamentId} onChange={(event) => { setTournamentId(event.target.value); setHorseName(''); }}>
                   <option value="">Choose registered event</option>
-                  {tournamentPage.tournaments.map((tournament) => (
-                    <option key={tournament.id} value={tournament.id}>{tournament.title.replace('\n', ' ')}</option>
+                  {tournaments.map((tournament) => (
+                    <option key={tournament.id} value={tournament.id}>{tournament.title}</option>
                   ))}
                 </select>
               </label>
@@ -96,9 +181,9 @@ export default function InviteJockeyForm() {
                 <span>Select horse</span>
                 <select value={horseName} onChange={(event) => setHorseName(event.target.value)} disabled={!tournamentId}>
                   <option value="">Select a horse from stable</option>
-                  {myHorses.horses.map((horse) => <option key={horse.name} value={horse.name}>{horse.name}</option>)}
+                  {(eligibleHorses[tournamentId] || []).map((horse) => <option key={horse.id} value={horse.name}>{horse.name}</option>)}
                 </select>
-                <small>Showing horses registered for the selected tournament.</small>
+                <small>Only horses approved for a race in the selected tournament are shown.</small>
               </label>
             </div>
 
@@ -109,12 +194,14 @@ export default function InviteJockeyForm() {
 
             <div className="invite-jockey-form-page__notice-box">
               <InviteIcon name="info" />
-              <p>Upon submission, this invitation will be sent to <strong>{jockey.name}</strong> for formal review. Jockeys typically respond within 12 hours. Funds will be held in escrow upon acceptance.</p>
+              <p>Upon submission, this invitation will be sent to <strong>{jockey?.name || 'the selected jockey'}</strong> for formal review. Jockeys typically respond within 12 hours. Funds will be held in escrow upon acceptance.</p>
             </div>
 
             <div className="invite-jockey-form-page__cta">
-              <button type="submit">Send Official Invitation <InviteIcon name="arrow-right" /></button>
-              <button type="button" onClick={() => navigate(`/HorseOwner/InviteJockeys/${encodeURIComponent(jockey.name)}`)}>Cancel Invitation</button>
+              <button type="submit" disabled={submitting || !jockey}>
+                {submitting ? 'Sending...' : <>Send Official Invitation <InviteIcon name="arrow-right" /></>}
+              </button>
+              <button type="button" onClick={() => navigate(`/HorseOwner/InviteJockeys/${profileTarget}`)}>Cancel Invitation</button>
             </div>
           </form>
         </section>

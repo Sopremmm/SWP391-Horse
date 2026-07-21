@@ -1,5 +1,6 @@
 import React from 'react';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
+import { deleteAdminUser, fetchAdminUsers, updateAdminUserStatus } from '../../services/integration.ts';
 
 import './AdminUsers.css';
 
@@ -18,7 +19,6 @@ type ManagedUser = {
   location: string;
 };
 
-const initialUsers: ManagedUser[] = [];
 const PAGE_SIZE = 10;
 
 function Icon({ name }: { name: 'search' | 'user' | 'ban' | 'restore' | 'trash' | 'left' | 'right' }) {
@@ -44,12 +44,13 @@ function roleClass(role: UserRole) {
 }
 
 export default function AdminUsers() {
-  const [users, setUsers] = React.useState(initialUsers);
+  const [users, setUsers] = React.useState<ManagedUser[]>([]);
   const [query, setQuery] = React.useState('');
   const [role, setRole] = React.useState<'All Roles' | UserRole>('All Roles');
   const [page, setPage] = React.useState(1);
   const [selectedUser, setSelectedUser] = React.useState<ManagedUser | null>(null);
   const [toast, setToast] = React.useState('');
+  const [loading, setLoading] = React.useState(true);
   const toastTimer = React.useRef<number | null>(null);
 
   React.useEffect(() => () => {
@@ -62,25 +63,99 @@ export default function AdminUsers() {
     toastTimer.current = window.setTimeout(() => setToast(''), 2600);
   };
 
-  const filteredUsers = users.filter((user) => {
-    const keyword = query.trim().toLowerCase();
-    const matchesQuery = !keyword || [user.name, user.email, user.id].some((value) => value.toLowerCase().includes(keyword));
-    return matchesQuery && (role === 'All Roles' || user.role === role);
-  });
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const roleMap: Record<UserRole, string> = {
+      'Horse Owner': 'HORSE_OWNER',
+      Jockey: 'JOCKEY',
+      Referee: 'REFEREE',
+      Spectator: 'SPECTATOR',
+    };
+
+    const titleCaseRole = (value?: string): UserRole => {
+      if (value === 'JOCKEY') return 'Jockey';
+      if (value === 'REFEREE') return 'Referee';
+      if (value === 'SPECTATOR') return 'Spectator';
+      return 'Horse Owner';
+    };
+
+    const toneForRole = (value: UserRole) => {
+      if (value === 'Jockey') return 'gold';
+      if (value === 'Referee') return 'slate';
+      if (value === 'Spectator') return 'green';
+      return 'teal';
+    };
+
+    const load = async () => {
+      setLoading(true);
+      try {
+        const response = await fetchAdminUsers({
+          q: query.trim() || undefined,
+          role: role === 'All Roles' ? undefined : roleMap[role],
+        });
+        if (cancelled) return;
+        setUsers(
+          response.map((user) => {
+            const mappedRole = titleCaseRole(String(user.role || '').replace(/^ROLE_/i, '').toUpperCase());
+            return {
+              id: String(user.id),
+              name: user.fullName || user.email,
+              email: user.email,
+              role: mappedRole,
+              status: String(user.status || 'ACTIVE').toUpperCase() === 'SUSPENDED' ? 'Suspended' : 'Active',
+              initials: (user.fullName || user.email || 'U')
+                .split(/\s+/)
+                .slice(0, 2)
+                .map((part) => part[0]?.toUpperCase())
+                .join(''),
+              tone: toneForRole(mappedRole),
+              joined: user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-GB') : '—',
+              location: user.phone || '—',
+            };
+          }),
+        );
+      } catch (err) {
+        if (!cancelled) notify(err instanceof Error ? err.message : 'Failed to load users.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [query, role]);
+
+  const filteredUsers = users;
   const pageCount = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
   const pageUsers = filteredUsers.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  const toggleStatus = (user: ManagedUser) => {
+  const toggleStatus = async (user: ManagedUser) => {
     const nextStatus: UserStatus = user.status === 'Suspended' ? 'Active' : 'Suspended';
-    setUsers((current) => current.map((item) => (item.id === user.id ? { ...item, status: nextStatus } : item)));
-    notify(`${user.name} is now ${nextStatus.toLowerCase()}.`);
+    try {
+      await updateAdminUserStatus(Number(user.id), nextStatus.toUpperCase());
+      setUsers((current) => current.map((item) => (item.id === user.id ? { ...item, status: nextStatus } : item)));
+      setSelectedUser((current) => (current?.id === user.id ? { ...current, status: nextStatus } : current));
+      notify(`${user.name} is now ${nextStatus.toLowerCase()}.`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : 'Failed to update user status.');
+    }
   };
 
-  const deleteUser = (user: ManagedUser) => {
+  const deleteUser = async (user: ManagedUser) => {
     if (!window.confirm(`Delete ${user.name} from the system?`)) return;
-    setUsers((current) => current.filter((item) => item.id !== user.id));
-    notify(`${user.name} was removed.`);
+    try {
+      await deleteAdminUser(Number(user.id));
+      setUsers((current) => current.filter((item) => item.id !== user.id));
+      setSelectedUser((current) => (current?.id === user.id ? null : current));
+      notify(`${user.name} was removed.`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : 'Failed to delete user.');
+    }
   };
 
   return (
@@ -89,7 +164,7 @@ export default function AdminUsers() {
       title="User Management"
       topNavActive="overview"
     >
-      <div className="admin-users">
+      <div className="admin-users" aria-busy={loading}>
         <section className="admin-users__canvas">
           <header className="admin-users__heading">
             <h1>User Management</h1>
@@ -162,16 +237,16 @@ export default function AdminUsers() {
                   <div><span className={`admin-users__status admin-users__status--${user.status.toLowerCase()}`}>{user.status}</span></div>
                   <div className="admin-users__actions">
                     <button type="button" className="admin-users__view" onClick={() => setSelectedUser(user)}>View Profile</button>
-                    <button type="button" title={user.status === 'Suspended' ? 'Restore user' : 'Suspend user'} aria-label={user.status === 'Suspended' ? `Restore ${user.name}` : `Suspend ${user.name}`} onClick={() => toggleStatus(user)}>
+                    <button type="button" title={user.status === 'Suspended' ? 'Restore user' : 'Suspend user'} aria-label={user.status === 'Suspended' ? `Restore ${user.name}` : `Suspend ${user.name}`} onClick={() => void toggleStatus(user)}>
                       <Icon name={user.status === 'Suspended' ? 'restore' : 'ban'} />
                     </button>
-                    <button type="button" className="admin-users__delete" title="Delete user" aria-label={`Delete ${user.name}`} onClick={() => deleteUser(user)}>
+                    <button type="button" className="admin-users__delete" title="Delete user" aria-label={`Delete ${user.name}`} onClick={() => void deleteUser(user)}>
                       <Icon name="trash" />
                     </button>
                   </div>
                 </article>
               )) : (
-                <div className="admin-users__empty">No users match your search.</div>
+                <div className="admin-users__empty">{loading ? 'Loading users...' : 'No users match your search.'}</div>
               )}
             </div>
 
@@ -200,7 +275,7 @@ export default function AdminUsers() {
                 <div><dt>Joined</dt><dd>{selectedUser.joined}</dd></div>
                 <div><dt>Location</dt><dd>{selectedUser.location}</dd></div>
               </dl>
-              <button type="button" className="admin-users__modal-action" onClick={() => { toggleStatus(selectedUser); setSelectedUser(null); }}>
+              <button type="button" className="admin-users__modal-action" onClick={() => { void toggleStatus(selectedUser); setSelectedUser(null); }}>
                 {selectedUser.status === 'Suspended' ? 'Restore Account' : 'Suspend Account'}
               </button>
             </section>

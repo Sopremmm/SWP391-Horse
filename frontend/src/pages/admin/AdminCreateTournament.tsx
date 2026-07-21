@@ -1,6 +1,7 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
+import { createTournament, fetchTournamentBySlug } from '../../services/integration.ts';
 
 import './AdminCreateTournament.css';
 
@@ -35,16 +36,106 @@ type AdminCreateTournamentProps = {
 };
 
 export default function AdminCreateTournament({ mode = 'create' }: AdminCreateTournamentProps) {
+  const navigate = useNavigate();
+  const params = useParams<{ name?: string }>();
   const isEdit = mode === 'edit';
   const [created, setCreated] = React.useState(false);
-  const initialTournament = {
+  const [error, setError] = React.useState('');
+  const [submitting, setSubmitting] = React.useState(false);
+  const minimumTournamentStart = React.useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+    return date.toISOString().slice(0, 10);
+  }, []);
+  const [bannerPreview, setBannerPreview] = React.useState('');
+  const [initialTournament, setInitialTournament] = React.useState({
+    id: '',
     name: '', description: '', participants: '', prize: '', registrationStart: '', registrationDeadline: '', tournamentStart: '', tournamentEnd: '', venue: '',
+  });
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      if (!isEdit || !params.name) return;
+      const tournament = await fetchTournamentBySlug(decodeURIComponent(params.name)).catch(() => null);
+      if (!tournament || cancelled) return;
+      setInitialTournament({
+        id: String(tournament.id),
+        name: tournament.name || '',
+        description: tournament.description || '',
+        participants: tournament.maxHorses ? String(tournament.maxHorses) : '',
+        prize: tournament.prizePool ? String(tournament.prizePool) : '',
+        registrationStart: '',
+        registrationDeadline: '',
+        tournamentStart: tournament.startDate || '',
+        tournamentEnd: tournament.endDate || '',
+        venue: tournament.location || '',
+      });
+      setBannerPreview(tournament.imageUrl || '');
+    };
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isEdit, params.name]);
+
+  const handleBannerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setError('Banner must be a JPG, PNG, or WebP image.');
+      event.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Banner image must not exceed 5MB.');
+      event.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setBannerPreview(reader.result);
+        setError('');
+      }
+    };
+    reader.onerror = () => setError('Unable to read the selected image.');
+    reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setCreated(true);
-    window.setTimeout(() => setCreated(false), 3000);
+    setSubmitting(true);
+    setError('');
+
+    const formData = new FormData(event.currentTarget);
+    try {
+      await createTournament({
+        id: initialTournament.id ? Number(initialTournament.id) : undefined,
+        name: String(formData.get('name') || '').trim(),
+        description: String(formData.get('description') || '').trim(),
+        maxHorses: Number(formData.get('participants') || 0),
+        prizePool: Number(formData.get('prize') || 0),
+        startDate: String(formData.get('tournamentStart') || ''),
+        endDate: String(formData.get('tournamentEnd') || ''),
+        location: String(formData.get('venue') || '').trim(),
+        imageUrl: bannerPreview || undefined,
+      });
+      setCreated(true);
+      window.setTimeout(() => {
+        setCreated(false);
+        navigate('/Admin/ManageTournaments');
+      }, 1200);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to save tournament.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -63,6 +154,13 @@ export default function AdminCreateTournament({ mode = 'create' }: AdminCreateTo
           </div>
         ) : null}
 
+        {error ? (
+          <div className="admin-create-tournament__success" role="alert">
+            <Icon name="check" />
+            {error}
+          </div>
+        ) : null}
+
         <form className="admin-create-tournament__canvas" onSubmit={handleSubmit}>
           <section className="admin-create-tournament__hero">
             <h1>{isEdit ? 'Edit Tournament' : 'Create New Tournament'}</h1>
@@ -75,12 +173,21 @@ export default function AdminCreateTournament({ mode = 'create' }: AdminCreateTo
 
           <section className="admin-create-tournament__section admin-create-tournament__media-card" aria-labelledby="media-title">
             <h2 id="media-title">Tournament Media</h2>
-            <label className="admin-create-tournament__upload">
-              <input name="banner" type="file" accept="image/*" />
+            <label
+              className={`admin-create-tournament__upload${bannerPreview ? ' has-preview' : ''}`}
+              style={bannerPreview ? { backgroundImage: `linear-gradient(rgba(251, 249, 246, 0.28), rgba(251, 249, 246, 0.32)), url(${JSON.stringify(bannerPreview)})` } : undefined}
+            >
+              <input
+                name="banner"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleBannerChange}
+                aria-label="Choose tournament banner"
+              />
               <span className="admin-create-tournament__upload-content">
                 <Icon name="camera" />
-                <strong>Upload Tournament Banner</strong>
-                <small>Recommended: 1920x600px - Max 5MB</small>
+                <strong>{bannerPreview ? 'Change Tournament Banner' : 'Upload Tournament Banner'}</strong>
+                <small>{bannerPreview ? 'Image selected - click to choose another' : 'Recommended: 1920x600px - JPG, PNG or WebP - Max 5MB'}</small>
               </span>
             </label>
           </section>
@@ -115,7 +222,7 @@ export default function AdminCreateTournament({ mode = 'create' }: AdminCreateTo
                   <span>Prize Pool</span>
                   <div>
                     <Icon name="money" />
-                    <input name="prize" type="text" defaultValue={initialTournament.prize} />
+                    <input name="prize" type="number" min="0" step="0.01" defaultValue={initialTournament.prize} />
                     <strong>GBP</strong>
                   </div>
                 </label>
@@ -136,11 +243,11 @@ export default function AdminCreateTournament({ mode = 'create' }: AdminCreateTo
               </label>
               <label className="admin-create-tournament__field">
                 <span>Tournament Start</span>
-                <input name="tournamentStart" type="date" defaultValue={initialTournament.tournamentStart} />
+                <input name="tournamentStart" type="date" min={isEdit ? undefined : minimumTournamentStart} defaultValue={initialTournament.tournamentStart} required />
               </label>
               <label className="admin-create-tournament__field">
                 <span>Tournament End</span>
-                <input name="tournamentEnd" type="date" defaultValue={initialTournament.tournamentEnd} />
+                <input name="tournamentEnd" type="date" defaultValue={initialTournament.tournamentEnd} required />
               </label>
             </div>
           </section>
@@ -158,8 +265,8 @@ export default function AdminCreateTournament({ mode = 'create' }: AdminCreateTo
 
           <div className="admin-create-tournament__actions">
             <Link to="/Admin/ManageTournaments">Cancel</Link>
-            <button type="submit">
-              {isEdit ? 'Save Changes' : 'Create Tournament'}
+              <button type="submit" disabled={submitting}>
+              {submitting ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Tournament'}
               <span aria-hidden="true">-&gt;</span>
             </button>
           </div>

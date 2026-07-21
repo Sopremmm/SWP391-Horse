@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import { Header } from '../../components/common/Header.tsx';
 import { OwnerPortalHeader } from '../../components/horseOwner/OwnerPortalChrome.tsx';
 import { getPageData, MyHorse } from '../../data/pageData.ts';
+import { getHorseOwnerHorseDetailData } from '../../services/integration.ts';
 import './HorseOwnerHorseDetail.css';
 
 type RaceHistoryRow = {
@@ -155,16 +156,6 @@ function readJsonFromStorage(key: string): RawHorseResponse | null {
   }
 }
 
-async function readHorsesFromApi(endpoint: string): Promise<RawHorseResponse | null> {
-  try {
-    const response = await fetch(endpoint, { method: 'GET' });
-    if (!response.ok) return null;
-    return (await response.json()) as RawHorseResponse;
-  } catch {
-    return null;
-  }
-}
-
 function fallbackMyHorses(): HorseDetailData[] {
   return getPageData().myHorses.horses.map((horse, index) => normalizeHorse(horse, index));
 }
@@ -214,14 +205,9 @@ export default function HorseOwnerHorseDetail() {
     let cancelled = false;
 
     const load = async () => {
-      const endpoint = isRegistryView
-        ? process.env.REACT_APP_HORSE_OWNER_HORSES_API || '/api/horse-owner/horses'
-        : '/api/my-horses';
-      const apiData = await readHorsesFromApi(endpoint);
-      const localData = readJsonFromStorage(isRegistryView ? 'horse_owner_horses_data' : 'my_horses_data');
-      const data = normalizeResponse(apiData ?? localData);
-      const candidates = isRegistryView ? data : [...data, ...fallbackMyHorses()];
-      const nextHorse = findHorse(candidates, decodedName) || candidates[0] || null;
+      const apiHorse = await getHorseOwnerHorseDetailData(normalize(decodedName)).catch(() => null);
+      const fallbackData = isRegistryView ? [] : fallbackMyHorses();
+      const nextHorse = apiHorse || findHorse(fallbackData, decodedName) || fallbackData[0] || null;
 
       if (!cancelled) setHorse(nextHorse);
     };
@@ -240,9 +226,7 @@ export default function HorseOwnerHorseDetail() {
         <main className="horse-detail__main horse-detail__main--empty">
           <section className="horse-detail__empty">
             <h1>Horse detail data is empty.</h1>
-            <p>
-              Connect the database endpoint or provide localStorage data for this route to render the horse profile.
-            </p>
+            <p>Horse data is not available.</p>
           </section>
         </main>
       </div>

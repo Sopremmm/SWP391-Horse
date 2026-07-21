@@ -1,0 +1,65 @@
+@startuml
+title JOCKEY Role - StateChart
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam roundcorner 0
+top to bottom direction
+skinparam nodesep 90
+skinparam ranksep 110
+skinparam wrapWidth 220
+skinparam defaultTextAlignment center
+skinparam Padding 12
+skinparam ArrowFontSize 11
+skinparam state {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  ArrowColor #334155
+  FontSize 13
+  FontStyle bold
+}
+
+[*] --> LoggedOut
+LoggedOut --> Authenticated : sign in [ACTIVE JOCKEY]
+LoggedOut --> AccessDenied : invalid credentials/status/role
+AccessDenied --> LoggedOut : retry
+
+state Authenticated {
+  [*] --> JockeyDashboard
+
+  JockeyDashboard --> ProfileMissing : no jockey profile
+  ProfileMissing --> ProfileReady : create profile
+  JockeyDashboard --> ProfileReady : profile exists
+  ProfileReady --> ProfileReady : update profile
+
+  JockeyDashboard --> InvitationList : open my invitations
+  InvitationList --> InvitationPending : select PENDING invitation
+  InvitationPending --> InvitationExpired : respond [expiresAt < now]
+  InvitationPending --> InvitationAccepted : ACCEPTED [valid owner/race entry]
+  InvitationPending --> InvitationDeclined : DECLINED
+
+  InvitationAccepted --> AssignedToRace : backend assigns jockey to entry
+  AssignedToRace --> AwaitingCheckIn : wait for race day
+  AwaitingCheckIn --> CheckedIn : referee confirms attendance
+  AwaitingCheckIn --> NoShow : referee marks no-show
+  CheckedIn --> Racing : race ONGOING
+  Racing --> AwaitingResult : race FINISHED
+  AwaitingResult --> ResultPublished : race COMPLETED
+  ResultPublished --> JockeyDashboard : view result
+
+  InvitationDeclined --> InvitationList : review another invitation
+  InvitationExpired --> InvitationList : review another invitation
+  NoShow --> JockeyDashboard : finish
+
+  JockeyDashboard --> Notifications : view notifications
+  Notifications --> JockeyDashboard : mark read / return
+}
+
+Authenticated --> LoggedOut : sign out / token expires
+
+note right of InvitationPending
+  The invitation must belong to the authenticated jockey.
+  JKY-02 changes an expired invitation to EXPIRED.
+end note
+
+@enduml

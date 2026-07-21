@@ -1,6 +1,33 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Register from "./pages/Register.tsx";
+import {
+  ConnectedAdminRaceIncidentDetail,
+  ConnectedAdminRaceIncidentLog,
+  ConnectedJockeyHome,
+  ConnectedJockeyHorseDetail,
+  ConnectedJockeyHorseLeaderboard,
+  ConnectedJockeyInvitationDetail,
+  ConnectedJockeyInvitationPage,
+  ConnectedJockeyNotifications,
+  ConnectedJockeyMyRace,
+  ConnectedJockeyProfilePage,
+  ConnectedJockeyProfileView,
+  ConnectedJockeyRaceDetail,
+  ConnectedJockeyTournamentDetail,
+  ConnectedJockeyTournaments,
+  ConnectedRefereeHome,
+  ConnectedRefereeNotifications,
+  ConnectedRefereeRaceDetail,
+  ConnectedRefereeRaces,
+  ConnectedSpectatorHome,
+  ConnectedSpectatorHorseDetail,
+  ConnectedSpectatorHorses,
+  ConnectedSpectatorProfile,
+  ConnectedSpectatorRaceDetail,
+  ConnectedSpectatorTournament,
+  ConnectedSpectatorTournamentDetail,
+} from "./pages/ConnectedPages.tsx";
 
 
 import Login from "./pages/Login.tsx";
@@ -22,42 +49,10 @@ import JockeyProfile from "./pages/jockey/JockeyProfile.tsx";
 import HorseOwnerTournamentDetail from "./pages/horse-owner/HorseOwnerTournamentDetail.tsx";
 import HorseOwnerTournamentEntryRegister from "./pages/horse-owner/HorseOwnerTournamentEntryRegister.tsx";
 import HorseOwnerHorseDetail from "./pages/horse-owner/HorseOwnerHorseDetail.tsx";
-import JockeyHome from "./pages/jockey/JockeyHome.tsx";
-import JockeyTournaments from "./pages/jockey/JockeyTournaments.tsx";
-import JockeyTournamentDetail from "./pages/jockey/JockeyTournamentDetail.tsx";
-import JockeyRaceDetail from "./pages/jockey/JockeyRaceDetail.tsx";
-import JockeyHorseLeaderboard from "./pages/jockey/JockeyHorseLeaderboard.tsx";
-import JockeyHorseDetail from "./pages/jockey/JockeyHorseDetail.tsx";
-import JockeyMyRace from "./pages/jockey/JockeyMyRace.tsx";
-import JockeyProfileView from "./pages/jockey/JockeyProfileView.tsx";
-import JockeyProfilePage from "./pages/jockey/JockeyProfilePage.tsx";
-import JockeyInvitationPage from "./pages/jockey/JockeyInvitationPage.tsx";
-import JockeyInvitationDetail from "./pages/jockey/JockeyInvitationDetail.tsx";
 import HorseOwnerProfile from "./pages/horse-owner/HorseOwnerProfile.tsx";
 import HorseOwnerMyTournament from "./pages/horse-owner/HorseOwnerTournamentRegister.tsx";
 import HorseOwnerMyJockeys from "./pages/horse-owner/HorseOwnerMyJockeys.tsx";
 import HorseOwnerNotifications from "./pages/horse-owner/HorseOwnerNotifications.tsx";
-import SpectatorHome from "./pages/spectator/SpectatorHome.tsx";
-import SpectatorTournament from "./pages/spectator/SpectatorTournament.tsx";
-import SpectatorTournamentDetail from "./pages/spectator/SpectatorTournamentDetail.tsx";
-import SpectatorRaceDetail from "./pages/spectator/SpectatorRaceDetail.tsx";
-import SpectatorHorses from "./pages/spectator/SpectatorHorses.tsx";
-import SpectatorHorseDetail from "./pages/spectator/SpectatorHorseDetail.tsx";
-import SpectatorMyBets from "./pages/spectator/SpectatorMyBets.tsx";
-import RefereeHome from "./pages/referee/RefereeHome.tsx";
-import RefereeRaces from "./pages/referee/RefereeRaces.tsx";
-import RefereeRaceDetail from "./pages/referee/RefereeRaceDetail.tsx";
-import RefereeNotifications from "./pages/referee/RefereeNotifications.tsx";
-import AdminRaceIncidentLog from "./pages/admin/AdminRaceIncidentLog.tsx";
-import AdminRaceIncidentDetail from "./pages/admin/AdminRaceIncidentDetail.tsx";
-
-
-
-
-
-
-
-
 export default function App() {
   return (
     <Router>
@@ -89,53 +84,55 @@ export default function App() {
         <Route path="/HorseOwner/InviteJockeys" element={<InviteJockeys />} />
         <Route path="/HorseOwner/InviteJockeys/:name" element={<JockeyProfile />} />
         <Route path="/HorseOwner/InviteJockeys/:name/invite" element={<InviteJockeyForm />} />
-        <Route path="/Jockey/Home" element={<JockeyHome />} />
-        <Route path="/Jockey/Tournaments" element={<JockeyTournaments />} />
-        <Route path="/Jockey/Tournaments/:name" element={<JockeyTournamentDetail />} />
-        <Route path="/Jockey/Tournaments/:name/:race" element={<JockeyRaceDetail />} />
-        <Route path="/Jockey/HorseLeaderBoard" element={<JockeyHorseLeaderboard />} />
-        <Route path="/Jockey/Leaderboard" element={<JockeyHorseLeaderboard />} />
-        <Route path="/Jockey/Horse/:name" element={<JockeyHorseDetail />} />
-        <Route path="/Jockey/MyRace" element={<JockeyMyRace />} />
-        <Route path="/jockey/tournament/:name/:race" element={<JockeyRaceDetail />} />
-        <Route path="/Jockey/Profile/edit" element={<JockeyProfilePage />} />
-        <Route path="/Jockey/Profile" element={<JockeyProfileView />} />
-        <Route path="/Jockey/Invitation" element={<JockeyInvitationPage />} />
-        <Route path="/Jockey/Invitations" element={<JockeyInvitationPage />} />
-        <Route path="/Jockey/Invitation/:id" element={<JockeyInvitationDetail />} />
-        <Route path="/Jockey/Invitation/Jockey/Invitation/:tournamentname" element={<JockeyInvitationDetail />} />
-        <Route path="/Referee/Home" element={<RefereeHome />} />
-        <Route path="/referee/home" element={<RefereeHome />} />
-        <Route path="/Referee/Races" element={<RefereeRaces />} />
-        <Route path="/Referee/MyRaces" element={<RefereeRaces />} />
-        <Route path="/Referee/Races/:name" element={<RefereeRaceDetail />} />
-        <Route path="/Referee/MyRaces/:name" element={<RefereeRaceDetail />} />
-        <Route path="/referee/races" element={<RefereeRaces />} />
-        <Route path="/referee/myraces" element={<RefereeRaces />} />
-        <Route path="/referee/races/:name" element={<RefereeRaceDetail />} />
-        <Route path="/referee/myraces/:name" element={<RefereeRaceDetail />} />
-        <Route path="/Referee/Notifications" element={<RefereeNotifications />} />
-        <Route path="/referee/notifications" element={<RefereeNotifications />} />
-        <Route path="/Spectator/Home" element={<SpectatorHome />} />
-        <Route path="/spectator/home" element={<SpectatorHome />} />
-        <Route path="/Spectator/Horses" element={<SpectatorHorses />} />
-        <Route path="/spectator/horses" element={<SpectatorHorses />} />
-        <Route path="/Spectator/Horses/:name" element={<SpectatorHorseDetail />} />
-        <Route path="/spectator/horses/:name" element={<SpectatorHorseDetail />} />
-        <Route path="/Spectator/MyBets" element={<SpectatorMyBets />} />
-        <Route path="/spectator/mybets" element={<SpectatorMyBets />} />
-        <Route path="/Spectator/Tournaments" element={<SpectatorTournament />} />
-        <Route path="/Spectator/Tournament" element={<SpectatorTournament />} />
-        <Route path="/Spectator/Tournaments/:name/:racename" element={<SpectatorRaceDetail />} />
-        <Route path="/Spectator/Tournament/:name/:racename" element={<SpectatorRaceDetail />} />
-        <Route path="/Spectator/Tournaments/:name" element={<SpectatorTournamentDetail />} />
-        <Route path="/Spectator/Tournament/:name" element={<SpectatorTournamentDetail />} />
-        <Route path="/spectator/tournaments" element={<SpectatorTournament />} />
-        <Route path="/spectator/tournament" element={<SpectatorTournament />} />
-        <Route path="/spectator/tournaments/:name/:racename" element={<SpectatorRaceDetail />} />
-        <Route path="/spectator/tournament/:name/:racename" element={<SpectatorRaceDetail />} />
-        <Route path="/spectator/tournaments/:name" element={<SpectatorTournamentDetail />} />
-        <Route path="/spectator/tournament/:name" element={<SpectatorTournamentDetail />} />
+        <Route path="/Jockey/Home" element={<ConnectedJockeyHome />} />
+        <Route path="/Jockey/Tournaments" element={<ConnectedJockeyTournaments />} />
+        <Route path="/Jockey/Tournaments/:name" element={<ConnectedJockeyTournamentDetail />} />
+        <Route path="/Jockey/Tournaments/:name/:race" element={<ConnectedJockeyRaceDetail />} />
+        <Route path="/Jockey/HorseLeaderBoard" element={<ConnectedJockeyHorseLeaderboard />} />
+        <Route path="/Jockey/Leaderboard" element={<ConnectedJockeyHorseLeaderboard />} />
+        <Route path="/Jockey/Horse/:name" element={<ConnectedJockeyHorseDetail />} />
+        <Route path="/Jockey/MyRace" element={<ConnectedJockeyMyRace />} />
+        <Route path="/jockey/tournament/:name/:race" element={<ConnectedJockeyRaceDetail />} />
+        <Route path="/Jockey/Profile/edit" element={<ConnectedJockeyProfilePage />} />
+        <Route path="/Jockey/Profile" element={<ConnectedJockeyProfileView />} />
+        <Route path="/Jockey/Invitation" element={<ConnectedJockeyInvitationPage />} />
+        <Route path="/Jockey/Invitations" element={<ConnectedJockeyInvitationPage />} />
+        <Route path="/Jockey/Invitation/:id" element={<ConnectedJockeyInvitationDetail />} />
+        <Route path="/Jockey/Invitation/Jockey/Invitation/:tournamentname" element={<ConnectedJockeyInvitationDetail />} />
+        <Route path="/Jockey/Notifications" element={<ConnectedJockeyNotifications />} />
+        <Route path="/jockey/notifications" element={<ConnectedJockeyNotifications />} />
+        <Route path="/Referee/Home" element={<ConnectedRefereeHome />} />
+        <Route path="/referee/home" element={<ConnectedRefereeHome />} />
+        <Route path="/Referee/Races" element={<ConnectedRefereeRaces />} />
+        <Route path="/Referee/MyRaces" element={<ConnectedRefereeRaces />} />
+        <Route path="/Referee/Races/:name" element={<ConnectedRefereeRaceDetail />} />
+        <Route path="/Referee/MyRaces/:name" element={<ConnectedRefereeRaceDetail />} />
+        <Route path="/referee/races" element={<ConnectedRefereeRaces />} />
+        <Route path="/referee/myraces" element={<ConnectedRefereeRaces />} />
+        <Route path="/referee/races/:name" element={<ConnectedRefereeRaceDetail />} />
+        <Route path="/referee/myraces/:name" element={<ConnectedRefereeRaceDetail />} />
+        <Route path="/Referee/Notifications" element={<ConnectedRefereeNotifications />} />
+        <Route path="/referee/notifications" element={<ConnectedRefereeNotifications />} />
+        <Route path="/Spectator/Home" element={<ConnectedSpectatorHome />} />
+        <Route path="/spectator/home" element={<ConnectedSpectatorHome />} />
+        <Route path="/Spectator/Horses" element={<ConnectedSpectatorHorses />} />
+        <Route path="/spectator/horses" element={<ConnectedSpectatorHorses />} />
+        <Route path="/Spectator/Horses/:name" element={<ConnectedSpectatorHorseDetail />} />
+        <Route path="/spectator/horses/:name" element={<ConnectedSpectatorHorseDetail />} />
+        <Route path="/Spectator/Profile" element={<ConnectedSpectatorProfile />} />
+        <Route path="/spectator/profile" element={<ConnectedSpectatorProfile />} />
+        <Route path="/Spectator/Tournaments" element={<ConnectedSpectatorTournament />} />
+        <Route path="/Spectator/Tournament" element={<ConnectedSpectatorTournament />} />
+        <Route path="/Spectator/Tournaments/:name/:racename" element={<ConnectedSpectatorRaceDetail />} />
+        <Route path="/Spectator/Tournament/:name/:racename" element={<ConnectedSpectatorRaceDetail />} />
+        <Route path="/Spectator/Tournaments/:name" element={<ConnectedSpectatorTournamentDetail />} />
+        <Route path="/Spectator/Tournament/:name" element={<ConnectedSpectatorTournamentDetail />} />
+        <Route path="/spectator/tournaments" element={<ConnectedSpectatorTournament />} />
+        <Route path="/spectator/tournament" element={<ConnectedSpectatorTournament />} />
+        <Route path="/spectator/tournaments/:name/:racename" element={<ConnectedSpectatorRaceDetail />} />
+        <Route path="/spectator/tournament/:name/:racename" element={<ConnectedSpectatorRaceDetail />} />
+        <Route path="/spectator/tournaments/:name" element={<ConnectedSpectatorTournamentDetail />} />
+        <Route path="/spectator/tournament/:name" element={<ConnectedSpectatorTournamentDetail />} />
         <Route path="/admin" element={<AdminHome />} />
         <Route path="/Admin/Profile" element={<AdminHome />} />
         <Route path="/Admin/User" element={<AdminUsers />} />
@@ -146,9 +143,9 @@ export default function App() {
         <Route path="/Admin/ManageTournaments/:name/:racename" element={<AdminManageTournamentDetail />} />
         <Route path="/Admin/ManageTournaments/:name" element={<AdminManageTournamentDetail />} />
         <Route path="/Admin/ConfirmRegistration" element={<AdminConfirmRegistration />} />
-        <Route path="/Admin/RaceIncidentLog" element={<AdminRaceIncidentLog />} />
-        <Route path="/Admin/RaceIncidentsLog" element={<AdminRaceIncidentLog />} />
-        <Route path="/Admin/RaceIncidentsLog/:name/:racename" element={<AdminRaceIncidentDetail />} />
+        <Route path="/Admin/RaceIncidentLog" element={<ConnectedAdminRaceIncidentLog />} />
+        <Route path="/Admin/RaceIncidentsLog" element={<ConnectedAdminRaceIncidentLog />} />
+        <Route path="/Admin/RaceIncidentsLog/:name/:racename" element={<ConnectedAdminRaceIncidentDetail />} />
 
       </Routes>
     </Router>

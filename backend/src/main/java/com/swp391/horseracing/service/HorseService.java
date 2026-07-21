@@ -21,6 +21,8 @@ public class HorseService {
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new RuntimeException("Error: Owner not found!"));
         horse.setOwner(owner);
+        horse.setStatus("ACTIVE");
+        horse.setCondition(normalizeCondition(horse.getCondition()));
         return horseRepository.save(horse);
     }
 
@@ -37,6 +39,7 @@ public class HorseService {
         horse.setWeightKg(horseDetails.getWeightKg());
         horse.setImageUrl(horseDetails.getImageUrl());
         horse.setColor(horseDetails.getColor());
+        horse.setCondition(normalizeCondition(horseDetails.getCondition()));
         
         return horseRepository.save(horse);
     }
@@ -48,5 +51,18 @@ public class HorseService {
     public Horse getHorseById(Long id) {
         return horseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Error: Horse not found!"));
+    }
+
+    public List<Horse> getAllHorses() {
+        return horseRepository.findAll();
+    }
+
+    private String normalizeCondition(String condition) {
+        if (condition == null || condition.isBlank()) return "PEAK";
+        String normalized = condition.trim().toUpperCase();
+        if (!List.of("PEAK", "GOOD", "RECOVERING").contains(normalized)) {
+            throw new RuntimeException("Error: Horse condition must be PEAK, GOOD, or RECOVERING!");
+        }
+        return normalized;
     }
 }

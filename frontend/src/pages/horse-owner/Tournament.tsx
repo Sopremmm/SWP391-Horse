@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/common/Header.tsx';
+import { getHorseOwnerTournamentListData } from '../../services/integration.ts';
 import './Tournament.css';
 
 type TournamentStatus = 'live' | 'ongoing' | 'registration-open' | 'upcoming' | 'completed' | string;
@@ -101,26 +102,6 @@ const normalizeTournamentData = (raw?: RawTournamentPageData | null): Tournament
   sortOptions: raw?.sortOptions?.length ? raw.sortOptions : EMPTY_TOURNAMENT_PAGE_DATA.sortOptions,
 });
 
-const readTournamentsFromLocalStorage = (): RawTournamentPageData | null => {
-  try {
-    const raw = window.localStorage.getItem('horse_owner_tournaments_data');
-    return raw ? (JSON.parse(raw) as RawTournamentPageData) : null;
-  } catch {
-    return null;
-  }
-};
-
-const readTournamentsFromApi = async (): Promise<RawTournamentPageData | null> => {
-  try {
-    const endpoint = process.env.REACT_APP_HORSE_OWNER_TOURNAMENTS_API || '/api/horse-owner/tournaments';
-    const response = await fetch(endpoint, { method: 'GET' });
-    if (!response.ok) return null;
-    return (await response.json()) as RawTournamentPageData;
-  } catch {
-    return null;
-  }
-};
-
 const compareBySort = (sortValue: string) => (a: ScheduleTournament, b: ScheduleTournament) => {
   if (sortValue === 'title') return a.title.localeCompare(b.title);
   if (sortValue === 'prizePool') return String(b.prizePool || '').localeCompare(String(a.prizePool || ''));
@@ -128,9 +109,7 @@ const compareBySort = (sortValue: string) => (a: ScheduleTournament, b: Schedule
 };
 
 export default function Tournament() {
-  const [pageData, setPageData] = React.useState<TournamentPageData>(() =>
-    normalizeTournamentData(readTournamentsFromLocalStorage()),
-  );
+  const [pageData, setPageData] = React.useState<TournamentPageData>(EMPTY_TOURNAMENT_PAGE_DATA);
   const [query, setQuery] = React.useState('');
   const [sortValue, setSortValue] = React.useState(EMPTY_TOURNAMENT_PAGE_DATA.sortOptions[0].value);
   const [visibleCount, setVisibleCount] = React.useState(6);
@@ -139,10 +118,9 @@ export default function Tournament() {
     let cancelled = false;
 
     const load = async () => {
-      const apiData = await readTournamentsFromApi();
-      const localData = readTournamentsFromLocalStorage();
+      const apiData = await getHorseOwnerTournamentListData().catch(() => null);
       if (!cancelled) {
-        const data = normalizeTournamentData(apiData ?? localData);
+        const data = normalizeTournamentData(apiData);
         setPageData(data);
         setSortValue(data.sortOptions[0]?.value || 'date');
       }
@@ -284,7 +262,7 @@ export default function Tournament() {
             </div>
           ) : (
             <div className="owner-tournaments__empty">
-              No tournaments to display yet. Connect your endpoint or set `horse_owner_tournaments_data` in localStorage.
+              No tournaments to display yet.
             </div>
           )}
 

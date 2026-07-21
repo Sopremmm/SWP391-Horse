@@ -1,11 +1,17 @@
 package com.swp391.horseracing.controller;
 
 import com.swp391.horseracing.entity.Race;
+import com.swp391.horseracing.dto.request.SaveTournamentBracketRequest;
+import com.swp391.horseracing.dto.response.PrizeResponse;
+import com.swp391.horseracing.dto.response.PublicRaceResultsResponse;
+import com.swp391.horseracing.service.PrizeService;
+import com.swp391.horseracing.service.RaceResultQueryService;
 import com.swp391.horseracing.service.RaceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -15,10 +21,24 @@ public class RaceController {
     @Autowired
     private RaceService raceService;
 
+    @Autowired
+    private RaceResultQueryService raceResultQueryService;
+
+    @Autowired
+    private PrizeService prizeService;
+
     @PostMapping("/tournament/{tournamentId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Race> createRace(@PathVariable Long tournamentId, @RequestBody Race race) {
         return ResponseEntity.ok(raceService.createRace(tournamentId, race));
+    }
+
+    @PutMapping("/tournament/{tournamentId}/bracket")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Race>> saveTournamentBracket(
+            @PathVariable Long tournamentId,
+            @Valid @RequestBody SaveTournamentBracketRequest request) {
+        return ResponseEntity.ok(raceService.saveTournamentBracket(tournamentId, request));
     }
 
     @PatchMapping("/{id}/referee")
@@ -35,5 +55,15 @@ public class RaceController {
     @GetMapping("/{id}")
     public ResponseEntity<Race> getRaceById(@PathVariable Long id) {
         return ResponseEntity.ok(raceService.getRaceById(id));
+    }
+
+    @GetMapping("/{id}/results")
+    public ResponseEntity<PublicRaceResultsResponse> getRaceResults(@PathVariable Long id) {
+        return ResponseEntity.ok(raceResultQueryService.getPublicRaceResults(id));
+    }
+
+    @GetMapping("/{id}/prizes")
+    public ResponseEntity<List<PrizeResponse>> getRacePrizes(@PathVariable Long id) {
+        return ResponseEntity.ok(prizeService.getPrizesByRace(id));
     }
 }

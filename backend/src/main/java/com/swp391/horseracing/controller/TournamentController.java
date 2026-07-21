@@ -1,7 +1,9 @@
 package com.swp391.horseracing.controller;
 
 import com.swp391.horseracing.entity.Tournament;
+import com.swp391.horseracing.dto.response.LeaderboardRowResponse;
 import com.swp391.horseracing.security.user.UserDetailsImpl;
+import com.swp391.horseracing.service.LeaderboardService;
 import com.swp391.horseracing.service.TournamentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,9 @@ public class TournamentController {
     @Autowired
     private TournamentService tournamentService;
 
+    @Autowired
+    private LeaderboardService leaderboardService;
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Tournament> createTournament(@RequestBody Tournament tournament, @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -31,6 +36,11 @@ public class TournamentController {
     @GetMapping("/{id}")
     public ResponseEntity<Tournament> getTournamentById(@PathVariable Long id) {
         return ResponseEntity.ok(tournamentService.getTournamentById(id));
+    }
+
+    @GetMapping("/{id}/leaderboard")
+    public ResponseEntity<List<LeaderboardRowResponse>> getLeaderboard(@PathVariable Long id) {
+        return ResponseEntity.ok(leaderboardService.getTournamentLeaderboard(id));
     }
 
     @PatchMapping("/{id}/status")

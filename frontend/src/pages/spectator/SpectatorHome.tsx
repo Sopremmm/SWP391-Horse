@@ -2,41 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { SpectatorFooter, SpectatorHeader } from '../../components/spectator/index.ts';
 import HomeBanner from '../../assets/images/HomeBanner.png';
-import horse1 from '../../assets/images/horse1.webp';
-import horse2 from '../../assets/images/horse2.jpg';
-import horse3 from '../../assets/images/horse3.jpg';
-import horse4 from '../../assets/images/horse4.jpg';
-import horse5 from '../../assets/images/horse5.jpg';
 import './SpectatorHome.css';
 
-const upcomingRaces = [
-  { date: 'OCT 24, 2024', title: 'Longchamp Grand Prix', location: 'Paris, France' },
-  { date: 'OCT 28, 2024', title: 'The Kentucky Invitation', location: 'Louisville, USA' },
-  { date: 'NOV 02, 2024', title: 'Sandown Classic', location: 'Melbourne, AUS' },
-];
-
-const horseLeaders = [
-  { rank: '01', name: 'Midnight Thunder', ratio: '84% WIN RATIO', image: horse1 },
-  { rank: '02', name: 'Star Chaser', ratio: '79% WIN RATIO', image: horse2 },
-  { rank: '03', name: 'Royal Flush', ratio: '72% WIN RATIO', image: horse3 },
-  { rank: '04', name: 'Morning Glory', ratio: '68% WIN RATIO', image: horse4 },
-  { rank: '05', name: 'Empire Gold', ratio: '65% WIN RATIO', image: horse5 },
-];
-
 const horsePath = (horseName: string) => `/Spectator/Horses/${horseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`;
-
-const recentBets = [
-  { race: 'Kensington Sprint', horse: 'Midnight Thunder', amount: '$450.00', status: 'Won' },
-  { race: 'The Heritage Oaks', horse: 'Star Chaser', amount: '$1,200.00', status: 'Pending' },
-  { race: 'Sunset Derby', horse: 'Royal Flush', amount: '$200.00', status: 'Lost' },
-  { race: 'Grand Valley Stakes', horse: 'Morning Glory', amount: '$750.00', status: 'Won' },
-];
-
-const stats = [
-  { label: 'Total bets placed', value: '48' },
-  { label: 'Win rate', value: '64%' },
-  { label: 'Total winnings', value: '$12,450' },
-];
 
 const ArrowIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -55,23 +23,25 @@ const CalendarIcon = () => (
   </span>
 );
 
-const StatusBadge: React.FC<{ status: string }> = ({ status }) => (
-  <span className={`spectator-bets__status spectator-bets__status--${status.toLowerCase()}`}>
-    <span />
-    {status}
-  </span>
-);
-
 type SpectatorHomeProps = {
-  upcomingRaces?: typeof upcomingRaces;
-  horseLeaders?: typeof horseLeaders;
-  recentBets?: typeof recentBets;
-  stats?: typeof stats;
+  displayName?: string;
+  introText?: string;
+  upcomingRaces?: Array<{ date: string; title: string; location: string }>;
+  horseLeaders?: Array<{ rank: string; name: string; ratio: string; image?: string }>;
+  stats?: Array<{ label: string; value: string }>;
   loading?: boolean;
   error?: string;
 };
 
-export const SpectatorHome: React.FC<SpectatorHomeProps> = ({ upcomingRaces = [], horseLeaders = [], recentBets = [], stats = [], loading = false, error }) => {
+export const SpectatorHome: React.FC<SpectatorHomeProps> = ({
+  displayName,
+  introText,
+  upcomingRaces = [],
+  horseLeaders = [],
+  stats = [],
+  loading = false,
+  error,
+}) => {
   return (
     <div className="spectator-home">
       <SpectatorHeader />
@@ -79,10 +49,9 @@ export const SpectatorHome: React.FC<SpectatorHomeProps> = ({ upcomingRaces = []
       <main className="spectator-home__main">
         <section className="spectator-welcome">
           <p className="spectator-eyebrow">Spectator Dashboard</p>
-          <h1>Welcome back, Arthur.</h1>
+          <h1>{displayName ? `Welcome back, ${displayName}.` : 'Welcome back.'}</h1>
           <p>
-            Your betting portfolio is currently outperforming the market by 12%. The Royal Heritage Cup is live, do not
-            miss the chance to capitalize on the morning's favorable odds.
+            {introText || 'Follow tournaments, discover top horses, and keep up with the latest race schedule.'}
           </p>
         </section>
 
@@ -162,44 +131,9 @@ export const SpectatorHome: React.FC<SpectatorHomeProps> = ({ upcomingRaces = []
               View Full Rankings
             </Link>
           </article>
-
-          <article className="spectator-panel spectator-bets">
-            <div className="spectator-panel__header">
-              <h2>Recent Bets</h2>
-              <Link to="/Spectator/MyBets">History</Link>
-            </div>
-
-            <div className="spectator-bets__table" role="table" aria-label="Recent bets">
-              <div className="spectator-bets__row spectator-bets__row--head" role="row">
-                <span>Race Name</span>
-                <span>Horse</span>
-                <span>Amount</span>
-                <span>Status</span>
-                <span>Action</span>
-              </div>
-              {recentBets.map((bet) => (
-                <div className="spectator-bets__row" role="row" key={bet.race}>
-                  <strong>{bet.race}</strong>
-                  <Link to={horsePath(bet.horse)} className="spectator-horse-link spectator-horse-link--table">
-                    {bet.horse}
-                  </Link>
-                  <strong className="spectator-bets__amount">{bet.amount}</strong>
-                  <StatusBadge status={bet.status} />
-                  <button aria-label={`Actions for ${bet.race}`} className="spectator-bets__menu">
-                    <svg width="4" height="18" viewBox="0 0 4 18" fill="none" aria-hidden="true">
-                      <path
-                        d="M2 4C2.55 4 3.02 3.8 3.41 3.41C3.8 3.02 4 2.55 4 2C4 1.45 3.8 0.98 3.41 0.59C3.02 0.2 2.55 0 2 0C1.45 0 0.98 0.2 0.59 0.59C0.2 0.98 0 1.45 0 2C0 2.55 0.2 3.02 0.59 3.41C0.98 3.8 1.45 4 2 4ZM2 11C2.55 11 3.02 10.8 3.41 10.41C3.8 10.02 4 9.55 4 9C4 8.45 3.8 7.98 3.41 7.59C3.02 7.2 2.55 7 2 7C1.45 7 0.98 7.2 0.59 7.59C0.2 7.98 0 8.45 0 9C0 9.55 0.2 10.02 0.59 10.41C0.98 10.8 1.45 11 2 11ZM2 18C2.55 18 3.02 17.8 3.41 17.41C3.8 17.02 4 16.55 4 16C4 15.45 3.8 14.98 3.41 14.59C3.02 14.2 2.55 14 2 14C1.45 14 0.98 14.2 0.59 14.59C0.2 14.98 0 15.45 0 16C0 16.55 0.2 17.02 0.59 17.41C0.98 17.8 1.45 18 2 18Z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              ))}
-            </div>
-          </article>
         </section>
 
-        <section className="spectator-stats" aria-label="Betting statistics">
+        <section className="spectator-stats" aria-label="Spectator statistics">
           {stats.map((stat) => (
             <div key={stat.label} className="spectator-stats__item">
               <span>{stat.label}</span>
