@@ -314,6 +314,7 @@ public class AdminRaceControlService {
         }
         raceEntryRepository.flush();
 
+        Set<Long> seenJockeyIds = new HashSet<>();
         for (AdminConfigureRaceGatesRequest.GateAssignment assignment : assignments) {
             RaceEntry entry = assignment.getEntryId() != null ? tournamentEntries.get(assignment.getEntryId()) : null;
             if (entry == null && assignment.getHorseId() != null) {
@@ -330,6 +331,13 @@ public class AdminRaceControlService {
             }
             if (entry == null) {
                 throw new RuntimeException("Error: Unable to resolve horse entry for gate assignment!");
+            }
+            // Bug 4 fix: Prevent the same jockey from being assigned to multiple gates in one race
+            if (entry.getJockey() != null && entry.getJockey().getId() != null) {
+                if (!seenJockeyIds.add(entry.getJockey().getId())) {
+                    String jockeyName = entry.getJockey().getFullName() != null ? entry.getJockey().getFullName() : "#" + entry.getJockey().getId();
+                    throw new RuntimeException("Error: Jockey \"" + jockeyName + "\" is already assigned to another gate in this race!");
+                }
             }
             entry.setRace(race);
             entry.setGateNumber(assignment.getGateNumber());

@@ -58,6 +58,10 @@ public class JockeyInvitationService {
         if (horseEntry == null || !"APPROVED".equals(horseEntry.getStatus())) {
             throw new RuntimeException("Error: Horse must be approved for this tournament before inviting a jockey!");
         }
+        // Bug 5 fix: Block invitation if this horse already has a jockey assigned
+        if (horseEntry.getJockey() != null && horseEntry.getJockey().getId() != null) {
+            throw new RuntimeException("Error: This horse already has a jockey assigned for this tournament!");
+        }
 
         JockeyInvitation invitation = invitationRepository
                 .findByHorseIdAndJockeyIdAndTournamentId(horseId, jockeyId, tournamentId)
@@ -117,7 +121,11 @@ public class JockeyInvitationService {
             if (entry == null || (!"PENDING".equals(entry.getStatus()) && !"APPROVED".equals(entry.getStatus()) && !"CONFIRMED".equals(entry.getStatus()))) {
                 throw new RuntimeException("Error: Valid race entry not found for this horse!");
             }
-            
+            // Bug 5 fix: Block accept if another jockey already claimed this horse
+            if (entry.getJockey() != null && entry.getJockey().getId() != null
+                    && !entry.getJockey().getId().equals(invitation.getJockey().getId())) {
+                throw new RuntimeException("Error: Another jockey has already been assigned to this horse!");
+            }
             entry.setJockey(invitation.getJockey());
             raceEntryRepository.save(entry);
         }

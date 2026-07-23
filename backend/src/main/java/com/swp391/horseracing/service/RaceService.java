@@ -229,6 +229,12 @@ public class RaceService {
     public List<Race> getPublishedRacesByTournament(Long tournamentId) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new RuntimeException("Error: Tournament not found!"));
+        // If the tournament is OPEN or beyond (active, completed), all races are visible
+        String status = tournament.getStatus();
+        if (status != null && (status.equalsIgnoreCase("OPEN") || status.equalsIgnoreCase("ONGOING")
+                || status.equalsIgnoreCase("COMPLETED") || status.equalsIgnoreCase("FINISHED"))) {
+            return raceRepository.findByTournamentId(tournamentId);
+        }
         if (!Boolean.TRUE.equals(tournament.getBracketPublished())) {
             return List.of();
         }
@@ -242,6 +248,14 @@ public class RaceService {
 
     public Race getPublishedRaceById(Long id) {
         Race race = getRaceById(id);
+        // If the tournament is OPEN or beyond, the race is visible
+        if (race.getTournament() != null) {
+            String status = race.getTournament().getStatus();
+            if (status != null && (status.equalsIgnoreCase("OPEN") || status.equalsIgnoreCase("ONGOING")
+                    || status.equalsIgnoreCase("COMPLETED") || status.equalsIgnoreCase("FINISHED"))) {
+                return race;
+            }
+        }
         if (!Boolean.TRUE.equals(race.getPublished())) {
             throw new RuntimeException("Error: Race is not published!");
         }

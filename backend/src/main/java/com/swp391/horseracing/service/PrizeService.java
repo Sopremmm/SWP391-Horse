@@ -35,6 +35,13 @@ public class PrizeService {
         Race race = raceRepository.findById(raceId)
                 .orElseThrow(() -> new RuntimeException("Error: Race not found!"));
 
+        // Only award tournament prize pool for the Grand Final (round 3+).
+        // Qualifying and Semi-final races do not distribute prizes.
+        int round = race.getRoundNumber() != null ? race.getRoundNumber() : 1;
+        if (round < 3) {
+            return getPrizesByRace(raceId);
+        }
+
         BigDecimal prizePool = race.getTournament() != null && race.getTournament().getPrizePool() != null
                 ? race.getTournament().getPrizePool()
                 : BigDecimal.ZERO;

@@ -52,7 +52,12 @@ public class RaceEntryService {
         if (raceEntryRepository.findByTournamentIdAndHorseId(tournamentId, horseId) != null) {
             throw new RuntimeException("Error: This horse is already registered for the tournament!");
         }
-        int registeredCount = raceEntryRepository.findByTournamentId(tournamentId).size();
+        long registeredCount = raceEntryRepository.findByTournamentId(tournamentId).stream()
+                .filter(e -> {
+                    String st = e.getStatus();
+                    return st != null && !st.equalsIgnoreCase("REJECTED") && !st.equalsIgnoreCase("WITHDRAWN");
+                })
+                .count();
         if (tournament.getMaxHorses() != null && registeredCount >= tournament.getMaxHorses()) {
             throw new RuntimeException("Error: Tournament has reached its horse limit!");
         }

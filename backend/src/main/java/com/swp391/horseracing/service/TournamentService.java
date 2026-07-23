@@ -3,11 +3,17 @@ package com.swp391.horseracing.service;
 import com.swp391.horseracing.entity.Race;
 import com.swp391.horseracing.entity.Tournament;
 import com.swp391.horseracing.entity.User;
+import com.swp391.horseracing.repository.JockeyInvitationRepository;
+import com.swp391.horseracing.repository.PrizeRepository;
+import com.swp391.horseracing.repository.RaceEntryRepository;
 import com.swp391.horseracing.repository.RaceRepository;
+import com.swp391.horseracing.repository.RaceResultRepository;
+import com.swp391.horseracing.repository.RefereeReportRepository;
 import com.swp391.horseracing.repository.TournamentRepository;
 import com.swp391.horseracing.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,6 +25,24 @@ public class TournamentService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RaceRepository raceRepository;
+
+    @Autowired
+    private RaceEntryRepository raceEntryRepository;
+
+    @Autowired
+    private RaceResultRepository raceResultRepository;
+
+    @Autowired
+    private RefereeReportRepository refereeReportRepository;
+
+    @Autowired
+    private PrizeRepository prizeRepository;
+
+    @Autowired
+    private JockeyInvitationRepository jockeyInvitationRepository;
 
     public Tournament createTournament(Tournament tournament, Long adminId) {
         if (tournament.getStartDate() == null || tournament.getEndDate() == null) {
@@ -51,15 +75,33 @@ public class TournamentService {
                 .orElseThrow(() -> new RuntimeException("Error: Tournament not found!"));
     }
 
+    @Transactional
     public void deleteTournament(Long id) {
-        if (!tournamentRepository.existsById(id)) {
-            throw new RuntimeException("Error: Tournament not found!");
-        }
-        tournamentRepository.deleteById(id);
-    }
+        Tournament tournament = tournamentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Error: Tournament not found!"));
 
-    @Autowired
-    private com.swp391.horseracing.repository.RaceRepository raceRepository;
+        // Delete jockey invitations for this tournament
+        jockeyInvitationRepository.findAll().stream()
+                .filter(inv -> inv.getTournament() != null && id.equals(inv.getTournament().getId()))
+                .forEach(jockeyInvitationRepository::delete);
+
+        // Delete race-level children (results, reports, prizes) then races
+        List<Race> races = raceRepository.findByTournamentId(id);
+        for (Race race : races) {
+            raceResultRepository.findByRaceId(race.getId()).forEach(raceResultRepository::delete);
+            refereeReportRepository.findByRaceId(race.getId()).ifPresent(refereeReportRepository::delete);
+            prizeRepository.findByRaceIdOrderByFinishRankAsc(race.getId()).forEach(prizeRepository::delete);
+        }
+
+        // Detach and delete race entries
+        raceEntryRepository.findByTournamentId(id).forEach(raceEntryRepository::delete);
+
+        // Delete races
+        raceRepository.deleteAll(races);
+
+        // Finally delete tournament
+        tournamentRepository.delete(tournament);
+    }
 
     public Tournament updateTournament(Long id, Tournament request) {
         Tournament tournament = getTournamentById(id);
