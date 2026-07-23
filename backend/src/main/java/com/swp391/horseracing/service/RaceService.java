@@ -2,9 +2,14 @@ package com.swp391.horseracing.service;
 
 import com.swp391.horseracing.dto.request.SaveTournamentBracketRequest;
 import com.swp391.horseracing.entity.Race;
+import com.swp391.horseracing.entity.RaceEntry;
 import com.swp391.horseracing.entity.Tournament;
 import com.swp391.horseracing.entity.User;
 import com.swp391.horseracing.repository.RaceRepository;
+import com.swp391.horseracing.repository.RaceEntryRepository;
+import com.swp391.horseracing.repository.PrizeRepository;
+import com.swp391.horseracing.repository.RaceResultRepository;
+import com.swp391.horseracing.repository.RefereeReportRepository;
 import com.swp391.horseracing.repository.TournamentRepository;
 import com.swp391.horseracing.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +29,18 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 public class RaceService {
     @Autowired
     private RaceRepository raceRepository;
+
+    @Autowired
+    private RaceEntryRepository raceEntryRepository;
+
+    @Autowired
+    private RaceResultRepository raceResultRepository;
+
+    @Autowired
+    private RefereeReportRepository refereeReportRepository;
+
+    @Autowired
+    private PrizeRepository prizeRepository;
 
     @Autowired
     private TournamentRepository tournamentRepository;
@@ -60,10 +77,6 @@ public class RaceService {
         List<Race> semifinals = racesInRound(existing, 2);
         List<Race> finals = existing.stream().filter(race -> safeRound(race) >= 3).toList();
 
-        if (qualifyingCount < qualifiers.size() || semifinalCount < semifinals.size()) {
-            throw new ResponseStatusException(BAD_REQUEST,
-                    "Bracket counts cannot be reduced because existing races may contain assignments or results.");
-        }
         if (finals.size() > 1) {
             throw new ResponseStatusException(BAD_REQUEST,
                     "Tournament already contains more than one final race.");
@@ -72,6 +85,26 @@ public class RaceService {
         LocalDate startDate = tournament.getStartDate() != null ? tournament.getStartDate() : LocalDate.now();
         int maxParticipants = tournament.getMaxHorses() != null && tournament.getMaxHorses() > 0
                 ? tournament.getMaxHorses() : 12;
+
+        boolean structureChanged = qualifyingCount != qualifiers.size() || semifinalCount != semifinals.size();
+        if (structureChanged) {
+            assertBracketEditable(existing);
+            detachTournamentEntries(tournamentId);
+
+            List<Race> racesToRemove = new ArrayList<>();
+            if (qualifyingCount < qualifiers.size()) {
+                racesToRemove.addAll(qualifiers.subList(qualifyingCount, qualifiers.size()));
+                qualifiers = new ArrayList<>(qualifiers.subList(0, qualifyingCount));
+            }
+            if (semifinalCount < semifinals.size()) {
+                racesToRemove.addAll(semifinals.subList(semifinalCount, semifinals.size()));
+                semifinals = new ArrayList<>(semifinals.subList(0, semifinalCount));
+            }
+            if (!racesToRemove.isEmpty()) {
+                raceRepository.deleteAll(racesToRemove);
+                raceRepository.flush();
+            }
+        }
 
         List<Race> newRaces = new ArrayList<>();
         for (int position = qualifiers.size() + 1; position <= qualifyingCount; position++) {
@@ -91,7 +124,47 @@ public class RaceService {
         }
 
         raceRepository.saveAll(newRaces);
+        raceRepository.flush();
+
+        // Gate allocation is intentionally a separate admin action. Automatically assigning
+        // pending entries here previously bypassed the entry-approval workflow.
         return raceRepository.findByTournamentIdOrderByRoundNumberAscRaceDateAscIdAsc(tournamentId);
+    }
+
+    @Transactional
+    public void deleteTournamentBracket(Long tournamentId) {
+        if (!tournamentRepository.existsById(tournamentId)) {
+            throw new ResponseStatusException(BAD_REQUEST, "Tournament not found.");
+        }
+        List<Race> races = raceRepository
+                .findByTournamentIdOrderByRoundNumberAscRaceDateAscIdAsc(tournamentId);
+        assertBracketEditable(races);
+        detachTournamentEntries(tournamentId);
+        raceRepository.deleteAll(races);
+        raceRepository.flush();
+    }
+
+    private void assertBracketEditable(List<Race> races) {
+        for (Race race : races) {
+            boolean scheduled = race.getStatus() == null || race.getStatus().equalsIgnoreCase("SCHEDULED");
+            boolean hasOfficialData = raceResultRepository.existsByRaceId(race.getId())
+                    || refereeReportRepository.existsByRaceId(race.getId())
+                    || prizeRepository.existsByRaceId(race.getId());
+            if (!scheduled || hasOfficialData) {
+                throw new ResponseStatusException(BAD_REQUEST,
+                        "Bracket cannot be changed after a race has started or official results have been recorded.");
+            }
+        }
+    }
+
+    private void detachTournamentEntries(Long tournamentId) {
+        List<RaceEntry> entries = raceEntryRepository.findByTournamentId(tournamentId);
+        for (RaceEntry entry : entries) {
+            entry.setRace(null);
+            entry.setGateNumber(null);
+        }
+        raceEntryRepository.saveAll(entries);
+        raceEntryRepository.flush();
     }
 
     private static List<Race> racesInRound(List<Race> races, int round) {
@@ -131,6 +204,7 @@ public class RaceService {
             throw new RuntimeException("Error: User is not a referee!");
         }
 
+        User previousReferee = race.getReferee();
         race.setReferee(referee);
         Race saved = raceRepository.save(race);
         notificationService.sendNotification(
@@ -141,6 +215,10 @@ public class RaceService {
                 saved.getId(),
                 "RACE"
         );
+        if (previousReferee != null && previousReferee.getId() != null && !previousReferee.getId().equals(referee.getId())) {
+            notificationService.sendNotification(previousReferee.getId(), "Race Assignment Changed",
+                    "You are no longer assigned to race \"" + saved.getName() + "\".", "SYSTEM", saved.getId(), "RACE");
+        }
         return saved;
     }
 
@@ -148,8 +226,39 @@ public class RaceService {
         return raceRepository.findByTournamentId(tournamentId);
     }
 
+    public List<Race> getPublishedRacesByTournament(Long tournamentId) {
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new RuntimeException("Error: Tournament not found!"));
+        // If the tournament is OPEN or beyond (active, completed), all races are visible
+        String status = tournament.getStatus();
+        if (status != null && (status.equalsIgnoreCase("OPEN") || status.equalsIgnoreCase("ONGOING")
+                || status.equalsIgnoreCase("COMPLETED") || status.equalsIgnoreCase("FINISHED"))) {
+            return raceRepository.findByTournamentId(tournamentId);
+        }
+        if (!Boolean.TRUE.equals(tournament.getBracketPublished())) {
+            return List.of();
+        }
+        return raceRepository.findByTournamentIdAndPublishedTrue(tournamentId);
+    }
+
     public Race getRaceById(Long id) {
         return raceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Error: Race not found!"));
+    }
+
+    public Race getPublishedRaceById(Long id) {
+        Race race = getRaceById(id);
+        // If the tournament is OPEN or beyond, the race is visible
+        if (race.getTournament() != null) {
+            String status = race.getTournament().getStatus();
+            if (status != null && (status.equalsIgnoreCase("OPEN") || status.equalsIgnoreCase("ONGOING")
+                    || status.equalsIgnoreCase("COMPLETED") || status.equalsIgnoreCase("FINISHED"))) {
+                return race;
+            }
+        }
+        if (!Boolean.TRUE.equals(race.getPublished())) {
+            throw new RuntimeException("Error: Race is not published!");
+        }
+        return race;
     }
 }

@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +49,62 @@ class BackendE2EIntegrationTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Test
+    void updateTournament_shouldKeepRegistrationWindowAndUpdateTheExistingRecord() throws Exception {
+        String adminEmail = "tournament-editor@test.com";
+        String password = "secret123";
+        seedStaffUser(adminEmail, password, "Tournament Editor", "998", Role.ADMIN);
+        AuthSession admin = signin(adminEmail, password);
+
+        LocalDate registrationStart = LocalDate.now().plusDays(1);
+        LocalDate registrationEnd = LocalDate.now().plusDays(5);
+        LocalDate tournamentStart = LocalDate.now().plusDays(10);
+        Map<String, Object> createBody = new HashMap<>();
+        createBody.put("name", "Editable Registration Cup");
+        createBody.put("location", "HCMC");
+        createBody.put("startDate", tournamentStart.toString());
+        createBody.put("endDate", tournamentStart.plusDays(2).toString());
+        createBody.put("registrationStartDate", registrationStart.toString());
+        createBody.put("registrationEndDate", registrationEnd.toString());
+
+        MvcResult created = mockMvc.perform(post("/api/tournaments")
+                        .header("Authorization", bearer(admin.token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isOk())
+                .andReturn();
+        long tournamentId = objectMapper.readTree(created.getResponse().getContentAsString()).get("id").asLong();
+
+        LocalDate updatedRegistrationStart = LocalDate.now();
+        LocalDate updatedRegistrationEnd = LocalDate.now().plusDays(6);
+        Map<String, Object> updateBody = new HashMap<>(createBody);
+        updateBody.put("name", "Edited Registration Cup");
+        updateBody.put("registrationStartDate", updatedRegistrationStart.toString());
+        updateBody.put("registrationEndDate", updatedRegistrationEnd.toString());
+
+        mockMvc.perform(put("/api/tournaments/" + tournamentId)
+                        .header("Authorization", bearer(admin.token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateBody)))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    JsonNode json = objectMapper.readTree(result.getResponse().getContentAsString());
+                    assertThat(json.get("id").asLong()).isEqualTo(tournamentId);
+                    assertThat(json.get("registrationStartDate").asText()).isEqualTo(updatedRegistrationStart.toString());
+                    assertThat(json.get("registrationEndDate").asText()).isEqualTo(updatedRegistrationEnd.toString());
+                    assertThat(json.get("status").asText()).isEqualTo("OPEN");
+                });
+
+        MvcResult fetched = mockMvc.perform(get("/api/tournaments/" + tournamentId)
+                        .header("Authorization", bearer(admin.token)))
+                .andExpect(status().isOk())
+                .andReturn();
+        String response = fetched.getResponse().getContentAsString();
+        assertThat(response).contains("Edited Registration Cup");
+        assertThat(response).contains(updatedRegistrationStart.toString());
+        assertThat(response).contains(updatedRegistrationEnd.toString());
+    }
 
     @Test
     void fullFlow_shouldWork_and_enforceOwnershipAndAuthz() throws Exception {
@@ -86,6 +143,7 @@ class BackendE2EIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
         assertThat(myHorses.getResponse().getContentAsString()).contains("\"id\":" + horseId);
+        assertThat(myHorses.getResponse().getContentAsString()).contains("\"ageType\":\"Colt\"");
 
         MvcResult horseGet = mockMvc.perform(get("/api/horses/" + horseId)
                         .header("Authorization", bearer(owner1.token)))
@@ -115,12 +173,18 @@ class BackendE2EIntegrationTest {
                         .header("Authorization", bearer(owner1.token)))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertThat(racesByTournament.getResponse().getContentAsString()).contains("\"id\":" + race1Id);
+        assertThat(racesByTournament.getResponse().getContentAsString()).doesNotContain("\"id\":" + race1Id);
 
         mockMvc.perform(patch("/api/races/" + race1Id + "/referee")
                         .header("Authorization", bearer(admin.token))
                         .param("refereeId", referee.userId.toString()))
                 .andExpect(status().isOk());
+
+        MvcResult assignedRaces = mockMvc.perform(get("/api/referee/races")
+                        .header("Authorization", bearer(referee.token)))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertThat(assignedRaces.getResponse().getContentAsString()).contains("\"id\":" + race1Id);
 
         mockMvc.perform(patch("/api/tournaments/" + tournamentId + "/status")
                         .header("Authorization", bearer(admin.token))
@@ -129,6 +193,18 @@ class BackendE2EIntegrationTest {
 
         long entryId = registerHorse(owner1.token, horseId, tournamentId);
         approveEntry(admin.token, entryId, race1Id);
+        mockMvc.perform(put("/api/admin/races/" + race1Id + "/gates")
+                        .header("Authorization", bearer(admin.token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("gateCount", 2,
+                                "assignments", List.of(Map.of("entryId", entryId, "gateNumber", 1))))))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/admin/races/" + race1Id + "/publish")
+                        .header("Authorization", bearer(admin.token)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/tournaments/" + tournamentId + "/bracket/publish")
+                        .header("Authorization", bearer(admin.token)))
+                .andExpect(status().isOk());
         MvcResult entriesByTournament = mockMvc.perform(get("/api/entries/tournament/" + tournamentId)
                         .header("Authorization", bearer(owner1.token)))
                 .andExpect(status().isOk())
@@ -226,6 +302,7 @@ class BackendE2EIntegrationTest {
         body.put("name", name);
         body.put("breed", "Thoroughbred");
         body.put("age", 3);
+        body.put("ageType", "Colt");
 
         MvcResult result = mockMvc.perform(post("/api/horses")
                         .header("Authorization", bearer(token))
@@ -244,6 +321,7 @@ class BackendE2EIntegrationTest {
         body.put("weightKg", 55.5);
         body.put("experienceYears", 2);
         body.put("bio", "Test profile");
+        body.put("active", true);
 
         mockMvc.perform(post("/api/jockeys/profile")
                         .header("Authorization", bearer(token))
@@ -301,8 +379,7 @@ class BackendE2EIntegrationTest {
 
     private void approveEntry(String token, long entryId, long raceId) throws Exception {
         mockMvc.perform(patch("/api/entries/" + entryId + "/approve")
-                        .header("Authorization", bearer(token))
-                        .param("raceId", String.valueOf(raceId)))
+                        .header("Authorization", bearer(token)))
                 .andExpect(status().isOk());
     }
 

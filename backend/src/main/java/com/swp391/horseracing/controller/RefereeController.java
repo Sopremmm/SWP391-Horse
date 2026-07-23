@@ -1,5 +1,6 @@
 package com.swp391.horseracing.controller;
 
+import com.swp391.horseracing.entity.Race;
 import com.swp391.horseracing.entity.RaceEntry;
 import com.swp391.horseracing.entity.RaceResult;
 import com.swp391.horseracing.entity.RefereeReport;
@@ -22,39 +23,45 @@ public class RefereeController {
     @Autowired
     private RefereeService refereeService;
 
+    @GetMapping
+    @PreAuthorize("hasRole('REFEREE')")
+    public ResponseEntity<List<Race>> getAssignedRaces(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(refereeService.getAssignedRaces(userDetails.getId()));
+    }
+
     @GetMapping("/{raceId}/entries")
     @PreAuthorize("hasRole('REFEREE')")
-    public ResponseEntity<List<RaceEntry>> getEntries(@PathVariable Long raceId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<RaceEntry>> getEntries(@PathVariable("raceId") Long raceId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(refereeService.getRaceEntriesForReferee(raceId, userDetails.getId()));
     }
 
     @PatchMapping("/{raceId}/checkin")
     @PreAuthorize("hasRole('REFEREE')")
-    public ResponseEntity<RaceEntry> checkIn(@PathVariable Long raceId, @Valid @RequestBody CheckInRequest request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<RaceEntry> checkIn(@PathVariable("raceId") Long raceId, @Valid @RequestBody CheckInRequest request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(refereeService.checkInEntry(raceId, request.entryId, request.checkedIn, userDetails.getId()));
     }
 
     @PatchMapping("/{raceId}/no-show")
     @PreAuthorize("hasRole('REFEREE')")
-    public ResponseEntity<RaceEntry> markNoShow(@PathVariable Long raceId, @Valid @RequestBody NoShowRequest request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<RaceEntry> markNoShow(@PathVariable("raceId") Long raceId, @Valid @RequestBody NoShowRequest request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(refereeService.markNoShow(raceId, request.entryId, request.reason, userDetails.getId()));
     }
 
     @PostMapping("/{raceId}/violations")
     @PreAuthorize("hasRole('REFEREE')")
-    public ResponseEntity<RefereeReport> recordViolation(@PathVariable Long raceId, @Valid @RequestBody ViolationRequest request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<RefereeReport> recordViolation(@PathVariable("raceId") Long raceId, @Valid @RequestBody ViolationRequest request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(refereeService.recordViolation(raceId, request.entryId, request.message, userDetails.getId()));
     }
 
     @GetMapping("/{raceId}/results")
     @PreAuthorize("hasRole('REFEREE')")
-    public ResponseEntity<List<RaceResult>> getResults(@PathVariable Long raceId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<RaceResult>> getResults(@PathVariable("raceId") Long raceId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(refereeService.getRaceResultsForReferee(raceId, userDetails.getId()));
     }
 
     @PutMapping("/{raceId}/results")
     @PreAuthorize("hasRole('REFEREE')")
-    public ResponseEntity<List<RaceResult>> upsertResults(@PathVariable Long raceId, @Valid @RequestBody List<ResultItemRequest> request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<RaceResult>> upsertResults(@PathVariable("raceId") Long raceId, @Valid @RequestBody List<ResultItemRequest> request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         List<RefereeService.ResultInput> inputs = request.stream()
                 .map(i -> new RefereeService.ResultInput(i.entryId, i.finishRank, i.finishTimeMs))
                 .toList();
@@ -63,26 +70,26 @@ public class RefereeController {
 
     @GetMapping("/{raceId}/report")
     @PreAuthorize("hasRole('REFEREE')")
-    public ResponseEntity<RefereeReport> getReport(@PathVariable Long raceId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<RefereeReport> getReport(@PathVariable("raceId") Long raceId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(refereeService.getReportForReferee(raceId, userDetails.getId()));
     }
 
     @PutMapping("/{raceId}/report")
     @PreAuthorize("hasRole('REFEREE')")
-    public ResponseEntity<RefereeReport> saveDraft(@PathVariable Long raceId, @Valid @RequestBody ReportNotesRequest request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<RefereeReport> saveDraft(@PathVariable("raceId") Long raceId, @Valid @RequestBody ReportNotesRequest request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(refereeService.saveDraftReport(raceId, request.notes, userDetails.getId()));
     }
 
     @PostMapping("/{raceId}/report/submit")
     @PreAuthorize("hasRole('REFEREE')")
-    public ResponseEntity<RefereeReport> submit(@PathVariable Long raceId, @RequestBody(required = false) ReportNotesRequest request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<RefereeReport> submit(@PathVariable("raceId") Long raceId, @RequestBody(required = false) ReportNotesRequest request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         String notes = request == null ? null : request.notes;
         return ResponseEntity.ok(refereeService.submitReport(raceId, notes, userDetails.getId()));
     }
 
     @PostMapping("/{raceId}/report/confirm")
     @PreAuthorize("hasRole('REFEREE')")
-    public ResponseEntity<RefereeReport> confirm(@PathVariable Long raceId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<RefereeReport> confirm(@PathVariable("raceId") Long raceId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(refereeService.confirmReport(raceId, userDetails.getId()));
     }
 

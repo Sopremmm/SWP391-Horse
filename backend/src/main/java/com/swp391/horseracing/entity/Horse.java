@@ -28,6 +28,9 @@ public class Horse {
 
     private Integer age;
 
+    @Column(name = "age_type", length = 50)
+    private String ageType;
+
     @Column(name = "weight_kg")
     private Double weightKg;
 
@@ -37,9 +40,6 @@ public class Horse {
     @Lob
     @Column(name = "image_url", columnDefinition = "NVARCHAR(MAX)")
     private String imageUrl;
-
-    @Column(length = 20)
-    private String condition = "PEAK"; // PEAK, GOOD, RECOVERING
 
     @Column(name = "total_races")
     private Integer totalRaces = 0;
@@ -66,14 +66,14 @@ public class Horse {
     public void setBreed(String breed) { this.breed = breed; }
     public Integer getAge() { return age; }
     public void setAge(Integer age) { this.age = age; }
+    public String getAgeType() { return ageType; }
+    public void setAgeType(String ageType) { this.ageType = ageType; }
     public Double getWeightKg() { return weightKg; }
     public void setWeightKg(Double weightKg) { this.weightKg = weightKg; }
     public String getColor() { return color; }
     public void setColor(String color) { this.color = color; }
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
-    public String getCondition() { return condition; }
-    public void setCondition(String condition) { this.condition = condition; }
     public Integer getTotalRaces() { return totalRaces; }
     public void setTotalRaces(Integer totalRaces) { this.totalRaces = totalRaces; }
     public Integer getTotalWins() { return totalWins; }

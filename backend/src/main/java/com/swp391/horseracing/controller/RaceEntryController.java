@@ -1,6 +1,8 @@
 package com.swp391.horseracing.controller;
 
 import com.swp391.horseracing.entity.RaceEntry;
+import com.swp391.horseracing.dto.request.AdminEntryDecisionRequest;
+import jakarta.validation.Valid;
 import com.swp391.horseracing.security.user.UserDetailsImpl;
 import com.swp391.horseracing.service.RaceEntryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,17 +27,18 @@ public class RaceEntryController {
 
     @PatchMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RaceEntry> approveEntry(@PathVariable Long id, @RequestParam Long raceId) {
-        return ResponseEntity.ok(raceEntryService.approveRegistration(id, raceId));
+    public ResponseEntity<RaceEntry> approveEntry(@PathVariable Long id) {
+        return ResponseEntity.ok(raceEntryService.approveRegistration(id));
     }
 
     @PatchMapping("/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RaceEntry> rejectEntry(@PathVariable Long id) {
-        return ResponseEntity.ok(raceEntryService.rejectRegistration(id));
+    public ResponseEntity<RaceEntry> rejectEntry(@PathVariable Long id, @Valid @RequestBody AdminEntryDecisionRequest request) {
+        return ResponseEntity.ok(raceEntryService.rejectRegistration(id, request.getReason()));
     }
 
     @GetMapping("/tournament/{tournamentId}")
+    @PreAuthorize("!hasRole('REFEREE')")
     public ResponseEntity<List<RaceEntry>> getEntriesByTournament(@PathVariable Long tournamentId) {
         return ResponseEntity.ok(raceEntryService.getEntriesByTournament(tournamentId));
     }

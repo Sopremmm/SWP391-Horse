@@ -146,12 +146,7 @@ function extractJockeys(raw?: RawJockeyResponse | null): RawJockey[] {
 }
 
 function readJockeysFromLocalStorage(): RawJockeyResponse | null {
-  try {
-    const raw = window.localStorage.getItem('invite_jockeys_data');
-    return raw ? (JSON.parse(raw) as RawJockeyResponse) : null;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 async function readJockeysFromApi(name: string): Promise<RawJockeyResponse | null> {
@@ -187,19 +182,14 @@ function PositionBadge({ value }: { value: string }) {
 export default function JockeyProfile() {
   const params = useParams<{ name?: string }>();
   const decodedName = decodeURIComponent(params.name ?? '').trim();
-  const [jockey, setJockey] = React.useState<JockeyProfileData | null>(() => {
-    const raw = extractJockeys(readJockeysFromLocalStorage());
-    const selected = findJockey(raw, decodedName);
-    return selected ? normalizeJockey(selected) : null;
-  });
+  const [jockey, setJockey] = React.useState<JockeyProfileData | null>(null);
 
   React.useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
       const apiData = await readJockeysFromApi(decodedName);
-      const localData = readJockeysFromLocalStorage();
-      const selected = findJockey(extractJockeys(apiData ?? localData), decodedName);
+      const selected = findJockey(extractJockeys(apiData), decodedName);
       if (!cancelled) setJockey(selected ? normalizeJockey(selected) : null);
     };
 

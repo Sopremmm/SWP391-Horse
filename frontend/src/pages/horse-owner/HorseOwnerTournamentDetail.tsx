@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Header } from '../../components/common/Header.tsx';
 import { getPageData } from '../../data/pageData.ts';
+import { getHorseOwnerTournamentDetailData } from '../../services/integration.ts';
 import './HorseOwnerTournamentDetail.css';
 
 type RaceStatus = 'completed' | 'live' | 'upcoming' | string;
@@ -30,6 +31,7 @@ type TournamentDetailData = {
   presenter: string;
   location: string;
   dateRange: string;
+  registrationOpen?: boolean;
   heroImage?: string;
   races: TournamentRace[];
   participants: TournamentParticipant[];
@@ -169,22 +171,10 @@ function normalizeDetailData(raw?: RawTournamentDetailData | null): TournamentDe
   };
 }
 
-function readDetailFromLocalStorage(slug: string): RawTournamentDetailData | null {
-  try {
-    const specific = window.localStorage.getItem(`horse_owner_tournament_detail_${slug}`);
-    const shared = window.localStorage.getItem('horse_owner_tournament_detail_data');
-    return specific ? (JSON.parse(specific) as RawTournamentDetailData) : shared ? (JSON.parse(shared) as RawTournamentDetailData) : null;
-  } catch {
-    return null;
-  }
-}
-
 async function readDetailFromApi(slug: string): Promise<RawTournamentDetailData | null> {
   try {
-    const base = process.env.REACT_APP_HORSE_OWNER_TOURNAMENT_DETAIL_API || '/api/horse-owner/tournaments';
-    const response = await fetch(`${base}/${encodeURIComponent(slug)}`, { method: 'GET' });
-    if (!response.ok) return null;
-    return (await response.json()) as RawTournamentDetailData;
+    const data = await getHorseOwnerTournamentDetailData(slug);
+    return data as RawTournamentDetailData;
   } catch {
     return null;
   }
@@ -264,7 +254,7 @@ export default function HorseOwnerTournamentDetail() {
     [fallbackTournament?.dateValue, fallbackTournament?.imageUrl, fallbackTournament?.title],
   );
   const [detail, setDetail] = React.useState<TournamentDetailData>(() =>
-    normalizeDetailData(readDetailFromLocalStorage(slug) ?? fallbackData),
+    normalizeDetailData(fallbackData),
   );
   const [participantsOpen, setParticipantsOpen] = React.useState(false);
 
@@ -273,8 +263,7 @@ export default function HorseOwnerTournamentDetail() {
 
     const load = async () => {
       const apiData = await readDetailFromApi(slug);
-      const localData = readDetailFromLocalStorage(slug);
-      if (!cancelled) setDetail(normalizeDetailData(apiData ?? localData ?? fallbackData));
+      if (!cancelled) setDetail(normalizeDetailData(apiData ?? fallbackData));
     };
 
     void load();
@@ -313,7 +302,11 @@ export default function HorseOwnerTournamentDetail() {
               <button type="button" onClick={() => setParticipantsOpen(true)}>
                 View Participants
               </button>
-              <Link to={`/HorseOwner/Tournaments/${routeName}/Register`}>Register</Link>
+              {detail.registrationOpen ? (
+                <Link to={`/HorseOwner/Tournaments/${routeName}/Register`}>Register</Link>
+              ) : (
+                <button type="button" disabled>Registration Closed</button>
+              )}
             </div>
           </div>
         </section>

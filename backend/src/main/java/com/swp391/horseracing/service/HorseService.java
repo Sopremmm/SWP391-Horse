@@ -4,6 +4,7 @@ import com.swp391.horseracing.entity.Horse;
 import com.swp391.horseracing.entity.User;
 import com.swp391.horseracing.repository.HorseRepository;
 import com.swp391.horseracing.repository.UserRepository;
+import com.swp391.horseracing.repository.RaceEntryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +18,14 @@ public class HorseService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private RaceEntryRepository raceEntryRepository;
+
     public Horse addHorse(Horse horse, Long ownerId) {
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new RuntimeException("Error: Owner not found!"));
         horse.setOwner(owner);
         horse.setStatus("ACTIVE");
-        horse.setCondition(normalizeCondition(horse.getCondition()));
         return horseRepository.save(horse);
     }
 
@@ -36,11 +39,11 @@ public class HorseService {
         horse.setName(horseDetails.getName());
         horse.setBreed(horseDetails.getBreed());
         horse.setAge(horseDetails.getAge());
+        horse.setAgeType(horseDetails.getAgeType());
         horse.setWeightKg(horseDetails.getWeightKg());
         horse.setImageUrl(horseDetails.getImageUrl());
         horse.setColor(horseDetails.getColor());
-        horse.setCondition(normalizeCondition(horseDetails.getCondition()));
-        
+
         return horseRepository.save(horse);
     }
 
@@ -57,12 +60,16 @@ public class HorseService {
         return horseRepository.findAll();
     }
 
-    private String normalizeCondition(String condition) {
-        if (condition == null || condition.isBlank()) return "PEAK";
-        String normalized = condition.trim().toUpperCase();
-        if (!List.of("PEAK", "GOOD", "RECOVERING").contains(normalized)) {
-            throw new RuntimeException("Error: Horse condition must be PEAK, GOOD, or RECOVERING!");
+    public void deleteHorse(Long id, Long ownerId) {
+        Horse horse = horseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Error: Horse not found!"));
+        if (horse.getOwner() == null || !ownerId.equals(horse.getOwner().getId())) {
+            throw new RuntimeException("Error: You are not the owner of this horse!");
         }
-        return normalized;
+        if (!raceEntryRepository.findByHorseId(id).isEmpty()) {
+            throw new RuntimeException("Error: A horse with tournament history cannot be deleted; retire it instead!");
+        }
+        horseRepository.delete(horse);
     }
+
 }

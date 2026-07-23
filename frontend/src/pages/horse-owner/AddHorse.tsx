@@ -185,29 +185,12 @@ export default function AddHorse({ mode = 'add' }: AddHorseProps) {
         imageUrl: photoPreview || undefined,
       });
 
-      const existing = readStoredData();
-      const horses = existing.horses ?? getPageData().myHorses.horses;
       const nextHorse: StoredHorse = {
         id: savedHorse.id,
         name: savedHorse.name.trim(),
-        meta: `${breed.trim()} - ${age}yo - ${ageClass} - ${condition} condition - ${winRate}% win rate - ${Number(earnings || 0).toLocaleString()} credits`,
+        meta: `${breed.trim()} - ${age}yo - ${ageClass}`,
         imageSrc: photoPreview || DEFAULT_PHOTO,
       };
-      const nextHorses = isEdit
-        ? horses.map((horse) => (normalize(horse.name) === normalize(decodedName) ? nextHorse : horse))
-        : [...horses, nextHorse];
-
-      window.localStorage.setItem(
-        'my_horses_data',
-        JSON.stringify({
-          ...existing,
-          horses: nextHorses,
-          stats: {
-            ...existing.stats,
-            stableSize: `${String(nextHorses.length).padStart(2, '0')} Thoroughbreds`,
-          },
-        })
-      );
 
       setShowToast(true);
       window.setTimeout(() => navigate(isEdit ? `/HorseOwner/MyHorses/${encodeURIComponent(nextHorse.name)}` : '/HorseOwner/MyHorses'), 650);

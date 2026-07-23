@@ -26,9 +26,15 @@ public class JockeyInvitationService {
     private RaceEntryRepository raceEntryRepository;
 
     @Autowired
+    private JockeyProfileRepository jockeyProfileRepository;
+
+    @Autowired
     private NotificationService notificationService;
 
-    public JockeyInvitation inviteJockey(Long horseId, Long jockeyId, Long raceId, Long ownerId, String message) {
+    @Autowired
+    private TournamentRepository tournamentRepository;
+
+    public JockeyInvitation inviteJockey(Long horseId, Long jockeyId, Long tournamentId, Long ownerId, String message) {
         Horse horse = horseRepository.findById(horseId)
                 .orElseThrow(() -> new RuntimeException("Error: Horse not found!"));
         if (horse.getOwner() == null || horse.getOwner().getId() == null || !horse.getOwner().getId().equals(ownerId)) {
@@ -39,30 +45,28 @@ public class JockeyInvitationService {
         if (jockey.getRole() == null || !"JOCKEY".equals(jockey.getRole().name())) {
             throw new RuntimeException("Error: Selected user is not a jockey!");
         }
+        if (jockey.getStatus() == null || !"ACTIVE".equals(jockey.getStatus().name())
+                || jockeyProfileRepository.findByUserIdAndActiveTrue(jockeyId).isEmpty()) {
+            throw new RuntimeException("Error: Selected jockey does not have an active profile!");
+        }
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new RuntimeException("Error: Owner not found!"));
-        Race race = raceRepository.findById(raceId)
-                .orElseThrow(() -> new RuntimeException("Error: Race not found!"));
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new RuntimeException("Error: Tournament not found!"));
 
-        RaceEntry horseEntry = raceEntryRepository.findByTournamentIdAndHorseId(
-                race.getTournament().getId(), horseId);
-        if (horseEntry == null || !"APPROVED".equals(horseEntry.getStatus())
-                || horseEntry.getRace() == null || !raceId.equals(horseEntry.getRace().getId())) {
-            throw new RuntimeException("Error: Horse must be approved for this race before inviting a jockey!");
+        RaceEntry horseEntry = raceEntryRepository.findByTournamentIdAndHorseId(tournamentId, horseId);
+        if (horseEntry == null || !"APPROVED".equals(horseEntry.getStatus())) {
+            throw new RuntimeException("Error: Horse must be approved for this tournament before inviting a jockey!");
         }
-
-        // JKY-01: Jockey assigned <= 1 horse per race
-        List<RaceEntry> entries = raceEntryRepository.findByRaceId(raceId);
-        boolean alreadyAssigned = entries.stream()
-                .anyMatch(e -> e.getJockey() != null && e.getJockey().getId().equals(jockeyId));
-        if (alreadyAssigned) {
-            throw new RuntimeException("Error: Jockey already assigned to another horse in this race (JKY-01)");
+        // Bug 5 fix: Block invitation if this horse already has a jockey assigned
+        if (horseEntry.getJockey() != null && horseEntry.getJockey().getId() != null) {
+            throw new RuntimeException("Error: This horse already has a jockey assigned for this tournament!");
         }
 
         JockeyInvitation invitation = invitationRepository
-                .findByHorseIdAndJockeyIdAndRaceId(horseId, jockeyId, raceId)
+                .findByHorseIdAndJockeyIdAndTournamentId(horseId, jockeyId, tournamentId)
                 .orElseGet(() -> JockeyInvitation.builder()
-                        .horse(horse).jockey(jockey).owner(owner).race(race).build());
+                        .horse(horse).jockey(jockey).owner(owner).tournament(tournament).build());
         if ("PENDING".equals(invitation.getStatus()) && invitation.getExpiresAt() != null
                 && invitation.getExpiresAt().isAfter(LocalDateTime.now())) {
             throw new RuntimeException("Error: A pending invitation already exists for this jockey and horse!");
@@ -74,13 +78,13 @@ public class JockeyInvitationService {
         invitation.setStatus("PENDING");
         invitation.setInvitedAt(LocalDateTime.now());
         invitation.setRespondedAt(null);
-        invitation.setExpiresAt(LocalDateTime.now().plusHours(24));
+        invitation.setExpiresAt(tournament.getStartDate() != null ? tournament.getStartDate().atStartOfDay() : LocalDateTime.now().plusDays(7));
 
         JockeyInvitation saved = invitationRepository.save(invitation);
         notificationService.sendNotification(
                 jockey.getId(),
                 "Jockey Invitation",
-                "You have been invited to join race \"" + race.getName() + "\" with horse \"" + horse.getName() + "\".",
+                "You have been invited to join tournament \"" + tournament.getName() + "\" with horse \"" + horse.getName() + "\".",
                 "JOCKEY_INVITE",
                 saved.getId(),
                 "JOCKEY_INVITATION"
@@ -102,7 +106,7 @@ public class JockeyInvitationService {
         if (!"PENDING".equals(invitation.getStatus())) {
             throw new RuntimeException("Error: Invitation has already been answered!");
         }
-        if (invitation.getExpiresAt() == null || invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (invitation.getExpiresAt() == null || !invitation.getExpiresAt().isAfter(LocalDateTime.now())) {
             invitation.setStatus("EXPIRED");
             invitationRepository.save(invitation);
             throw new RuntimeException("Error: Invitation has expired (JKY-02)");
@@ -112,20 +116,26 @@ public class JockeyInvitationService {
         invitation.setRespondedAt(LocalDateTime.now());
 
         if ("ACCEPTED".equals(normalizedStatus)) {
-            // Update RaceEntry with the jockey
             RaceEntry entry = raceEntryRepository.findByTournamentIdAndHorseId(
-                    invitation.getRace().getTournament().getId(), invitation.getHorse().getId());
-            if (entry == null || entry.getRace() == null
-                    || !entry.getRace().getId().equals(invitation.getRace().getId())
-                    || !"APPROVED".equals(entry.getStatus())) {
-                throw new RuntimeException("Error: Approved race entry not found for this horse!");
+                    invitation.getTournament().getId(), invitation.getHorse().getId());
+            if (entry == null || (!"PENDING".equals(entry.getStatus()) && !"APPROVED".equals(entry.getStatus()) && !"CONFIRMED".equals(entry.getStatus()))) {
+                throw new RuntimeException("Error: Valid race entry not found for this horse!");
             }
-            
+            // Bug 5 fix: Block accept if another jockey already claimed this horse
+            if (entry.getJockey() != null && entry.getJockey().getId() != null
+                    && !entry.getJockey().getId().equals(invitation.getJockey().getId())) {
+                throw new RuntimeException("Error: Another jockey has already been assigned to this horse!");
+            }
             entry.setJockey(invitation.getJockey());
             raceEntryRepository.save(entry);
         }
-
-        return invitationRepository.save(invitation);
+        JockeyInvitation saved = invitationRepository.save(invitation);
+        notificationService.sendNotification(saved.getOwner().getId(), "Jockey Invitation Response",
+                "Jockey \"" + saved.getJockey().getFullName() + "\" "
+                        + ("ACCEPTED".equals(normalizedStatus) ? "accepted" : "declined")
+                        + " the invitation for horse \"" + saved.getHorse().getName() + "\".",
+                "SYSTEM", saved.getId(), "JOCKEY_INVITATION");
+        return saved;
     }
 
     public List<JockeyInvitation> getJockeyInvitations(Long jockeyId) {

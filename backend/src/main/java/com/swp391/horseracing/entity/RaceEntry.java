@@ -57,6 +57,10 @@ public class RaceEntry {
     @Column(name = "gate_number")
     private Integer gateNumber;
 
+    @Lob
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
+
     public RaceEntry() {}
 
     public RaceEntry(Horse horse, User jockey, Tournament tournament, Race race, String status) {
@@ -114,4 +118,6 @@ public class RaceEntry {
     public void setNoShowAt(LocalDateTime noShowAt) { this.noShowAt = noShowAt; }
     public Integer getGateNumber() { return gateNumber; }
     public void setGateNumber(Integer gateNumber) { this.gateNumber = gateNumber; }
+    public String getRejectionReason() { return rejectionReason; }
+    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
 }

@@ -104,12 +104,7 @@ function normalizeData(raw?: RawInviteJockeysData | null) {
 }
 
 function readInviteJockeysFromLocalStorage(): RawInviteJockeysData | null {
-  try {
-    const raw = window.localStorage.getItem('invite_jockeys_data');
-    return raw ? (JSON.parse(raw) as RawInviteJockeysData) : null;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 async function readInviteJockeysFromApi(): Promise<RawInviteJockeysData | null> {
@@ -166,7 +161,7 @@ function JockeyCard({ jockey }: { jockey: DisplayJockey }) {
 }
 
 export default function InviteJockeys() {
-  const [data, setData] = React.useState(() => normalizeData(readInviteJockeysFromLocalStorage()));
+  const [data, setData] = React.useState(() => normalizeData(null));
   const [query, setQuery] = React.useState('');
   const [gender, setGender] = React.useState('all');
   const [sort, setSort] = React.useState('races-desc');
@@ -177,8 +172,7 @@ export default function InviteJockeys() {
 
     const load = async () => {
       const apiData = await readInviteJockeysFromApi();
-      const localData = readInviteJockeysFromLocalStorage();
-      if (!cancelled) setData(normalizeData(apiData ?? localData));
+      if (!cancelled) setData(normalizeData(apiData));
     };
 
     void load();

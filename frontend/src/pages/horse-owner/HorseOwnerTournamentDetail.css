@@ -417,6 +417,23 @@
   font-weight: 800;
 }
 
+.ho-tourney-final.is-pending {
+  background: #365044;
+  border-color: rgba(255, 255, 255, .18);
+}
+
+.ho-tourney-final__pending {
+  min-height: 56px;
+  border: 1px solid rgba(255, 255, 255, .25);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, .7);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
 .ho-tourney-schedule {
   overflow: hidden;
   border: 1px solid rgba(216, 213, 207, .7);

@@ -22,10 +22,10 @@ public class JockeyInvitationController {
     public ResponseEntity<JockeyInvitation> inviteJockey(
             @RequestParam Long horseId,
             @RequestParam Long jockeyId,
-            @RequestParam Long raceId,
+            @RequestParam Long tournamentId,
             @RequestParam String message,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(invitationService.inviteJockey(horseId, jockeyId, raceId, userDetails.getId(), message));
+        return ResponseEntity.ok(invitationService.inviteJockey(horseId, jockeyId, tournamentId, userDetails.getId(), message));
     }
 
     @PatchMapping("/{id}/respond")

@@ -41,6 +41,11 @@ public class AdminRaceControlController {
         return ResponseEntity.ok(adminRaceControlService.getChecklist(raceId));
     }
 
+    @PostMapping("/{raceId}/force-start")
+    public ResponseEntity<Race> forceStart(@PathVariable Long raceId, @AuthenticationPrincipal UserDetailsImpl admin) {
+        return ResponseEntity.ok(adminRaceControlService.forceStartRace(admin.getId(), raceId));
+    }
+
     @PatchMapping("/{raceId}/status")
     public ResponseEntity<Race> updateStatus(
             @PathVariable Long raceId,

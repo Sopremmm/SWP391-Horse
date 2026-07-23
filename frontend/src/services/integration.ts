@@ -331,7 +331,7 @@ export async function registerTournamentEntry(horseId: number, tournamentId: num
 export async function sendJockeyInvitation(params: {
   horseId: number;
   jockeyId: number;
-  raceId: number;
+  tournamentId: number;
   message?: string;
 }) {
   const invitation = await api.post<RawJockeyInvitation>('/invitations', null, {
@@ -380,10 +380,28 @@ export async function createTournament(payload: Partial<RawTournament> & { id?: 
   return api.post<RawTournament>('/tournaments', payload);
 }
 
+export async function updateTournament(id: number, payload: Partial<RawTournament>) {
+  return api.put<RawTournament>(`/tournaments/${id}`, payload);
+}
+
+export async function updateAdminRaceStatus(raceId: number, status: string) {
+  return api.patch<RawRace>(`/admin/races/${raceId}/status`, null, {
+    query: { status },
+  });
+}
+
+export async function forceStartAdminRace(raceId: number) {
+  return api.post<RawRace>(`/admin/races/${raceId}/force-start`);
+}
+
 export async function updateTournamentStatus(id: number, status: string) {
   return api.patch<RawTournament>(`/tournaments/${id}/status`, null, {
     query: { status },
   });
+}
+
+export async function deleteTournament(id: number) {
+  return api.delete<void>(`/tournaments/${id}`);
 }
 
 export async function approveTournamentEntry(entryId: number, raceId: number) {
@@ -392,8 +410,8 @@ export async function approveTournamentEntry(entryId: number, raceId: number) {
   });
 }
 
-export async function rejectTournamentEntry(entryId: number) {
-  return api.patch<RawRaceEntry>(`/entries/${entryId}/reject`);
+export async function rejectTournamentEntry(entryId: number, reason: string) {
+  return api.patch<RawRaceEntry>(`/entries/${entryId}/reject`, { reason });
 }
 
 export async function fetchAdminPendingReports() {
@@ -468,6 +486,10 @@ export async function saveAdminRaceGates(
   },
 ) {
   return api.put<RawRace>(`/admin/races/${raceId}/gates`, payload);
+}
+
+export async function fetchAssignedRefereeRaces() {
+  return api.get<RawRace[]>('/referee/races');
 }
 
 export async function fetchRefereeEntries(raceId: number) {
@@ -735,6 +757,7 @@ export async function getHorseOwnerTournamentDetailData(slug: string) {
     presenter: 'Heritage Racing Presents',
     location: tournament.location || 'Location pending',
     dateRange: formatDateRange(tournament.startDate, tournament.endDate),
+    registrationOpen: tournament.status === 'OPEN',
     heroImage: '',
     races: races.map((race) => ({
       id: String(race.id),
@@ -847,7 +870,7 @@ export async function getHorseOwnerRegisteredTournamentsData() {
 }
 
 export async function getHorseOwnerHorseLeaderboardData() {
-  const horses = await fetchMyHorses().catch(() => []);
+  const horses = await fetchAdminHorses().catch(() => []);
   const sorted = [...horses].sort((a, b) => {
     const aRatio = a.totalRaces ? (a.totalWins || 0) / a.totalRaces : 0;
     const bRatio = b.totalRaces ? (b.totalWins || 0) / b.totalRaces : 0;
@@ -975,31 +998,16 @@ async function handleLegacyHorseOwnerEndpoint(pathname: string) {
 }
 
 export function installLegacyApiBridge() {
-  if (typeof window === 'undefined') return;
-  if ((window as unknown as Record<string, unknown>)[LEGACY_BRIDGE_FLAG]) return;
+  // Legacy API bridge is disabled, relying on real backend endpoints.
+}
 
-  const originalFetch = window.fetch.bind(window);
+export async function deleteHorse(id: number) {
+  return api.delete<void>(`/horses/${id}`);
+}
 
-  window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-    const requestUrl =
-      typeof input === 'string'
-        ? input
-        : input instanceof URL
-          ? input.toString()
-          : input.url;
-
-    const url = new URL(requestUrl, window.location.origin);
-    const isLegacyOwnerEndpoint =
-      (url.origin === window.location.origin || !/^https?:/i.test(requestUrl)) &&
-      url.pathname.startsWith('/api/horse-owner/');
-
-    if (isLegacyOwnerEndpoint) {
-      const response = await handleLegacyHorseOwnerEndpoint(url.pathname);
-      if (response) return response;
-    }
-
-    return originalFetch(input, init);
-  };
-
-  (window as unknown as Record<string, unknown>)[LEGACY_BRIDGE_FLAG] = true;
+export async function approveHorse(id: number) {
+  return api.patch<RawHorse>(`/admin/horses/${id}/status`, null, { query: { status: 'APPROVED' } });
+}
+export async function rejectHorse(id: number) {
+  return api.patch<RawHorse>(`/admin/horses/${id}/status`, null, { query: { status: 'REJECTED' } });
 }

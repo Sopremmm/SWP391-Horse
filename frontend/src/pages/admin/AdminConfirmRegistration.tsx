@@ -4,7 +4,6 @@ import {
   approveTournamentEntry,
   fetchAllTournaments,
   fetchEntriesByTournament,
-  fetchRacesByTournament,
   rejectTournamentEntry,
 } from '../../services/integration.ts';
 import './AdminConfirmRegistration.css';
@@ -69,10 +68,7 @@ export default function AdminConfirmRegistration() {
         const tournaments = await fetchAllTournaments().catch(() => []);
         const entriesByTournament = await Promise.all(
           tournaments.map(async (tournament) => {
-            const [entries, races] = await Promise.all([
-              fetchEntriesByTournament(tournament.id).catch(() => []),
-              fetchRacesByTournament(tournament.id).catch(() => []),
-            ]);
+            const entries = await fetchEntriesByTournament(tournament.id).catch(() => []);
 
             return entries.map((entry) => ({
               id: Number(entry.id),
@@ -87,7 +83,7 @@ export default function AdminConfirmRegistration() {
                   : entry.status === 'REJECTED'
                     ? 'Declined'
                     : 'Pending',
-              raceId: entry.race?.id || races[0]?.id,
+              raceId: entry.race?.id,
             }));
           }),
         );
@@ -120,13 +116,14 @@ export default function AdminConfirmRegistration() {
     const registration = registrations.find((item) => item.id === id);
     try {
       if (status === 'Approved') {
-        if (!registration?.raceId) {
-          setToast('This registration has no race assignment yet.');
+        await approveTournamentEntry(id);
+      } else if (status === 'Declined') {
+        const reason = window.prompt('Enter the required rejection reason:')?.trim();
+        if (!reason) {
+          setToast('A rejection reason is required.');
           return;
         }
-        await approveTournamentEntry(id, registration.raceId);
-      } else if (status === 'Declined') {
-        await rejectTournamentEntry(id);
+        await rejectTournamentEntry(id, reason);
       }
 
       setRegistrations((current) => current.map((item) => (item.id === id ? { ...item, status } : item)));

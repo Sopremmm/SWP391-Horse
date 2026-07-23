@@ -4,16 +4,19 @@ import AdminLayout from '../../components/admin/AdminLayout.tsx';
 import HomeBanner from '../../assets/images/HomeBanner.png';
 import {
   assignRaceReferee,
+  deleteTournament,
   fetchAdminHorses,
   fetchAdminUsers,
   fetchEntriesByTournament,
   fetchRacesByTournament,
   fetchTournamentBySlug,
+  forceStartAdminRace,
   formatCurrency,
   formatDateRange,
   saveAdminRaceGates,
   saveTournamentBracket,
   slugify,
+  updateTournamentStatus,
   type RawHorse,
   type RawRace,
   type RawRaceEntry,
@@ -211,7 +214,7 @@ function RaceDetailView({ tournament, raceName }: { tournament: string; raceName
 
   const eligibleEntries = React.useMemo(
     () =>
-      entries.filter((item) => item.status !== 'REJECTED'),
+      entries.filter((item) => item.status === 'APPROVED' || item.status === 'CONFIRMED'),
     [entries, race?.id],
   );
 
@@ -239,25 +242,12 @@ function RaceDetailView({ tournament, raceName }: { tournament: string; raceName
   //#endregion debug-point admin-configure-gates-missing-horses-A2
 
   const gateOptions = React.useMemo(() => {
-    const horseMap = new Map<number, RawHorse>();
-    horses.forEach((item) => {
-      if (item?.id) {
-        horseMap.set(item.id, item);
-      }
-    });
-    eligibleEntries.forEach((item) => {
-      if (item.horse?.id && !horseMap.has(item.horse.id)) {
-        horseMap.set(item.horse.id, item.horse);
-      }
-    });
-
-    return Array.from(horseMap.values())
-      .map((horse) => {
-        const entry = eligibleEntries.find((item) => item.horse?.id === horse.id) || null;
+    return eligibleEntries
+      .map((entry) => {
         return {
-          key: entry ? entryGateValue(entry.id) : horseGateValue(horse.id),
-          horseId: horse.id,
-          horse,
+          key: entryGateValue(entry.id),
+          horseId: entry.horse?.id ?? 0,
+          horse: entry.horse,
           entry,
         };
       })
@@ -333,11 +323,7 @@ function RaceDetailView({ tournament, raceName }: { tournament: string; raceName
       await saveAdminRaceGates(race.id, { gateCount, assignments });
       setNotice('Gate configuration saved successfully.');
       setGatesOpen(false);
-      if (window.history.length > 1) {
-        navigate(-1);
-      } else {
-        navigate(`/Admin/ManageTournaments/${encodeURIComponent(tournament)}`);
-      }
+      await loadRaceDetail();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to save gate configuration.');
     } finally {
@@ -357,6 +343,59 @@ function RaceDetailView({ tournament, raceName }: { tournament: string; raceName
       setNotice('Referee assigned successfully.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to assign referee.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const publishRace = async () => {
+    if (!race) return;
+    setSaving(true);
+    setError('');
+    setNotice('');
+    try {
+      const updated = await publishAdminRace(race.id);
+      setRace(updated);
+      await loadRaceDetail();
+      setNotice('Race published. Horse owners and spectators can now view its details.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to publish this race.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const startRace = async () => {
+    if (!race) return;
+    setSaving(true);
+    setError('');
+    setNotice('');
+    try {
+      const updated = await updateAdminRaceStatus(race.id, 'ONGOING');
+      setRace(updated);
+      await loadRaceDetail();
+      setNotice('Race is now ongoing. The assigned referee can record attendance and results.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to start this race.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const forceStart = async () => {
+    if (!race) return;
+    if (!window.confirm('Are you sure you want to force start this race? Horses without jockeys assigned will be automatically withdrawn.')) return;
+
+    setSaving(true);
+    setError('');
+    setNotice('');
+    try {
+      const updated = await forceStartAdminRace(race.id);
+      setRace(updated);
+      await loadRaceDetail();
+      setNotice('Race forcefully started. Horses without jockeys have been withdrawn.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to force start this race.');
     } finally {
       setSaving(false);
     }
@@ -451,6 +490,21 @@ function RaceDetailView({ tournament, raceName }: { tournament: string; raceName
             <button type="button" onClick={saveGates} disabled={saving || !race}>
               ▣ Save Configure Gates
             </button>
+            {!race?.published ? (
+              <button type="button" onClick={publishRace} disabled={saving || !race?.gatesConfigured || !race?.referee}>
+                Publish Race
+              </button>
+            ) : null}
+            {race?.published && race.status === 'SCHEDULED' ? (
+              <button type="button" onClick={startRace} disabled={saving}>
+                ▶ Start Race
+              </button>
+            ) : null}
+            {race?.published && race.status === 'SCHEDULED' ? (
+              <button type="button" onClick={forceStart} disabled={saving} style={{ backgroundColor: '#f39c12', color: 'white' }}>
+                ⚠ Force Start (Withdraw no-shows)
+              </button>
+            ) : null}
             <p>Race status: {race?.status || 'Unknown'}</p>
           </section>
         </aside>
@@ -467,11 +521,11 @@ function RaceDetailView({ tournament, raceName }: { tournament: string; raceName
           >
             <h2>Configure Gates</h2>
             <p>Choose the number of gates and assign horses to this bracket.</p>
-            <p>All horses in the database are listed here. Selecting a horse not yet in this tournament will auto-create its tournament entry when you save.</p>
+            <p>Only horses registered for this tournament are listed here.</p>
             <label>
               Number of gates
               <select value={gateCount} onChange={(event) => applyGateCount(Number(event.target.value))}>
-                {[1, 2, 3, 4, 5, 6, 8, 10, 12].map((value) => (
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((value) => (
                   <option value={value} key={value}>
                     {value} gates
                   </option>
@@ -519,6 +573,7 @@ function RaceDetailView({ tournament, raceName }: { tournament: string; raceName
 
 export default function AdminManageTournamentDetail() {
   const { name, racename } = useParams<{ name?: string; racename?: string }>();
+  const navigate = useNavigate();
   const title = tournamentName(name);
   const [tournament, setTournament] = React.useState<RawTournament | null>(null);
   const [bracket, setBracket] = React.useState<Bracket | null>(null);
@@ -613,6 +668,34 @@ export default function AdminManageTournamentDetail() {
     }
   };
 
+  const handleDeleteTournament = async () => {
+    if (!tournament) return;
+    if (!window.confirm('Are you sure you want to delete this tournament? This action cannot be undone.')) return;
+
+    setSaving(true);
+    try {
+      await deleteTournament(tournament.id);
+      navigate('/Admin/ManageTournaments');
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Unable to delete tournament.');
+      setSaving(false);
+    }
+  };
+
+  const handleOpenRegistration = async () => {
+    if (!tournament) return;
+    setSaving(true);
+    try {
+      await updateTournamentStatus(tournament.id, 'OPEN');
+      setTournament(prev => prev ? { ...prev, status: 'OPEN' } : prev);
+      setActionSuccess('Tournament registration is now open!');
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Unable to open registration. Ensure you have created the bracket first (at least 2 races).');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (racename) {
     const raceTitle = decodeURIComponent(racename).replace(/-/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
     return (
@@ -647,9 +730,17 @@ export default function AdminManageTournamentDetail() {
                 {actionSuccess ? <p className="amtDetailHeroDesc">{actionSuccess}</p> : null}
               </div>
               <div className="amtHeroActions">
+                {tournament?.status === 'DRAFT' && (
+                  <button type="button" className="amtDetailEditBtn" onClick={handleOpenRegistration} disabled={saving} style={{ marginRight: '10px', backgroundColor: '#2ecc71', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer' }}>
+                    ▶ Open Registration
+                  </button>
+                )}
                 <Link className="amtDetailEditBtn" to={`/Admin/ManageTournaments/edit/${encodeURIComponent(title)}`}>
                   ✎ Edit Tournament
                 </Link>
+                <button type="button" className="amtDetailDeleteBtn" onClick={handleDeleteTournament} disabled={saving} style={{ marginLeft: '10px', backgroundColor: '#e74c3c', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer' }}>
+                  Trash
+                </button>
               </div>
             </div>
           </section>

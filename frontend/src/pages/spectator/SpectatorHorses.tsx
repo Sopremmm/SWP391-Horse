@@ -206,6 +206,18 @@ const HorseImage: React.FC<{ horse: HorseRow }> = ({ horse }) => {
 type SpectatorHorsesProps = { horses?: HorseRow[]; loading?: boolean; error?: string };
 
 export const SpectatorHorses: React.FC<SpectatorHorsesProps> = ({ horses = [], loading = false, error }) => {
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const PAGE_SIZE = 10;
+
+  const totalPages = Math.ceil(horses.length / PAGE_SIZE) || 1;
+  const paginatedHorses = horses.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   return (
     <div className="spectator-horses-page">
       <SpectatorHeader />
@@ -253,7 +265,7 @@ export const SpectatorHorses: React.FC<SpectatorHorsesProps> = ({ horses = [], l
               <span>Action</span>
             </div>
 
-            {horses.map((horse) => (
+            {paginatedHorses.map((horse) => (
               <div className="spectator-horses-row" role="row" key={horse.rank}>
                 <div className={`spectator-horses-rank ${horse.featured ? 'is-featured' : ''}`}>
                   <span>{horse.rank}</span>
@@ -293,22 +305,19 @@ export const SpectatorHorses: React.FC<SpectatorHorsesProps> = ({ horses = [], l
           </div>
 
           <footer className="spectator-horses-pagination">
-            <span>Showing 1-10 of 284 Horses</span>
+            <span>Showing {(currentPage - 1) * PAGE_SIZE + 1}-{Math.min(currentPage * PAGE_SIZE, horses.length)} of {horses.length} Horses</span>
             <nav aria-label="Horse leaderboard pagination">
-              <button type="button" aria-label="First page">|‹</button>
-              <button type="button" aria-label="Previous page">‹</button>
-              <button type="button" className="is-active">1</button>
-              <button type="button">2</button>
-              <button type="button">3</button>
-              <span>...</span>
-              <button type="button">29</button>
-              <button type="button" aria-label="Next page">›</button>
-              <button type="button" aria-label="Last page">›|</button>
+              <button type="button" aria-label="First page" onClick={() => goToPage(1)} disabled={currentPage === 1}>|‹</button>
+              <button type="button" aria-label="Previous page" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>‹</button>
+
+              <button type="button" className="is-active">{currentPage}</button>
+
+              <button type="button" aria-label="Next page" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>›</button>
+              <button type="button" aria-label="Last page" onClick={() => goToPage(totalPages)} disabled={currentPage === totalPages}>›|</button>
             </nav>
           </footer>
         </section>
       </main>
-
       <SpectatorFooter />
     </div>
   );

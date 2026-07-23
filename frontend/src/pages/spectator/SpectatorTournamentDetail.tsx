@@ -152,12 +152,13 @@ const RaceNode: React.FC<{ race: BracketRace; tournamentName: string; className?
   </article>
 );
 
-type SpectatorTournamentDetailData = { location?: string; dates?: string; heroUrl?: string };
-type SpectatorTournamentDetailProps = { data?: SpectatorTournamentDetailData | null; qualifyingRaces?: BracketRace[]; semiFinalRaces?: BracketRace[]; schedule?: ScheduleRace[]; loading?: boolean; error?: string };
+type SpectatorTournamentDetailData = { title?: string; location?: string; dates?: string; heroUrl?: string };
+type SpectatorFinalRace = { title: string; slug: string; dateStr: string; venue: string; distance: string };
+type SpectatorTournamentDetailProps = { data?: SpectatorTournamentDetailData | null; qualifyingRaces?: BracketRace[]; semiFinalRaces?: BracketRace[]; finalRace?: SpectatorFinalRace; schedule?: ScheduleRace[]; loading?: boolean; error?: string };
 
-export const SpectatorTournamentDetail: React.FC<SpectatorTournamentDetailProps> = ({ data, qualifyingRaces = [], semiFinalRaces = [], schedule = [], loading = false, error }) => {
+export const SpectatorTournamentDetail: React.FC<SpectatorTournamentDetailProps> = ({ data, qualifyingRaces = [], semiFinalRaces = [], finalRace, schedule = [], loading = false, error }) => {
   const { name } = useParams();
-  const tournamentName = formatTournamentName(name);
+  const tournamentName = data?.title || formatTournamentName(name);
 
   if (!data) return <div className="spectator-detail-page"><SpectatorHeader /><main className="spectator-detail-api-empty">{loading ? 'Loading tournament data...' : error || 'No tournament data is available.'}</main><SpectatorFooter /></div>;
 
@@ -212,8 +213,8 @@ export const SpectatorTournamentDetail: React.FC<SpectatorTournamentDetailProps>
                 <article className="spectator-final-card">
                   <div className="spectator-final-card__title">
                     <div>
-                      <h4>Grand Finale</h4>
-                      <p>Aug 24 - 18:00 EST</p>
+                      <h4>{finalRace?.title || 'Grand Finale'}</h4>
+                      <p>{finalRace?.dateStr || 'TBA'}</p>
                     </div>
                     <span aria-hidden="true">
                       <svg width="18" height="24" viewBox="0 0 18 24" fill="none">
@@ -227,14 +228,14 @@ export const SpectatorTournamentDetail: React.FC<SpectatorTournamentDetailProps>
                   <div className="spectator-final-card__facts">
                     <div>
                       <span>Venue</span>
-                      <strong>Royal Track</strong>
+                      <strong>{finalRace?.venue || 'TBA'}</strong>
                     </div>
                     <div>
                       <span>Distance</span>
-                      <strong>2400m</strong>
+                      <strong>{finalRace?.distance || 'TBA'}</strong>
                     </div>
                   </div>
-                  <Link to={`/Spectator/Tournaments/${encodeURIComponent(tournamentName)}/grand-final`}>
+                  <Link to={`/Spectator/Tournaments/${encodeURIComponent(tournamentName)}/${finalRace?.slug || 'grand-final'}`}>
                     View Race
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                       <path

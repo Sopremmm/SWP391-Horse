@@ -88,9 +88,6 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/api/test/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/tournaments/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/races/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/entries/tournament/**").permitAll()
                                 .anyRequest().authenticated()
                 );
 

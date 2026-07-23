@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Footer } from '../../components/common/Footer.tsx';
 import { OwnerPortalHeader } from '../../components/horseOwner/OwnerPortalChrome.tsx';
-import { getHorseOwnerMyHorsesData } from '../../services/integration.ts';
+import { deleteHorse, getHorseOwnerMyHorsesData } from '../../services/integration.ts';
 import './MyHorses.css';
 
 type Horse = {
@@ -96,17 +96,19 @@ export const MyHorses: React.FC = () => {
     setPage((currentPage) => Math.min(currentPage, pageCount));
   }, [pageCount]);
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!pendingDelete) return;
-
-    setState((current) => {
-      const horses = current.horses.filter((horse) => horse.name !== pendingDelete.name);
-      return {
-        horses,
-        stats: normalizeStats({ stats: current.stats }, horses),
-      };
-    });
-    setPendingDelete(null);
+    if (!pendingDelete.id || !/^\d+$/.test(String(pendingDelete.id))) return;
+    try {
+      await deleteHorse(Number(pendingDelete.id));
+      setState((current) => {
+        const horses = current.horses.filter((horse) => horse.id !== pendingDelete.id);
+        return { horses, stats: normalizeStats({ stats: current.stats }, horses) };
+      });
+      setPendingDelete(null);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Unable to delete horse.');
+    }
   };
 
   const handleSave = () => {
@@ -252,7 +254,7 @@ export const MyHorses: React.FC = () => {
               <button
                 className="my-horses__btn my-horses__btn--danger"
                 type="button"
-                onClick={handleConfirmDelete}
+                onClick={() => void handleConfirmDelete()}
               >
                 Delete
               </button>

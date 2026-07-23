@@ -1,0 +1,14 @@
+.amtDetailPublishBtn {
+  min-height: 68px;
+  border: 1px solid #ffd185;
+  padding: 0 25px;
+  background: #ffd185;
+  color: #5b3500;
+  font: 700 14px Manrope, Inter, Arial, sans-serif;
+  cursor: pointer;
+}
+
+.amtDetailPublishBtn:disabled {
+  opacity: .7;
+  cursor: wait;
+}

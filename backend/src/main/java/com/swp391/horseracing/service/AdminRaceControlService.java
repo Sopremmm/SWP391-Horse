@@ -141,6 +141,41 @@ public class AdminRaceControlService {
         return res;
     }
 
+    private void excludeEntriesWithoutJockey(Race race) {
+        List<RaceEntry> entries = raceEntryRepository.findByRaceId(race.getId());
+        for (RaceEntry entry : entries) {
+            if ("APPROVED".equals(entry.getStatus()) || "CONFIRMED".equals(entry.getStatus())) {
+                if (entry.getJockey() == null) {
+                    entry.setStatus("WITHDRAWN");
+                    entry.setNoShow(true);
+                    entry.setNoShowAt(java.time.LocalDateTime.now());
+                    raceEntryRepository.save(entry);
+                }
+            }
+        }
+    }
+
+    @Transactional
+    public Race forceStartRace(Long actorAdminId, Long raceId) {
+        Race race = raceRepository.findById(raceId)
+                .orElseThrow(() -> new RuntimeException("Error: Race not found!"));
+
+        RaceStatus current = RaceStatus.fromString(race.getStatus());
+        if (current != RaceStatus.SCHEDULED) {
+            throw new RuntimeException("Error: Only SCHEDULED race can be force started!");
+        }
+
+        AdminRaceChecklistResponse checklist = getChecklist(raceId);
+        if (!checklist.isHasReferee()) {
+            throw new RuntimeException("Error: Referee must be assigned before force starting!");
+        }
+
+        excludeEntriesWithoutJockey(race);
+
+        race.setStatus(RaceStatus.ONGOING.name());
+        return raceRepository.save(race);
+    }
+
     @Transactional
     public Race updateRaceStatus(Long actorAdminId, Long raceId, String status) {
         Race race = raceRepository.findById(raceId)
@@ -277,7 +312,9 @@ public class AdminRaceControlService {
                 raceEntryRepository.save(entry);
             }
         }
+        raceEntryRepository.flush();
 
+        Set<Long> seenJockeyIds = new HashSet<>();
         for (AdminConfigureRaceGatesRequest.GateAssignment assignment : assignments) {
             RaceEntry entry = assignment.getEntryId() != null ? tournamentEntries.get(assignment.getEntryId()) : null;
             if (entry == null && assignment.getHorseId() != null) {
@@ -285,16 +322,22 @@ public class AdminRaceControlService {
                 if (entry == null) {
                     Horse horse = horseRepository.findById(assignment.getHorseId())
                             .orElseThrow(() -> new RuntimeException("Error: Horse not found!"));
-                    entry = RaceEntry.builder()
-                            .horse(horse)
-                            .tournament(race.getTournament())
-                            .status("APPROVED")
-                            .approvedAt(LocalDateTime.now())
-                            .build();
+                    entry = new RaceEntry();
+                    entry.setHorse(horse);
+                    entry.setTournament(race.getTournament());
+                    entry.setStatus("APPROVED");
+                    entry.setApprovedAt(LocalDateTime.now());
                 }
             }
             if (entry == null) {
                 throw new RuntimeException("Error: Unable to resolve horse entry for gate assignment!");
+            }
+            // Bug 4 fix: Prevent the same jockey from being assigned to multiple gates in one race
+            if (entry.getJockey() != null && entry.getJockey().getId() != null) {
+                if (!seenJockeyIds.add(entry.getJockey().getId())) {
+                    String jockeyName = entry.getJockey().getFullName() != null ? entry.getJockey().getFullName() : "#" + entry.getJockey().getId();
+                    throw new RuntimeException("Error: Jockey \"" + jockeyName + "\" is already assigned to another gate in this race!");
+                }
             }
             entry.setRace(race);
             entry.setGateNumber(assignment.getGateNumber());
@@ -318,4 +361,3 @@ public class AdminRaceControlService {
         return saved;
     }
 }
-

@@ -148,12 +148,7 @@ function normalizeResponse(raw?: RawHorseResponse | null): HorseDetailData[] {
 }
 
 function readJsonFromStorage(key: string): RawHorseResponse | null {
-  try {
-    const raw = window.localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as RawHorseResponse) : null;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 function fallbackMyHorses(): HorseDetailData[] {
@@ -193,13 +188,7 @@ export default function HorseOwnerHorseDetail() {
   const location = useLocation();
   const isRegistryView = location.pathname.startsWith('/HorseOwner/Horses/');
   const decodedName = decodeURIComponent(name ?? '');
-  const [horse, setHorse] = React.useState<HorseDetailData | null>(() => {
-    const initialData = isRegistryView
-      ? normalizeResponse(readJsonFromStorage('horse_owner_horses_data'))
-      : normalizeResponse(readJsonFromStorage('my_horses_data'));
-    const fallbackData = isRegistryView ? initialData : [...initialData, ...fallbackMyHorses()];
-    return findHorse(fallbackData, decodedName) || fallbackData[0] || null;
-  });
+  const [horse, setHorse] = React.useState<HorseDetailData | null>(null);
 
   React.useEffect(() => {
     let cancelled = false;

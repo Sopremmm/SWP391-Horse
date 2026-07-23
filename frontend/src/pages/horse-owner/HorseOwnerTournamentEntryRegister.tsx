@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Header } from '../../components/common/Header.tsx';
 import { getPageData, MyHorse } from '../../data/pageData.ts';
-import { fetchTournamentBySlug, registerTournamentEntry } from '../../services/integration.ts';
+import { getHorseOwnerTournamentRegisterData, getHorseOwnerMyHorsesData, fetchTournamentBySlug, registerTournamentEntry } from '../../services/integration.ts';
 import './HorseOwnerTournamentEntryRegister.css';
 
 type RuleIcon = 'shield' | 'gavel' | 'trophy';
@@ -92,31 +92,9 @@ function normalizeHorses(raw?: Array<Partial<MyHorse> & { id?: number | string }
     : [];
 }
 
-function readRegisterFromLocalStorage(slug: string): RawRegisterData | null {
-  try {
-    const specific = window.localStorage.getItem(`horse_owner_tournament_register_${slug}`);
-    const shared = window.localStorage.getItem('horse_owner_tournament_register_data');
-    return specific ? (JSON.parse(specific) as RawRegisterData) : shared ? (JSON.parse(shared) as RawRegisterData) : null;
-  } catch {
-    return null;
-  }
-}
-
-function readHorsesFromLocalStorage(): HorsesPayload | null {
-  try {
-    const raw = window.localStorage.getItem('my_horses_data');
-    return raw ? (JSON.parse(raw) as HorsesPayload) : null;
-  } catch {
-    return null;
-  }
-}
-
 async function readRegisterFromApi(slug: string): Promise<RawRegisterData | null> {
   try {
-    const base = process.env.REACT_APP_HORSE_OWNER_TOURNAMENT_REGISTER_API || '/api/horse-owner/tournaments';
-    const response = await fetch(`${base}/${encodeURIComponent(slug)}/register`, { method: 'GET' });
-    if (!response.ok) return null;
-    return (await response.json()) as RawRegisterData;
+    return (await getHorseOwnerTournamentRegisterData(slug)) as RawRegisterData;
   } catch {
     return null;
   }
@@ -124,10 +102,7 @@ async function readRegisterFromApi(slug: string): Promise<RawRegisterData | null
 
 async function readHorsesFromApi(): Promise<HorsesPayload | null> {
   try {
-    const endpoint = process.env.REACT_APP_HORSE_OWNER_MY_HORSES_API || '/api/horse-owner/my-horses';
-    const response = await fetch(endpoint, { method: 'GET' });
-    if (!response.ok) return null;
-    return (await response.json()) as HorsesPayload;
+    return (await getHorseOwnerMyHorsesData()) as HorsesPayload;
   } catch {
     return null;
   }
@@ -219,11 +194,10 @@ export default function HorseOwnerTournamentEntryRegister() {
     [decodedName, fallbackTournament],
   );
   const [data, setData] = React.useState<TournamentRegisterData>(() =>
-    normalizeRegisterData(readRegisterFromLocalStorage(slug) ?? fallbackData),
+    normalizeRegisterData(fallbackData),
   );
   const [horses, setHorses] = React.useState<Array<MyHorse & { id?: number | string }>>(() => {
-    const local = readHorsesFromLocalStorage();
-    return local ? normalizeHorses(local.horses) : normalizeHorses(myHorses.horses);
+    return normalizeHorses(myHorses.horses);
   });
   const [selectedHorse, setSelectedHorse] = React.useState<(MyHorse & { id?: number | string }) | null>(null);
   const [allHorsesOpen, setAllHorsesOpen] = React.useState(false);
@@ -237,13 +211,11 @@ export default function HorseOwnerTournamentEntryRegister() {
 
     const load = async () => {
       const apiData = await readRegisterFromApi(slug);
-      const localData = readRegisterFromLocalStorage(slug);
       const apiHorses = await readHorsesFromApi();
-      const localHorses = readHorsesFromLocalStorage();
 
       if (!cancelled) {
-        setData(normalizeRegisterData(apiData ?? localData ?? fallbackData));
-        setHorses(normalizeHorses((apiHorses ?? localHorses)?.horses ?? myHorses.horses));
+        setData(normalizeRegisterData(apiData ?? fallbackData));
+        setHorses(normalizeHorses(apiHorses?.horses ?? myHorses.horses));
       }
     };
 

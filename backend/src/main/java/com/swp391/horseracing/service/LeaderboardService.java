@@ -5,6 +5,7 @@ import com.swp391.horseracing.entity.Prize;
 import com.swp391.horseracing.entity.RaceResult;
 import com.swp391.horseracing.repository.PrizeRepository;
 import com.swp391.horseracing.repository.RaceResultRepository;
+import com.swp391.horseracing.repository.RaceEntryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +20,19 @@ public class LeaderboardService {
     @Autowired
     private PrizeRepository prizeRepository;
 
+    @Autowired
+    private RaceEntryRepository raceEntryRepository;
+
     public List<LeaderboardRowResponse> getTournamentLeaderboard(Long tournamentId) {
         List<RaceResult> results = raceResultRepository.findByRaceTournamentId(tournamentId);
         List<Prize> prizes = prizeRepository.findByRaceTournamentId(tournamentId);
 
         Map<Long, MutableRow> rows = new HashMap<>();
+        // An approved horse is visible with zero points before its first published result.
+        raceEntryRepository.findByTournamentId(tournamentId).stream()
+                .filter(entry -> entry.getId() != null && entry.getHorse() != null)
+                .filter(entry -> "APPROVED".equalsIgnoreCase(entry.getStatus()) || "WITHDRAWN".equalsIgnoreCase(entry.getStatus()))
+                .forEach(entry -> rows.putIfAbsent(entry.getId(), new MutableRow(entry)));
         for (RaceResult rr : results) {
             if (rr.getRace() == null || rr.getRace().getStatus() == null || !"COMPLETED".equalsIgnoreCase(rr.getRace().getStatus())) {
                 continue;
@@ -80,6 +89,12 @@ public class LeaderboardService {
             this.entryId = rr.getEntry().getId();
             this.horseId = rr.getEntry().getHorse() == null ? null : rr.getEntry().getHorse().getId();
             this.horseName = rr.getEntry().getHorse() == null ? null : rr.getEntry().getHorse().getName();
+        }
+
+        private MutableRow(com.swp391.horseracing.entity.RaceEntry entry) {
+            this.entryId = entry.getId();
+            this.horseId = entry.getHorse() == null ? null : entry.getHorse().getId();
+            this.horseName = entry.getHorse() == null ? null : entry.getHorse().getName();
         }
 
         private Integer getPoints() { return points; }

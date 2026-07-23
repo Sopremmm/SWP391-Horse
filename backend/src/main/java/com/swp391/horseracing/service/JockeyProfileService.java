@@ -25,9 +25,11 @@ public class JockeyProfileService {
             existingProfile.setWeightKg(profile.getWeightKg());
             existingProfile.setExperienceYears(profile.getExperienceYears());
             existingProfile.setBio(profile.getBio());
+            existingProfile.setActive(Boolean.TRUE.equals(profile.getActive()));
             return jockeyProfileRepository.save(existingProfile);
         } else {
             profile.setUser(user);
+            profile.setActive(Boolean.TRUE.equals(profile.getActive()));
             return jockeyProfileRepository.save(profile);
         }
     }

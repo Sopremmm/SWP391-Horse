@@ -39,6 +39,12 @@ public class Race {
     @Column(name = "max_participants")
     private Integer maxParticipants = 12;
 
+    @Column(name = "gates_configured", nullable = false)
+    private Boolean gatesConfigured = false;
+
+    @Column(name = "published", nullable = false)
+    private Boolean published = false;
+
     @Column(length = 20)
     private String status = "SCHEDULED"; // SCHEDULED, ONGOING, FINISHED, COMPLETED
 
@@ -64,6 +70,10 @@ public class Race {
     public void setDistanceM(Integer distanceM) { this.distanceM = distanceM; }
     public Integer getMaxParticipants() { return maxParticipants; }
     public void setMaxParticipants(Integer maxParticipants) { this.maxParticipants = maxParticipants; }
+    public Boolean getGatesConfigured() { return gatesConfigured; }
+    public void setGatesConfigured(Boolean gatesConfigured) { this.gatesConfigured = gatesConfigured; }
+    public Boolean getPublished() { return published; }
+    public void setPublished(Boolean published) { this.published = published; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }

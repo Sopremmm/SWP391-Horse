@@ -155,7 +155,7 @@ const FeaturedTournamentCard: React.FC<{ tournament: FeaturedTournament }> = ({ 
           <strong>{tournament.prizePool}</strong>
         </div>
       </div>
-      <Link to="/Spectator/Tournaments" className="spectator-tournament-feature__button">
+      <Link to={`/Spectator/Tournaments/${encodeURIComponent(tournament.title.toLowerCase().replace(/\s+/g, '-'))}`} className="spectator-tournament-feature__button">
         View Details <ArrowIcon />
       </Link>
     </div>

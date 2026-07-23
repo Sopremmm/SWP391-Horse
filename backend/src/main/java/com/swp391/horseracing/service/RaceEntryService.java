@@ -10,6 +10,8 @@ import com.swp391.horseracing.repository.RaceRepository;
 import com.swp391.horseracing.repository.TournamentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,6 +33,7 @@ public class RaceEntryService {
     @Autowired
     private NotificationService notificationService;
 
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public RaceEntry registerHorseToTournament(Long horseId, Long tournamentId, Long ownerId) {
         Horse horse = horseRepository.findById(horseId)
                 .orElseThrow(() -> new RuntimeException("Error: Horse not found!"));
@@ -43,17 +46,27 @@ public class RaceEntryService {
         if (!"OPEN".equalsIgnoreCase(tournament.getStatus())) {
             throw new RuntimeException("Error: Tournament registration is not open!");
         }
+        if (!"ACTIVE".equalsIgnoreCase(horse.getStatus())) {
+            throw new RuntimeException("Error: Only active horses can be registered!");
+        }
         if (raceEntryRepository.findByTournamentIdAndHorseId(tournamentId, horseId) != null) {
             throw new RuntimeException("Error: This horse is already registered for the tournament!");
         }
-        int registeredCount = raceEntryRepository.findByTournamentId(tournamentId).size();
+        long registeredCount = raceEntryRepository.findByTournamentId(tournamentId).stream()
+                .filter(e -> {
+                    String st = e.getStatus();
+                    return st != null && !st.equalsIgnoreCase("REJECTED") && !st.equalsIgnoreCase("WITHDRAWN");
+                })
+                .count();
         if (tournament.getMaxHorses() != null && registeredCount >= tournament.getMaxHorses()) {
             throw new RuntimeException("Error: Tournament has reached its horse limit!");
         }
 
-        // REG-01: Registration deadline <= raceStart - 24h (Applying to first race or tournament start)
-        if (tournament.getStartDate() == null || tournament.getStartDate().atStartOfDay().isBefore(LocalDateTime.now().plusHours(24))) {
-            throw new RuntimeException("Error: Registration deadline passed (REG-01)");
+        LocalDateTime now = LocalDateTime.now();
+        if (tournament.getRegistrationStartDate() == null || tournament.getRegistrationEndDate() == null
+                || now.toLocalDate().isBefore(tournament.getRegistrationStartDate())
+                || now.toLocalDate().isAfter(tournament.getRegistrationEndDate())) {
+            throw new RuntimeException("Error: Registration is outside the configured registration window!");
         }
 
         RaceEntry entry = RaceEntry.builder()
@@ -65,35 +78,22 @@ public class RaceEntryService {
         return raceEntryRepository.save(entry);
     }
 
-    public RaceEntry approveRegistration(Long entryId, Long raceId) {
+    @Transactional
+    public RaceEntry approveRegistration(Long entryId) {
         RaceEntry entry = raceEntryRepository.findById(entryId)
                 .orElseThrow(() -> new RuntimeException("Error: Entry not found!"));
-        Race race = raceRepository.findById(raceId)
-                .orElseThrow(() -> new RuntimeException("Error: Race not found!"));
-
-        // REG-02: Maximum Participants <= 12
-        List<RaceEntry> currentParticipants = raceEntryRepository.findByRaceId(raceId);
-        if (currentParticipants.size() >= 12) {
-            throw new RuntimeException("Error: Race is full (REG-02)");
+        if (!"PENDING".equalsIgnoreCase(entry.getStatus())) {
+            throw new RuntimeException("Error: Only pending entries can be approved!");
         }
-
-        // REG-04: Owner Participation Limit <= 3 per race
-        long ownerHorseCount = currentParticipants.stream()
-                .filter(e -> e.getHorse().getOwner().getId().equals(entry.getHorse().getOwner().getId()))
-                .count();
-        if (ownerHorseCount >= 3) {
-            throw new RuntimeException("Error: Owner limit reached for this race (REG-04)");
-        }
-
-        entry.setRace(race);
         entry.setStatus("APPROVED");
+        entry.setRejectionReason(null);
         entry.setApprovedAt(LocalDateTime.now());
         RaceEntry saved = raceEntryRepository.save(entry);
         if (saved.getHorse() != null && saved.getHorse().getOwner() != null && saved.getHorse().getOwner().getId() != null) {
             notificationService.sendNotification(
                     saved.getHorse().getOwner().getId(),
                     "Registration Approved",
-                    "Your horse \"" + saved.getHorse().getName() + "\" has been approved for race \"" + race.getName() + "\".",
+                    "Your horse \"" + saved.getHorse().getName() + "\" has been approved for tournament \"" + saved.getTournament().getName() + "\".",
                     "REG_APPROVED",
                     saved.getId(),
                     "RACE_ENTRY"
@@ -102,11 +102,22 @@ public class RaceEntryService {
         return saved;
     }
 
-    public RaceEntry rejectRegistration(Long entryId) {
+    @Transactional
+    public RaceEntry rejectRegistration(Long entryId, String reason) {
         RaceEntry entry = raceEntryRepository.findById(entryId)
                 .orElseThrow(() -> new RuntimeException("Error: Entry not found!"));
+        if (!"PENDING".equalsIgnoreCase(entry.getStatus())) {
+            throw new RuntimeException("Error: Only pending entries can be rejected!");
+        }
         entry.setStatus("REJECTED");
-        return raceEntryRepository.save(entry);
+        entry.setRejectionReason(reason.trim());
+        RaceEntry saved = raceEntryRepository.save(entry);
+        if (saved.getHorse() != null && saved.getHorse().getOwner() != null && saved.getHorse().getOwner().getId() != null) {
+            notificationService.sendNotification(saved.getHorse().getOwner().getId(), "Registration Rejected",
+                    "Registration for horse \"" + saved.getHorse().getName() + "\" was rejected: " + saved.getRejectionReason(),
+                    "REG_REJECTED", saved.getId(), "RACE_ENTRY");
+        }
+        return saved;
     }
 
     public List<RaceEntry> getEntriesByTournament(Long tournamentId) {

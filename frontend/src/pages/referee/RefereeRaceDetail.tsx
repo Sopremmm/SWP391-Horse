@@ -4,10 +4,15 @@ import { RefereeShell } from '../../components/referee/index.ts';
 import './RefereeRaceDetail.css';
 
 export type Participant = {
+  entryId?: number;
   gate: string;
   horse: string;
   breed: string;
   jockey: string;
+  checkedIn?: boolean;
+  attendanceTouched?: boolean;
+  finishTime?: string;
+  rank?: string;
 };
 
 export type IncidentLog = {
@@ -20,6 +25,7 @@ export type IncidentLog = {
 };
 
 export type RefereeRaceDetailData = {
+  raceId?: number;
   raceName?: string;
   imageUrl?: string;
   date?: string;
@@ -100,13 +106,28 @@ const GearIcon = () => (
 
 const rankOptions = ['-', '1', '2', '3', '4', '5', '6', '7', '8'];
 
-type RefereeRaceDetailProps = { data?: RefereeRaceDetailData | null; loading?: boolean; error?: string };
+type RefereeRaceDetailProps = {
+  data?: RefereeRaceDetailData | null;
+  loading?: boolean;
+  error?: string;
+  onSubmit?: () => Promise<void>;
+  onSaveParticipants?: (participants: Participant[]) => Promise<void>;
+  onRecordIncident?: (entryId: number, message: string) => Promise<void>;
+};
 
-export const RefereeRaceDetail: React.FC<RefereeRaceDetailProps> = ({ data, loading = false, error }) => {
+export const RefereeRaceDetail: React.FC<RefereeRaceDetailProps> = ({
+  data,
+  loading = false,
+  error,
+  onSubmit,
+  onSaveParticipants,
+  onRecordIncident,
+}) => {
   const { name } = useParams();
   const raceName = data?.raceName || titleCaseFromParam(name);
   const participants = data?.participants ?? [];
   const [incidents, setIncidents] = useState<IncidentLog[]>(data?.incidents ?? []);
+  const [participantRows, setParticipantRows] = useState<Participant[]>(data?.participants ?? []);
   const [isViolationOpen, setIsViolationOpen] = useState(false);
   const [isSubmitConfirmOpen, setIsSubmitConfirmOpen] = useState(false);
   const [editingIncidentId, setEditingIncidentId] = useState<number | null>(null);
@@ -118,6 +139,7 @@ export const RefereeRaceDetail: React.FC<RefereeRaceDetailProps> = ({ data, load
   const [draftDetails, setDraftDetails] = useState('');
 
   React.useEffect(() => setIncidents(data?.incidents ?? []), [data?.incidents]);
+  React.useEffect(() => setParticipantRows(data?.participants ?? []), [data?.participants]);
 
   const canSubmit = Boolean(draftHorse.trim() && draftType.trim() && draftTime.trim() && draftDetails.trim());
 
@@ -156,20 +178,37 @@ export const RefereeRaceDetail: React.FC<RefereeRaceDetailProps> = ({ data, load
     showToast('Violation deleted successfully.');
   };
 
-  const saveRaceTable = () => {
-    showToast('Race table saved successfully.');
+  const updateParticipant = (entryId: number | undefined, changes: Partial<Participant>) => {
+    if (!entryId) return;
+    setParticipantRows((current) => current.map((participant) => (
+      participant.entryId === entryId ? { ...participant, ...changes } : participant
+    )));
+  };
+
+  const saveRaceTable = async () => {
+    try {
+      await onSaveParticipants?.(participantRows);
+      showToast('Race table saved successfully.');
+    } catch (saveError) {
+      showToast(saveError instanceof Error ? saveError.message : 'Unable to save race table.');
+    }
   };
 
   const saveDraft = () => {
     showToast('Draft saved successfully.');
   };
 
-  const confirmSubmitToAdmin = () => {
-    setIsSubmitConfirmOpen(false);
-    showToast('Race report submitted to admin.');
+  const confirmSubmitToAdmin = async () => {
+    try {
+      await onSubmit?.();
+      setIsSubmitConfirmOpen(false);
+      showToast('Race report submitted to admin.');
+    } catch (submitError) {
+      showToast(submitError instanceof Error ? submitError.message : 'Unable to submit race report.');
+    }
   };
 
-  const addViolation = (event: React.FormEvent<HTMLFormElement>) => {
+  const addViolation = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!canSubmit) return;
 
@@ -190,6 +229,20 @@ export const RefereeRaceDetail: React.FC<RefereeRaceDetailProps> = ({ data, load
       );
       showToast('Violation updated successfully.');
     } else {
+      const participant = participantRows.find((item) => item.horse === draftHorse);
+      if (!participant?.entryId) {
+        showToast('The selected horse is not a race participant.');
+        return;
+      }
+      try {
+        await onRecordIncident?.(
+          participant.entryId,
+          `${draftType} | ${draftSeverity} | ${draftTime} | ${draftDetails}`,
+        );
+      } catch (incidentError) {
+        showToast(incidentError instanceof Error ? incidentError.message : 'Unable to save incident.');
+        return;
+      }
       setIncidents((current) => [
         ...current,
         {
@@ -254,8 +307,8 @@ export const RefereeRaceDetail: React.FC<RefereeRaceDetailProps> = ({ data, load
               <span>Rank</span>
               <span>Action</span>
             </div>
-            {loading ? <div className="referee-race-empty">Loading race data...</div> : error ? <div className="referee-race-empty">{error}</div> : participants.length ? participants.map((participant) => (
-              <div className="referee-participants-row" role="row" key={participant.gate}>
+            {loading ? <div className="referee-race-empty">Loading race data...</div> : error ? <div className="referee-race-empty">{error}</div> : participantRows.length ? participantRows.map((participant) => (
+              <div className="referee-participants-row" role="row" key={participant.entryId || participant.gate}>
                 <strong className="referee-participants-gate">{participant.gate}</strong>
                 <div className="referee-participants-horse">
                   <strong>{participant.horse}</strong>
@@ -263,11 +316,30 @@ export const RefereeRaceDetail: React.FC<RefereeRaceDetailProps> = ({ data, load
                 </div>
                 <strong>{participant.jockey}</strong>
                 <label className="referee-attendance-toggle" aria-label={`${participant.horse} attendance`}>
-                  <input type="checkbox" defaultChecked />
+                  <input
+                    type="checkbox"
+                    checked={participant.checkedIn ?? false}
+                    onChange={(event) => updateParticipant(participant.entryId, {
+                      checkedIn: event.target.checked,
+                      attendanceTouched: true,
+                    })}
+                  />
                   <span />
                 </label>
-                <input className="referee-finish-input" type="text" aria-label={`${participant.horse} finish time`} />
-                <select className="referee-rank-select" aria-label={`${participant.horse} rank`} defaultValue="-">
+                <input
+                  className="referee-finish-input"
+                  type="text"
+                  value={participant.finishTime || ''}
+                  onChange={(event) => updateParticipant(participant.entryId, { finishTime: event.target.value })}
+                  aria-label={`${participant.horse} finish time`}
+                  placeholder="mm:ss.mmm"
+                />
+                <select
+                  className="referee-rank-select"
+                  aria-label={`${participant.horse} rank`}
+                  value={participant.rank || '-'}
+                  onChange={(event) => updateParticipant(participant.entryId, { rank: event.target.value })}
+                >
                   {rankOptions.map((rank) => (
                     <option key={rank} value={rank}>
                       {rank}

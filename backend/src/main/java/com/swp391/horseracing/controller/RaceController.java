@@ -1,6 +1,7 @@
 package com.swp391.horseracing.controller;
 
 import com.swp391.horseracing.entity.Race;
+import com.swp391.horseracing.security.user.UserDetailsImpl;
 import com.swp391.horseracing.dto.request.SaveTournamentBracketRequest;
 import com.swp391.horseracing.dto.response.PrizeResponse;
 import com.swp391.horseracing.dto.response.PublicRaceResultsResponse;
@@ -10,6 +11,7 @@ import com.swp391.horseracing.service.RaceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -41,6 +43,13 @@ public class RaceController {
         return ResponseEntity.ok(raceService.saveTournamentBracket(tournamentId, request));
     }
 
+    @DeleteMapping("/tournament/{tournamentId}/bracket")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteTournamentBracket(@PathVariable Long tournamentId) {
+        raceService.deleteTournamentBracket(tournamentId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/{id}/referee")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Race> assignReferee(@PathVariable Long id, @RequestParam Long refereeId) {
@@ -48,13 +57,17 @@ public class RaceController {
     }
 
     @GetMapping("/tournament/{tournamentId}")
-    public ResponseEntity<List<Race>> getRacesByTournament(@PathVariable Long tournamentId) {
-        return ResponseEntity.ok(raceService.getRacesByTournament(tournamentId));
+    @PreAuthorize("!hasRole('REFEREE')")
+    public ResponseEntity<List<Race>> getRacesByTournament(@PathVariable Long tournamentId, @AuthenticationPrincipal UserDetailsImpl user) {
+        return ResponseEntity.ok(user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))
+                ? raceService.getRacesByTournament(tournamentId) : raceService.getPublishedRacesByTournament(tournamentId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Race> getRaceById(@PathVariable Long id) {
-        return ResponseEntity.ok(raceService.getRaceById(id));
+    @PreAuthorize("!hasRole('REFEREE')")
+    public ResponseEntity<Race> getRaceById(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl user) {
+        return ResponseEntity.ok(user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))
+                ? raceService.getRaceById(id) : raceService.getPublishedRaceById(id));
     }
 
     @GetMapping("/{id}/results")

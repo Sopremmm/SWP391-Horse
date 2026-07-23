@@ -9,6 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface RefereeReportRepository extends JpaRepository<RefereeReport, Long> {
+    boolean existsByRaceId(Long raceId);
     Optional<RefereeReport> findByRaceId(Long raceId);
     List<RefereeReport> findBySubmittedTrueAndConfirmedFalseOrderBySubmittedAtDesc();
     List<RefereeReport> findByConfirmedTrueOrderByConfirmedAtDesc();

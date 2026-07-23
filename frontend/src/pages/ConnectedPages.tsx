@@ -31,6 +31,8 @@ import {
   fetchAdminPendingReports,
   fetchAdminPublishableReports,
   fetchAdminRaceReport,
+  confirmAdminRaceReport,
+  publishAdminRaceResults,
   fetchEntriesByTournament,
   fetchNotifications,
   fetchJockeyProfile,
@@ -39,8 +41,15 @@ import {
   fetchPublicRaceResults,
   fetchRaceResults,
   fetchRacesByTournament,
+  fetchAssignedRefereeRaces,
   fetchRefereeEntries,
+  fetchRefereeRaceResults,
   fetchRefereeReport,
+  recordRefereeViolation,
+  submitRefereeReport,
+  updateRefereeCheckIn,
+  updateRefereeNoShow,
+  upsertRefereeRaceResults,
   respondToInvitation,
   formatCurrency,
   formatDate,
@@ -77,6 +86,24 @@ function mapInvitation(item: Awaited<ReturnType<typeof fetchJockeyInvitations>>[
         ? Math.round(((item.horse.totalWins || 0) / item.horse.totalRaces) * 100)
         : undefined,
   };
+}
+
+function formatRaceTime(milliseconds?: number) {
+  if (!milliseconds || milliseconds <= 0) return '';
+  const minutes = Math.floor(milliseconds / 60_000);
+  const seconds = Math.floor((milliseconds % 60_000) / 1_000);
+  const remainingMilliseconds = milliseconds % 1_000;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(remainingMilliseconds).padStart(3, '0')}`;
+}
+
+function parseRaceTime(value: string) {
+  const match = value.trim().match(/^(\d{1,2}):(\d{2})(?:\.(\d{1,3}))?$/);
+  if (!match) throw new Error('Finish time must use mm:ss.mmm, for example 01:42.350.');
+  const minutes = Number(match[1]);
+  const seconds = Number(match[2]);
+  const milliseconds = Number((match[3] || '0').padEnd(3, '0'));
+  if (seconds >= 60) throw new Error('Finish time seconds must be less than 60.');
+  return (minutes * 60_000) + (seconds * 1_000) + milliseconds;
 }
 
 function useAsyncData<T>(loader: () => Promise<T>, deps: React.DependencyList) {
@@ -291,7 +318,7 @@ export function ConnectedJockeyProfilePage() {
     return {
       fullName: user?.fullName || profile?.user?.fullName || '',
       avatarUrl: profile?.user?.avatarUrl,
-      professionalStatus: 'Active',
+      professionalStatus: profile?.active ? 'Active' : 'Unavailable',
       bio: profile?.bio || '',
       experienceYears: profile?.experienceYears,
       totalRaces: profile?.totalRaces,
@@ -316,6 +343,7 @@ export function ConnectedJockeyProfilePage() {
           weightKg: (data as typeof data & { weightKg?: number })?.weightKg || 0,
           experienceYears: profile.experienceYears || 0,
           bio: profile.bio || '',
+          active: profile.professionalStatus === 'Active',
           totalRaces: data?.totalRaces || 0,
           totalWins:
             data?.totalRaces && data.totalRaces > 0 && profile.winRate !== undefined
@@ -410,6 +438,7 @@ export function ConnectedJockeyRaceDetail() {
     if (!race) return null;
 
     return {
+      raceId: race.id,
       tournamentName: tournament.name,
       raceName: race.name,
       statusLabel: race.status || 'Scheduled',
@@ -417,12 +446,13 @@ export function ConnectedJockeyRaceDetail() {
       distance: race.distanceM ? `${race.distanceM}M` : 'TBA',
       venue: tournament.location,
       lineup: entries
-        .filter((entry) => entry.race?.id === race.id || !entry.race)
-        .map((entry, index) => {
+        .filter((entry) => entry.race?.id === race.id)
+        .sort((a, b) => (a.gateNumber ?? Number.MAX_SAFE_INTEGER) - (b.gateNumber ?? Number.MAX_SAFE_INTEGER))
+        .map((entry) => {
           const result = results.find((item) => item.entryId === entry.id);
           return {
             id: String(entry.id),
-            gate: index + 1,
+            gate: entry.gateNumber ?? undefined,
             horseName: entry.horse?.name,
             breed: entry.horse?.breed,
             sex: entry.horse?.color,
@@ -590,21 +620,13 @@ export function ConnectedJockeyHorseDetail() {
 }
 
 export function ConnectedRefereeHome() {
-  const user = getCurrentUser();
   const { data, loading, error } = useAsyncData(async () => {
-    const [notifications, tournaments] = await Promise.all([
+    const [notifications, races] = await Promise.all([
       fetchNotifications().catch(() => []),
-      fetchAllTournaments().catch(() => []),
+      fetchAssignedRefereeRaces(),
     ]);
 
-    const nested = await Promise.all(
-      tournaments.map(async (tournament) => {
-        const races = await fetchRacesByTournament(tournament.id).catch(() => []);
-        return races.map((race) => ({ race, tournament }));
-      }),
-    );
-
-    const assignedRaces = nested.flat().filter(({ race }) => race.referee?.id === user?.id);
+    const assignedRaces = races.map((race) => ({ race, tournament: race.tournament }));
     const sortedRaces = [...assignedRaces].sort(
       (a, b) => new Date(a.race.raceDate || '').getTime() - new Date(b.race.raceDate || '').getTime(),
     );
@@ -619,7 +641,7 @@ export function ConnectedRefereeHome() {
       completedCount: assignedRaces.filter(({ race }) => race.status === 'COMPLETED' || race.status === 'FINISHED').length,
       liveRace: liveRace
         ? {
-            series: liveRace.tournament.name,
+            series: liveRace.tournament?.name || 'Tournament',
             race: liveRace.race.name,
             participants: String(liveRace.race.maxParticipants || 0),
             dateTime: formatDateTime(liveRace.race.raceDate),
@@ -637,8 +659,8 @@ export function ConnectedRefereeHome() {
         id: race.id,
         time: new Date(race.raceDate || '').toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
         race: race.name,
-        details: `${tournament.name} • ${race.distanceM || 0}M`,
-        address: tournament.location || 'Location pending',
+        details: `${tournament?.name || 'Tournament'} • ${race.distanceM || 0}M`,
+        address: tournament?.location || 'Location pending',
         status:
           race.status === 'ONGOING'
             ? 'In Progress'
@@ -648,7 +670,7 @@ export function ConnectedRefereeHome() {
         action: race.status === 'ONGOING' ? 'Manage Live Race' : 'View Race',
       })),
     };
-  }, [user?.id]);
+  }, []);
 
   return <RefereeHome data={data} loading={loading} error={error} />;
 }
@@ -656,11 +678,7 @@ export function ConnectedRefereeHome() {
 export function ConnectedRefereeNotifications() {
   const [refreshKey, setRefreshKey] = React.useState(0);
   const { data, loading, error } = useAsyncData(async () => {
-    const notifications = await fetchNotifications();
-    const tournaments = await fetchAllTournaments().catch(() => []);
-    const allRaces = (
-      await Promise.all(tournaments.map(async (tournament) => fetchRacesByTournament(tournament.id).catch(() => [])))
-    ).flat();
+    const [notifications, allRaces] = await Promise.all([fetchNotifications(), fetchAssignedRefereeRaces()]);
 
     return notifications.map((item) => ({
       id: item.id,
@@ -702,28 +720,17 @@ export function ConnectedRefereeNotifications() {
 }
 
 export function ConnectedRefereeRaces() {
-  const user = getCurrentUser();
   const { data, loading, error } = useAsyncData(async () => {
-    const tournaments = await fetchAllTournaments();
-    const nested = await Promise.all(
-      tournaments.map(async (tournament) => {
-        const races = await fetchRacesByTournament(tournament.id).catch(() => []);
-        return races.map((race) => ({ race, tournament }));
-      }),
-    );
-
-    return nested
-      .flat()
-      .filter(({ race }) => race.referee?.id === user?.id)
-      .map(({ race, tournament }) => ({
+    const races = await fetchAssignedRefereeRaces();
+    return races.map((race) => ({
         id: race.id,
         date: formatDate(race.raceDate),
         time: new Date(race.raceDate || '').toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-        series: tournament.name,
+        series: race.tournament?.name || 'Tournament',
         race: race.name,
-        address: tournament.location || 'Location pending',
+        address: race.tournament?.location || 'Location pending',
         distance: race.distanceM ? `${race.distanceM}M` : 'TBA',
-        surface: tournament.status || 'Scheduled',
+        surface: race.tournament?.status || 'Scheduled',
         participants: `${race.maxParticipants || 0} max`,
         status:
           race.status === 'ONGOING'
@@ -733,7 +740,7 @@ export function ConnectedRefereeRaces() {
               : 'Upcoming',
         action: race.status === 'COMPLETED' ? 'Archived' : 'Manage Race',
       }));
-  }, [user?.id]);
+  }, []);
 
   return <RefereeRaces races={data || []} loading={loading} error={error} />;
 }
@@ -741,38 +748,37 @@ export function ConnectedRefereeRaces() {
 export function ConnectedRefereeRaceDetail() {
   const params = useParams();
   const raceSlug = slugify(decodeURIComponent(params.name || ''));
-  const user = getCurrentUser();
   const { data, loading, error } = useAsyncData(async () => {
-    const tournaments = await fetchAllTournaments();
-    const nested = await Promise.all(
-      tournaments.map(async (tournament) => {
-        const races = await fetchRacesByTournament(tournament.id).catch(() => []);
-        return races.map((race) => ({ race, tournament }));
-      }),
-    );
+    const races = await fetchAssignedRefereeRaces();
+    const selectedRace = races.find((race) => slugify(race.name) === raceSlug);
 
-    const selected = nested
-      .flat()
-      .find(({ race }) => race.referee?.id === user?.id && slugify(race.name) === raceSlug);
+    if (!selectedRace) return null;
 
-    if (!selected) return null;
-
-    const [entries, report] = await Promise.all([
-      fetchRefereeEntries(selected.race.id).catch(() => []),
-      fetchRefereeReport(selected.race.id).catch(() => null),
+    const [entries, report, results] = await Promise.all([
+      fetchRefereeEntries(selectedRace.id).catch(() => []),
+      fetchRefereeReport(selectedRace.id).catch(() => null),
+      fetchRefereeRaceResults(selectedRace.id).catch(() => []),
     ]);
+    const resultsByEntryId = new Map(results.map((result) => [result.entryId, result]));
 
     return {
-      raceName: selected.race.name,
-      date: formatDate(selected.race.raceDate),
-      time: new Date(selected.race.raceDate || '').toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-      distance: selected.race.distanceM ? `${selected.race.distanceM}M` : 'TBA',
-      location: selected.tournament.location,
+      raceId: selectedRace.id,
+      raceName: selectedRace.name,
+      date: formatDate(selectedRace.raceDate),
+      time: new Date(selectedRace.raceDate || '').toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+      distance: selectedRace.distanceM ? `${selectedRace.distanceM}M` : 'TBA',
+      location: selectedRace.tournament?.location,
       participants: entries.map((entry, index) => ({
+        entryId: entry.id,
         gate: String(index + 1),
         horse: entry.horse?.name || 'Horse',
         breed: [entry.horse?.breed, entry.horse?.age ? `${entry.horse.age}yo` : ''].filter(Boolean).join(' · '),
         jockey: entry.jockey?.fullName || 'Unassigned',
+        checkedIn: Boolean(entry.checkedIn),
+        finishTime: resultsByEntryId.get(entry.id)?.finishTimeMs
+          ? formatRaceTime(resultsByEntryId.get(entry.id)?.finishTimeMs)
+          : '',
+        rank: resultsByEntryId.get(entry.id)?.finishRank ? String(resultsByEntryId.get(entry.id)?.finishRank) : '-',
       })),
       incidents: report?.violations
         ? report.violations
@@ -788,37 +794,85 @@ export function ConnectedRefereeRaceDetail() {
             }))
         : [],
     };
-  }, [raceSlug, user?.id]);
+  }, [raceSlug]);
 
-  return <RefereeRaceDetail data={data} loading={loading} error={error} />;
+  return (
+    <RefereeRaceDetail
+      data={data}
+      loading={loading}
+      error={error}
+      onSubmit={async () => {
+        if (!data?.raceId) throw new Error('Race data is unavailable. Reload the page and try again.');
+        await submitRefereeReport(data.raceId);
+      }}
+      onSaveParticipants={async (participants) => {
+        if (!data?.raceId) throw new Error('Race data is unavailable. Reload the page and try again.');
+        await Promise.all(participants.map(async (participant) => {
+          if (!participant.entryId) return;
+          if (participant.checkedIn) {
+            await updateRefereeCheckIn(data.raceId!, participant.entryId, true);
+          } else if (participant.attendanceTouched) {
+            await updateRefereeNoShow(data.raceId!, participant.entryId, 'Marked absent by referee');
+          }
+        }));
+
+        const present = participants.filter((participant) => participant.checkedIn);
+        const incomplete = present.some((participant) => !participant.rank || participant.rank === '-' || !participant.finishTime?.trim());
+        if (incomplete) {
+          throw new Error('Enter rank and finish time for every attending horse before saving results.');
+        }
+        await upsertRefereeRaceResults(data.raceId, present.map((participant) => ({
+          entryId: participant.entryId!,
+          finishRank: Number(participant.rank),
+          finishTimeMs: parseRaceTime(participant.finishTime!),
+        })));
+      }}
+      onRecordIncident={async (entryId, message) => {
+        if (!data?.raceId) throw new Error('Race data is unavailable. Reload the page and try again.');
+        await recordRefereeViolation(data.raceId, entryId, message);
+      }}
+    />
+  );
 }
 
 export function ConnectedSpectatorTournament() {
   const { data, loading, error } = useAsyncData(async () => {
     const tournaments = await fetchAllTournaments();
-    const sorted = [...tournaments].sort(
-      (a, b) => new Date(a.startDate || '').getTime() - new Date(b.startDate || '').getTime(),
+    const visible = await Promise.all(
+      tournaments.map(async (tournament) => ({
+        tournament,
+        races: await fetchRacesByTournament(tournament.id).catch(() => []),
+      })),
+    );
+    const sorted = visible
+      .filter(({ races }) => races.length > 0)
+      .sort(
+      (a, b) => new Date(a.tournament.startDate || '').getTime() - new Date(b.tournament.startDate || '').getTime(),
     );
 
+    const mapTournament = ({ tournament, races }: (typeof sorted)[number]) => ({
+      title: tournament.name,
+      slug: slugify(tournament.name),
+      dates: formatDateRange(tournament.startDate, tournament.endDate),
+      status: tournament.status || 'Upcoming',
+      tone: tournament.status === 'ONGOING' ? 'live' as const : tournament.status === 'OPEN' ? 'open' as const : 'upcoming' as const,
+      races: `${races.length} ${races.length === 1 ? 'Race' : 'Races'}`,
+      prizePool: formatCurrency(tournament.prizePool),
+      image: tournament.imageUrl || '',
+    });
+
+    const mapped = sorted.map(mapTournament);
+
     return {
-      featuredTournaments: sorted.slice(0, 2).map((item, index) => ({
-        badge: item.status || (index === 0 ? 'Live Now' : 'Upcoming'),
-        tone: index === 0 ? 'live' : 'neutral',
-        title: item.name,
-        description: item.description || 'Tournament details synced from the backend.',
-        prizePool: formatCurrency(item.prizePool),
-        image: '',
+      featuredTournaments: sorted.slice(0, 2).map(({ tournament }) => ({
+        badge: tournament.status || 'Upcoming',
+        tone: tournament.status === 'ONGOING' ? 'live' as const : 'neutral' as const,
+        title: tournament.name,
+        description: tournament.description || 'Tournament details synced from the backend.',
+        prizePool: formatCurrency(tournament.prizePool),
+        image: tournament.imageUrl || '',
       })),
-      tournaments: sorted.map((item) => ({
-        title: item.name,
-        slug: slugify(item.name),
-        dates: formatDateRange(item.startDate, item.endDate),
-        status: item.status || 'Upcoming',
-        tone: item.status === 'ONGOING' ? 'live' : item.status === 'OPEN' ? 'open' : 'upcoming',
-        races: 'TBA',
-        prizePool: formatCurrency(item.prizePool),
-        image: '',
-      })),
+      tournaments: mapped,
     };
   }, []);
 
@@ -859,18 +913,32 @@ export function ConnectedSpectatorTournamentDetail() {
             : race.status === 'COMPLETED' || race.status === 'FINISHED'
               ? 'completed'
               : 'upcoming',
-        chip: `S${index + 1}`,
+        chip: String(index + 1),
         entry: `${formatDateTime(race.raceDate)} - ${race.distanceM || 0}M`,
       }));
 
+    const finalRaceData = races.find((race) => (race.roundNumber || 1) === 3);
+    const finalRace = finalRaceData ? {
+      title: finalRaceData.name,
+      slug: slugify(finalRaceData.name),
+      dateStr: formatDateTime(finalRaceData.raceDate),
+      venue: tournament.location || 'Venue pending',
+      distance: `${finalRaceData.distanceM || 0}m`,
+      status: finalRaceData.status === 'ONGOING' ? 'LIVE' : finalRaceData.status === 'COMPLETED' || finalRaceData.status === 'FINISHED' ? 'COMPLETED' : 'SCHEDULED',
+      participants: finalRaceData.maxParticipants || 0,
+      referee: finalRaceData.refereeName || 'TBA',
+    } : undefined;
+
     return {
       data: {
+        title: tournament.name,
         location: tournament.location,
         dates: formatDateRange(tournament.startDate, tournament.endDate),
-        heroUrl: '',
+        heroUrl: tournament.imageUrl || '',
       },
       qualifyingRaces,
       semiFinalRaces,
+      finalRace,
       schedule: races.map((race) => ({
         time: formatDateTime(race.raceDate),
         name: race.name,
@@ -890,6 +958,7 @@ export function ConnectedSpectatorTournamentDetail() {
       data={data?.data}
       qualifyingRaces={data?.qualifyingRaces}
       semiFinalRaces={data?.semiFinalRaces}
+      finalRace={data?.finalRace}
       schedule={data?.schedule}
       loading={loading}
       error={error}
@@ -1009,7 +1078,9 @@ export function ConnectedSpectatorRaceDetail() {
     const race = races.find((item) => slugify(item.name) === raceSlug);
     if (!race) return null;
 
-    const raceEntries = entries.filter((entry) => entry.race?.id === race.id || !entry.race);
+    const raceEntries = entries
+      .filter((entry) => entry.race?.id === race.id)
+      .sort((a, b) => (a.gateNumber ?? Number.MAX_SAFE_INTEGER) - (b.gateNumber ?? Number.MAX_SAFE_INTEGER));
     const results = publicSummary?.results || [];
     const incidents = publicSummary?.violations
       ? publicSummary.violations
@@ -1026,10 +1097,10 @@ export function ConnectedSpectatorRaceDetail() {
         distance: race.distanceM ? String(race.distanceM) : undefined,
         runnerCount: raceEntries.length,
       },
-      runners: raceEntries.map((entry, index) => {
+      runners: raceEntries.map((entry) => {
         const result = results.find((item) => item.entryId === entry.id);
         return {
-          gate: index + 1,
+          gate: entry.gateNumber ?? undefined,
           horse: entry.horse?.name || 'Horse',
           meta: [entry.horse?.breed, entry.horse?.age ? `${entry.horse.age} Years` : ''].filter(Boolean).join(' - '),
           jockey: entry.jockey?.fullName || 'Unassigned',
@@ -1201,24 +1272,48 @@ export function ConnectedAdminRaceIncidentDetail() {
     const report = await fetchAdminRaceReport(race.id).catch(() => null);
 
     return {
+      raceId: race.id,
       tournamentName: tournament.name,
       raceName: race.name,
       date: formatDate(race.raceDate),
       time: new Date(race.raceDate || '').toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
       refereeName: report?.referee?.fullName || race.referee?.fullName || 'Referee',
+      reportSubmitted: Boolean(report?.submitted),
+      reportConfirmed: Boolean(report?.confirmed),
+      resultsPublished: race.status === 'COMPLETED',
       incidents: (report?.violations || '')
         .split(/\r?\n/)
         .filter(Boolean)
-        .map((item, index) => ({
-          id: index + 1,
-          horseName: `Entry ${index + 1}`,
-          time: formatDateTime(report?.submittedAt || report?.confirmedAt),
-          violationType: 'Violation',
-          severity: 'medium' as const,
-          detail: item,
-        })),
+        .map((item, index) => {
+          const fields = item.split(' | ').map((field) => field.trim());
+          const severityIndex = fields.findIndex((field) => ['low', 'medium', 'high'].includes(field.toLowerCase()));
+          const severity = severityIndex >= 0 ? fields[severityIndex].toLowerCase() as 'low' | 'medium' | 'high' : 'medium' as const;
+          const entryField = fields.find((field) => field.startsWith('entryId='));
+          return {
+            id: index + 1,
+            horseName: entryField ? `Entry ${entryField.replace('entryId=', '')}` : `Entry ${index + 1}`,
+            time: severityIndex >= 0 && fields[severityIndex + 1] ? fields[severityIndex + 1] : formatDateTime(report?.submittedAt || report?.confirmedAt),
+            violationType: fields[3] || fields[1] || 'Violation',
+            severity,
+            detail: item,
+          };
+        }),
     };
   }, [raceSlug, tournamentSlug]);
 
-  return <AdminRaceIncidentDetail data={data} loading={loading} error={error} />;
+  return (
+    <AdminRaceIncidentDetail
+      data={data}
+      loading={loading}
+      error={error}
+      onConfirmReport={async () => {
+        if (!data?.raceId) throw new Error('Race data is unavailable. Reload the page and try again.');
+        await confirmAdminRaceReport(data.raceId);
+      }}
+      onPublishResults={async () => {
+        if (!data?.raceId) throw new Error('Race data is unavailable. Reload the page and try again.');
+        await publishAdminRaceResults(data.raceId);
+      }}
+    />
+  );
 }

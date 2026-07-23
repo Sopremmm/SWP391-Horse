@@ -29,6 +29,13 @@ public class RefereeService {
     @Autowired
     private RefereeReportRepository refereeReportRepository;
 
+    public List<Race> getAssignedRaces(Long refereeUserId) {
+        if (refereeUserId == null) {
+            throw new RuntimeException("Error: Authenticated referee is required!");
+        }
+        return raceRepository.findByRefereeId(refereeUserId);
+    }
+
     public List<RaceEntry> getRaceEntriesForReferee(Long raceId, Long refereeUserId) {
         Race race = getRaceAndAuthorizeReferee(raceId, refereeUserId);
         return raceEntryRepository.findByRaceId(race.getId());
@@ -221,6 +228,18 @@ public class RefereeService {
         }
 
         List<RaceEntry> entries = raceEntryRepository.findByRaceId(raceId);
+
+        for (RaceEntry entry : entries) {
+            if (entry.getStatus() != null && (entry.getStatus().equals("APPROVED") || entry.getStatus().equals("CONFIRMED"))) {
+                if (entry.getCheckedIn() == null || !entry.getCheckedIn()) {
+                    entry.setNoShow(true);
+                    entry.setNoShowAt(LocalDateTime.now());
+                    entry.setStatus("WITHDRAWN");
+                    raceEntryRepository.save(entry);
+                }
+            }
+        }
+
         ensureAllCheckedInOrWithdrawn(entries);
 
         report.setSubmitted(true);

@@ -36,6 +36,9 @@ public class JockeyProfile {
     @Column
     private String bio;
 
+    @Column(name = "is_active", nullable = false)
+    private Boolean active = false;
+
     public JockeyProfile() {}
 
     public Long getId() { return id; }
@@ -54,4 +57,6 @@ public class JockeyProfile {
     public void setTotalWins(Integer totalWins) { this.totalWins = totalWins; }
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
+    public Boolean getActive() { return active; }
+    public void setActive(Boolean active) { this.active = active; }
 }

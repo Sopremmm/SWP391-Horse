@@ -88,8 +88,8 @@ export default function InviteJockeyForm() {
         tournamentItems.map(async (item) => {
           const entries = await fetchEntriesByTournament(item.id).catch(() => []);
           const eligible = entries
-            .filter((entry) => entry.status === 'APPROVED' && entry.race?.id && entry.horse?.id && myHorseIds.has(entry.horse.id))
-            .map((entry) => ({ id: entry.horse!.id, name: entry.horse!.name, raceId: entry.race!.id }));
+            .filter((entry) => ['PENDING', 'APPROVED', 'CONFIRMED'].includes(entry.status || 'PENDING') && entry.horse?.id && myHorseIds.has(entry.horse.id))
+            .map((entry) => ({ id: entry.horse!.id, name: entry.horse!.name }));
           return [String(item.id), eligible] as const;
         }),
       );
@@ -112,8 +112,8 @@ export default function InviteJockeyForm() {
     const horse = (eligibleHorses[tournamentId] || []).find((item) => item.name === horseName);
     const tournament = tournaments.find((item) => String(item.id) === tournamentId);
 
-    if (!horse?.id || !horse.raceId) {
-      setNotice('This horse must be registered and approved for a race before inviting a jockey.');
+    if (!horse?.id) {
+      setNotice('This horse must be registered and approved for a tournament before inviting a jockey.');
       return;
     }
 
@@ -122,7 +122,7 @@ export default function InviteJockeyForm() {
       await sendJockeyInvitation({
         horseId: horse.id,
         jockeyId: jockey.id,
-        raceId: horse.raceId,
+        tournamentId: Number(tournamentId),
         message,
       });
       setNotice(`Official invitation sent to ${jockey.name} for ${tournament?.title ?? 'the selected event'}.`);
@@ -183,7 +183,7 @@ export default function InviteJockeyForm() {
                   <option value="">Select a horse from stable</option>
                   {(eligibleHorses[tournamentId] || []).map((horse) => <option key={horse.id} value={horse.name}>{horse.name}</option>)}
                 </select>
-                <small>Only horses approved for a race in the selected tournament are shown.</small>
+                <small>Only horses registered in the selected tournament are shown.</small>
               </label>
             </div>
 

@@ -10,7 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "jockey_invitation", uniqueConstraints = {@UniqueConstraint(columnNames = {"horse_id", "jockey_id", "race_id"})})
+@Table(name = "jockey_invitation", uniqueConstraints = {@UniqueConstraint(columnNames = {"horse_id", "jockey_id", "tournament_id"})})
 public class JockeyInvitation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,8 +29,8 @@ public class JockeyInvitation {
     private User jockey;
 
     @ManyToOne
-    @JoinColumn(name = "race_id", nullable = false)
-    private Race race;
+    @JoinColumn(name = "tournament_id")
+    private Tournament tournament;
 
     @Column(length = 15)
     private String status = "PENDING"; // PENDING, ACCEPTED, DECLINED, EXPIRED
@@ -51,11 +51,11 @@ public class JockeyInvitation {
 
     public JockeyInvitation() {}
 
-    public JockeyInvitation(Horse horse, User owner, User jockey, Race race, String message, String status, LocalDateTime invitedAt, LocalDateTime expiresAt) {
+    public JockeyInvitation(Horse horse, User owner, User jockey, Tournament tournament, String message, String status, LocalDateTime invitedAt, LocalDateTime expiresAt) {
         this.horse = horse;
         this.owner = owner;
         this.jockey = jockey;
-        this.race = race;
+        this.tournament = tournament;
         this.message = message;
         this.status = status;
         this.invitedAt = invitedAt;
@@ -70,7 +70,7 @@ public class JockeyInvitation {
         private Horse horse;
         private User owner;
         private User jockey;
-        private Race race;
+        private Tournament tournament;
         private String message;
         private String status;
         private LocalDateTime invitedAt;
@@ -79,13 +79,13 @@ public class JockeyInvitation {
         public JockeyInvitationBuilder horse(Horse horse) { this.horse = horse; return this; }
         public JockeyInvitationBuilder owner(User owner) { this.owner = owner; return this; }
         public JockeyInvitationBuilder jockey(User jockey) { this.jockey = jockey; return this; }
-        public JockeyInvitationBuilder race(Race race) { this.race = race; return this; }
+        public JockeyInvitationBuilder tournament(Tournament tournament) { this.tournament = tournament; return this; }
         public JockeyInvitationBuilder message(String message) { this.message = message; return this; }
         public JockeyInvitationBuilder status(String status) { this.status = status; return this; }
         public JockeyInvitationBuilder invitedAt(LocalDateTime invitedAt) { this.invitedAt = invitedAt; return this; }
         public JockeyInvitationBuilder expiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; return this; }
         public JockeyInvitation build() {
-            return new JockeyInvitation(horse, owner, jockey, race, message, status, invitedAt, expiresAt);
+            return new JockeyInvitation(horse, owner, jockey, tournament, message, status, invitedAt, expiresAt);
         }
     }
 
@@ -97,8 +97,8 @@ public class JockeyInvitation {
     public void setOwner(User owner) { this.owner = owner; }
     public User getJockey() { return jockey; }
     public void setJockey(User jockey) { this.jockey = jockey; }
-    public Race getRace() { return race; }
-    public void setRace(Race race) { this.race = race; }
+    public Tournament getTournament() { return tournament; }
+    public void setTournament(Tournament tournament) { this.tournament = tournament; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public String getMessage() { return message; }

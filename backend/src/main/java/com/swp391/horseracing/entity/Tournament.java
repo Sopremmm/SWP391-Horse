@@ -38,6 +38,12 @@ public class Tournament {
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
+    @Column(name = "registration_start_date")
+    private LocalDate registrationStartDate;
+
+    @Column(name = "registration_end_date")
+    private LocalDate registrationEndDate;
+
     @Column(name = "prize_pool")
     private BigDecimal prizePool = BigDecimal.ZERO;
 
@@ -50,6 +56,9 @@ public class Tournament {
 
     @Column(length = 20)
     private String status = "DRAFT"; // DRAFT, OPEN, ONGOING, CLOSED
+
+    @Column(name = "bracket_published", nullable = false)
+    private Boolean bracketPublished = false;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -71,6 +80,10 @@ public class Tournament {
     public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
     public LocalDate getEndDate() { return endDate; }
     public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+    public LocalDate getRegistrationStartDate() { return registrationStartDate; }
+    public void setRegistrationStartDate(LocalDate registrationStartDate) { this.registrationStartDate = registrationStartDate; }
+    public LocalDate getRegistrationEndDate() { return registrationEndDate; }
+    public void setRegistrationEndDate(LocalDate registrationEndDate) { this.registrationEndDate = registrationEndDate; }
     public BigDecimal getPrizePool() { return prizePool; }
     public void setPrizePool(BigDecimal prizePool) { this.prizePool = prizePool; }
     public Integer getMaxHorses() { return maxHorses; }
@@ -79,6 +92,8 @@ public class Tournament {
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public Boolean getBracketPublished() { return bracketPublished; }
+    public void setBracketPublished(Boolean bracketPublished) { this.bracketPublished = bracketPublished; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
-import { createTournament, fetchTournamentBySlug } from '../../services/integration.ts';
+import { createTournament, fetchTournamentBySlug, updateTournament } from '../../services/integration.ts';
 
 import './AdminCreateTournament.css';
 
@@ -66,8 +66,8 @@ export default function AdminCreateTournament({ mode = 'create' }: AdminCreateTo
         description: tournament.description || '',
         participants: tournament.maxHorses ? String(tournament.maxHorses) : '',
         prize: tournament.prizePool ? String(tournament.prizePool) : '',
-        registrationStart: '',
-        registrationDeadline: '',
+        registrationStart: tournament.registrationStartDate || '',
+        registrationDeadline: tournament.registrationEndDate || '',
         tournamentStart: tournament.startDate || '',
         tournamentEnd: tournament.endDate || '',
         venue: tournament.location || '',
@@ -115,17 +115,23 @@ export default function AdminCreateTournament({ mode = 'create' }: AdminCreateTo
 
     const formData = new FormData(event.currentTarget);
     try {
-      await createTournament({
-        id: initialTournament.id ? Number(initialTournament.id) : undefined,
+      const payload = {
         name: String(formData.get('name') || '').trim(),
         description: String(formData.get('description') || '').trim(),
         maxHorses: Number(formData.get('participants') || 0),
         prizePool: Number(formData.get('prize') || 0),
+        registrationStartDate: String(formData.get('registrationStart') || ''),
+        registrationEndDate: String(formData.get('registrationDeadline') || ''),
         startDate: String(formData.get('tournamentStart') || ''),
         endDate: String(formData.get('tournamentEnd') || ''),
         location: String(formData.get('venue') || '').trim(),
         imageUrl: bannerPreview || undefined,
-      });
+      };
+      if (isEdit && initialTournament.id) {
+        await updateTournament(Number(initialTournament.id), payload);
+      } else {
+        await createTournament(payload);
+      }
       setCreated(true);
       window.setTimeout(() => {
         setCreated(false);
@@ -235,11 +241,11 @@ export default function AdminCreateTournament({ mode = 'create' }: AdminCreateTo
             <div className="admin-create-tournament__schedule-grid">
               <label className="admin-create-tournament__field">
                 <span>Registration Start</span>
-                <input name="registrationStart" type="datetime-local" defaultValue={initialTournament.registrationStart} />
+                <input name="registrationStart" type="date" defaultValue={initialTournament.registrationStart} required />
               </label>
               <label className="admin-create-tournament__field">
                 <span>Registration Deadline</span>
-                <input name="registrationDeadline" type="datetime-local" defaultValue={initialTournament.registrationDeadline} />
+                <input name="registrationDeadline" type="date" defaultValue={initialTournament.registrationDeadline} required />
               </label>
               <label className="admin-create-tournament__field">
                 <span>Tournament Start</span>

@@ -43,9 +43,24 @@ public class TournamentController {
         return ResponseEntity.ok(leaderboardService.getTournamentLeaderboard(id));
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Tournament> updateTournament(
+            @PathVariable Long id,
+            @RequestBody Tournament request) {
+        return ResponseEntity.ok(tournamentService.updateTournament(id, request));
+    }
+
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Tournament> updateStatus(@PathVariable Long id, @RequestParam String status) {
         return ResponseEntity.ok(tournamentService.updateStatus(id, status));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteTournament(@PathVariable Long id) {
+        tournamentService.deleteTournament(id);
+        return ResponseEntity.noContent().build();
     }
 }

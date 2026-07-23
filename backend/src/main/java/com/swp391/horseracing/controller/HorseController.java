@@ -41,8 +41,15 @@ public class HorseController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Horse>> getAllHorses() {
         return ResponseEntity.ok(horseService.getAllHorses());
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('HORSE_OWNER')")
+    public ResponseEntity<Void> deleteHorse(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        horseService.deleteHorse(id, userDetails.getId());
+        return ResponseEntity.noContent().build();
     }
 }

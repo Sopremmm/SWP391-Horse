@@ -93,7 +93,7 @@ export const SpectatorHome: React.FC<SpectatorHomeProps> = ({
                 </div>
                 <h3>{race.title}</h3>
                 <p>{race.location}</p>
-                <Link to="/Spectator/Tournaments" className="spectator-race-card__button">
+                <Link to={`/Spectator/Tournaments/${encodeURIComponent(race.title.toLowerCase().replace(/\s+/g, '-'))}`} className="spectator-race-card__button">
                   View Details
                 </Link>
               </article>

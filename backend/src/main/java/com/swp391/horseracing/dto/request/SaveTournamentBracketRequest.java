@@ -5,10 +5,10 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 public class SaveTournamentBracketRequest {
-    @NotNull @Min(1) @Max(64)
+    @NotNull @Min(0) @Max(64)
     private Integer qualifyingRaces;
 
-    @NotNull @Min(1) @Max(32)
+    @NotNull @Min(0) @Max(32)
     private Integer semifinalRaces;
 
     public Integer getQualifyingRaces() { return qualifyingRaces; }
