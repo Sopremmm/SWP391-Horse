@@ -1,0 +1,32 @@
+.jockey-notifications{min-height:100vh;background:#f9faf6;color:#404941;font-family:Manrope,Inter,Arial,sans-serif}
+.jockey-notifications *{box-sizing:border-box}
+.jockey-notifications__main{width:min(100% - 48px,1224px);margin:auto;padding:104px 0 64px}
+.jockey-notifications__intro{display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
+.jockey-notifications__intro h1,.jockey-notification-card__heading h2{margin:0;color:#07552c;font-family:'EB Garamond',Georgia,serif}
+.jockey-notifications__intro h1{font-size:28px}
+.jockey-notifications__intro p{max-width:720px;margin:12px 0 0;font-size:16px;line-height:1.55}
+.jockey-notifications__controls{display:flex;align-items:center;gap:12px}
+.jockey-notifications__filter{display:flex;gap:10px}
+.jockey-notifications__filter button,.jockey-notifications__mark,.jockey-notification-card__actions button,.jockey-notification-card__actions a{min-height:42px;padding:0 18px;border:1px solid #c8d0c6;border-radius:999px;background:#fff;color:#07552c;font:600 14px Manrope,Inter,Arial,sans-serif;text-decoration:none;cursor:pointer}
+.jockey-notifications__filter button.is-active{background:#07552c;color:#fff}
+.jockey-notifications__mark:disabled{opacity:.55;cursor:not-allowed}
+.jockey-notifications__list{margin-top:28px;display:grid;gap:16px}
+.jockey-notification-card{padding:24px 28px;border:1px solid #c8d0c6;border-radius:12px;background:#fff;display:grid;grid-template-columns:52px minmax(0,1fr);gap:18px}
+.jockey-notification-card.is-read{opacity:.82}
+.jockey-notification-card__icon{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-weight:800}
+.jockey-notification-card__icon--invitation{background:#fff0d9;color:#8a5411}
+.jockey-notification-card__icon--alert{background:#fee2e2;color:#b91c1c}
+.jockey-notification-card__icon--update{background:#dff5e5;color:#07552c}
+.jockey-notification-card__heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.jockey-notification-card__heading time{color:#59625b;font-size:13px}
+.jockey-notification-card__content p{margin:10px 0 0;color:#59625b;line-height:1.6}
+.jockey-notification-card__actions{margin-top:16px;display:flex;flex-wrap:wrap;gap:12px}
+.jockey-notifications__state{min-height:180px;border:1px dashed #c0c9be;border-radius:12px;background:#fff;display:grid;place-items:center;color:#717970}
+.jockey-notifications__state--error{color:#b91c1c}
+@media(max-width:760px){
+  .jockey-notifications__main{width:min(100% - 32px,1224px);padding-top:90px}
+  .jockey-notifications__intro{flex-direction:column}
+  .jockey-notifications__controls{width:100%;flex-direction:column;align-items:stretch}
+  .jockey-notification-card{grid-template-columns:1fr}
+  .jockey-notification-card__heading{flex-direction:column;align-items:flex-start}
+}

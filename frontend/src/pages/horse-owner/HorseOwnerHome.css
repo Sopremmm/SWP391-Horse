@@ -1,0 +1,542 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
+
+.owner-home {
+  --owner-green: #003d24;
+  --owner-green-deep: #002f1d;
+  --owner-gold: #e3b55f;
+  --owner-ink: #0b3d2a;
+  --owner-muted: #5f6b7a;
+  min-height: 100vh;
+  background: #ffffff;
+  color: var(--owner-ink);
+  font-family: Inter, Arial, sans-serif;
+}
+
+.owner-home *,
+.owner-home *::before,
+.owner-home *::after {
+  box-sizing: border-box;
+}
+
+.owner-home a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.owner-home__main {
+  width: min(100%, 1280px);
+  margin: 0 auto;
+  padding: 112px 38px 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.owner-home__welcome {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.owner-home__welcome p,
+.owner-home__feature-meta strong,
+.owner-home__prize-head span,
+.owner-home__race-date span,
+.owner-home__panel-head a,
+.owner-home__footer-nav strong,
+.owner-home__footer-contact strong,
+.owner-home__stat span {
+  margin: 0;
+  color: var(--owner-gold);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.owner-home__welcome h1 {
+  margin: 0;
+  color: var(--owner-ink);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(42px, 5vw, 52px);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.owner-home__welcome span {
+  max-width: 670px;
+  color: var(--owner-muted);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.owner-home__feature {
+  position: relative;
+  min-height: 452px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--owner-green);
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);
+}
+
+.owner-home__feature > img,
+.owner-home__feature-shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.owner-home__feature > img {
+  object-fit: cover;
+}
+
+.owner-home__feature-shade {
+  background:
+    linear-gradient(90deg, rgba(0, 61, 36, 0.96) 0%, rgba(0, 61, 36, 0.64) 48%, rgba(8, 25, 32, 0.3) 100%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.08));
+}
+
+.owner-home__empty-feature,
+.owner-home__empty-stats {
+  position: relative;
+  min-height: 452px;
+  padding: 48px;
+  color: rgba(255, 255, 255, 0.72);
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.owner-home__feature-content {
+  position: relative;
+  min-height: 452px;
+  padding: 76px 48px 72px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  align-items: end;
+  gap: 40px;
+}
+
+.owner-home__feature-copy {
+  max-width: 680px;
+  color: #ffffff;
+}
+
+.owner-home__feature-meta {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.owner-home__feature-meta strong {
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: var(--owner-gold);
+  color: var(--owner-green-deep);
+  font-size: 10px;
+}
+
+.owner-home__feature-meta span {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.owner-home__feature-copy h2 {
+  margin: 0 0 22px;
+  color: #ffffff;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(38px, 5vw, 52px);
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.owner-home__feature-copy p {
+  max-width: 570px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.owner-home__prize-card {
+  min-height: 296px;
+  padding: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.owner-home__prize-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.owner-home__prize-head strong {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.owner-home__prize-value {
+  color: #ffffff;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.owner-home__race-date {
+  padding: 8px 0 2px;
+  display: grid;
+  gap: 8px;
+}
+
+.owner-home__race-date strong {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.owner-home__details-button {
+  min-height: 44px;
+  margin-top: auto;
+  border-radius: 6px;
+  background: var(--owner-gold);
+  color: var(--owner-green-deep);
+  font-size: 14px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.owner-home__tables {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.owner-home__panel {
+  min-width: 0;
+  padding: 25px 25px 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f7f6f1;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.owner-home__panel-head {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.owner-home__panel-head h2 {
+  margin: 0;
+  color: var(--owner-ink);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.owner-home__panel-head a {
+  color: rgba(11, 61, 42, 0.64);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.owner-home__table-wrap {
+  overflow: hidden;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.owner-home table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.owner-home th,
+.owner-home td {
+  padding: 18px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: left;
+}
+
+.owner-home tr:last-child td {
+  border-bottom: 0;
+}
+
+.owner-home th {
+  background: #f8fafc;
+  color: #7b8494;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.owner-home td {
+  color: #5b6574;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.owner-home td:first-child,
+.owner-home td:last-child {
+  color: #184d39;
+  font-weight: 700;
+}
+
+.owner-home__horse-name {
+  color: #184d39;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.owner-home__horse-name img {
+  width: 32px;
+  height: 32px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.owner-home__gender {
+  color: #5b6574;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.owner-home__gender::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border: 2px solid #60a5fa;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.owner-home__gender--mare::before {
+  border-color: #f472b6;
+}
+
+.owner-home__stats {
+  min-height: 128px;
+  padding: 32px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.11) 0 2px, transparent 2px 28px),
+    var(--owner-green);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  gap: 28px;
+}
+
+.owner-home__stats .owner-home__empty-stats {
+  min-height: 0;
+  padding: 0;
+  grid-column: 1 / -1;
+}
+
+.owner-home__stat {
+  text-align: center;
+}
+
+.owner-home__stat strong {
+  color: var(--owner-gold);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.1;
+  display: block;
+}
+
+.owner-home__stat span {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.62);
+  display: block;
+}
+
+.owner-home__footer {
+  border-top: 1px solid #e5e7eb;
+  background: #f7f6f1;
+}
+
+.owner-home__footer-inner {
+  width: min(100%, 1280px);
+  min-height: 306px;
+  margin: 0 auto;
+  padding: 64px 46px 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 48px;
+}
+
+.owner-home__footer-brand h2 {
+  margin: 0 0 16px;
+  color: var(--owner-ink);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 27px;
+  line-height: 1.2;
+}
+
+.owner-home__footer-brand p {
+  max-width: 340px;
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.owner-home__footer-nav,
+.owner-home__footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.owner-home__footer-nav strong,
+.owner-home__footer-contact strong {
+  color: #a7afbc;
+}
+
+.owner-home__footer-nav a,
+.owner-home__footer-contact a {
+  color: #5f6b7a;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.owner-home__footer-contact div {
+  display: flex;
+  gap: 12px;
+}
+
+.owner-home__footer-contact div a {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #a7afbc;
+  color: #f7f6f1;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.owner-home__copyright {
+  width: min(calc(100% - 64px), 1218px);
+  margin: 0 auto;
+  padding: 32px 0;
+  border-top: 1px solid #e5e7eb;
+  color: #a7afbc;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.owner-home a:focus-visible,
+.owner-home button:focus-visible {
+  outline: 3px solid rgba(227, 181, 95, 0.42);
+  outline-offset: 3px;
+}
+
+@media (max-width: 1060px) {
+  .owner-home__feature-content,
+  .owner-home__tables {
+    grid-template-columns: 1fr;
+  }
+
+  .owner-home__feature-content {
+    align-items: stretch;
+  }
+
+  .owner-home__prize-card {
+    max-width: 420px;
+  }
+}
+
+@media (max-width: 760px) {
+  .owner-home__main {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .owner-home__main {
+    padding-top: 100px;
+    gap: 34px;
+  }
+
+  .owner-home__feature-content {
+    min-height: 560px;
+    padding: 32px 24px;
+  }
+
+  .owner-home__panel {
+    padding: 20px 16px;
+  }
+
+  .owner-home__panel-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .owner-home__table-wrap {
+    overflow-x: auto;
+  }
+
+  .owner-home table {
+    min-width: 560px;
+  }
+
+  .owner-home__stats,
+  .owner-home__footer-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .owner-home__footer-inner {
+    min-height: 0;
+    padding: 44px 22px 28px;
+  }
+
+  .owner-home__copyright {
+    width: calc(100% - 44px);
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

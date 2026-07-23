@@ -1,0 +1,416 @@
+.spectator-tournament-page {
+  min-height: 100vh;
+  background: #f5f5f4;
+  color: #191c19;
+  font-family: Manrope, Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.spectator-tournament-page *,
+.spectator-tournament-page *::before,
+.spectator-tournament-page *::after {
+  box-sizing: border-box;
+}
+
+.spectator-tournament-main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.spectator-tournament-eyebrow {
+  margin: 0 0 4px;
+  color: #855316;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 16px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.spectator-tournament-hero h1,
+.spectator-tournament-schedule h2,
+.spectator-tournament-feature h3,
+.spectator-tournament-card h3 {
+  font-family: Georgia, 'Libre Caslon Text', 'Times New Roman', serif;
+}
+
+.spectator-tournament-hero h1 {
+  margin: 0;
+  color: #191c19;
+  font-size: 36px;
+  line-height: 1.15;
+}
+
+.spectator-tournament-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.spectator-tournament-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.spectator-tournament-feature {
+  position: relative;
+  min-height: 420px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.08);
+}
+
+.spectator-tournament-feature img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.spectator-tournament-feature::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(0, 59, 27, 0.9) 0%, rgba(0, 59, 27, 0.24) 54%, rgba(0, 59, 27, 0) 100%);
+}
+
+.spectator-tournament-feature__content {
+  position: relative;
+  z-index: 1;
+  min-height: 420px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 24px;
+}
+
+.spectator-tournament-feature__meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 24px;
+}
+
+.spectator-tournament-feature__badge,
+.spectator-tournament-card__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 8px;
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.spectator-tournament-feature__badge.is-live {
+  background: #ffbc76;
+  color: #79490b;
+}
+
+.spectator-tournament-feature__badge.is-neutral {
+  background: #e1e3dd;
+  color: #404941;
+}
+
+.spectator-tournament-feature h3 {
+  margin: 10px 0 4px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.spectator-tournament-feature p {
+  max-width: 450px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.spectator-tournament-feature__prize {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.spectator-tournament-feature__prize span {
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.spectator-tournament-feature__prize strong {
+  display: block;
+  color: #ffffff;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 42px;
+}
+
+.spectator-tournament-feature__button {
+  width: max-content;
+  min-height: 56px;
+  padding: 0 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 2px;
+  background: #ffffff;
+  color: #003b1b;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.spectator-tournament-filter {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 192px 104px;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #c0c9be;
+  border-radius: 4px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.spectator-tournament-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 58px;
+  background: #f2f4ee;
+  color: #717970;
+}
+
+.spectator-tournament-search svg {
+  position: absolute;
+  left: 16px;
+}
+
+.spectator-tournament-search input {
+  width: 100%;
+  height: 58px;
+  padding: 0 16px 0 48px;
+  border: 0;
+  background: transparent;
+  color: #191c19;
+  font: inherit;
+  font-size: 16px;
+  outline: none;
+}
+
+.spectator-tournament-search input::placeholder {
+  color: #6b7280;
+}
+
+.spectator-tournament-filter select,
+.spectator-tournament-filter button {
+  height: 58px;
+  border-radius: 2px;
+  font: inherit;
+  font-size: 16px;
+}
+
+.spectator-tournament-filter select {
+  padding: 0 48px 0 16px;
+  border: 1px solid #c0c9be;
+  background: #ffffff;
+  color: #191c19;
+}
+
+.spectator-tournament-filter button {
+  border: 0;
+  background: #003b1b;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.spectator-tournament-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.spectator-tournament-schedule h2 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 36px;
+}
+
+.spectator-tournament-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.spectator-tournament-card {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 432px;
+  border: 1px solid #c0c9be;
+  border-radius: 4px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.05);
+}
+
+.spectator-tournament-card > img {
+  width: 100%;
+  height: 128px;
+  object-fit: cover;
+}
+
+.spectator-tournament-card__body {
+  padding: 24px 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.spectator-tournament-card__badge.is-live {
+  background: #14532d;
+  color: #87c695;
+}
+
+.spectator-tournament-card__badge.is-open {
+  background: #ffdcbd;
+  color: #2c1600;
+}
+
+.spectator-tournament-card__badge.is-upcoming {
+  background: #e1e3dd;
+  color: #404941;
+}
+
+.spectator-tournament-card h3 {
+  margin: 8px 0 0;
+  color: #191c19;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.spectator-tournament-card__date {
+  margin: 0 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #717970;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.spectator-tournament-card__facts {
+  padding-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  border-top: 1px solid #c0c9be;
+}
+
+.spectator-tournament-card__facts span {
+  display: block;
+  color: #717970;
+  font-size: 10px;
+  line-height: 24px;
+  text-transform: uppercase;
+}
+
+.spectator-tournament-card__facts strong {
+  color: #191c19;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.spectator-tournament-card__facts div:last-child strong {
+  color: #003b1b;
+}
+
+.spectator-tournament-card__action {
+  margin-top: auto;
+  padding: 24px;
+}
+
+.spectator-tournament-card__action a,
+.spectator-tournament-load {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 58px;
+  border: 1px solid #003b1b;
+  border-radius: 2px;
+  background: transparent;
+  color: #003b1b;
+  font-size: 16px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.spectator-tournament-card__action a:hover,
+.spectator-tournament-load:hover {
+  background: #eef4ed;
+}
+
+.spectator-tournament-load {
+  gap: 10px;
+  margin-top: 8px;
+}
+
+@media (max-width: 1040px) {
+  .spectator-tournament-feature-grid,
+  .spectator-tournament-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .spectator-tournament-main {
+    padding: 28px 18px;
+  }
+
+  .spectator-tournament-feature-grid,
+  .spectator-tournament-grid,
+  .spectator-tournament-filter {
+    grid-template-columns: 1fr;
+  }
+
+  .spectator-tournament-feature {
+    min-height: 480px;
+  }
+
+  .spectator-tournament-feature__content {
+    min-height: 480px;
+    padding: 24px;
+  }
+
+  .spectator-tournament-feature__meta {
+    grid-template-columns: 1fr;
+  }
+
+  .spectator-tournament-feature__prize {
+    text-align: left;
+  }
+
+  .spectator-tournament-feature__button {
+    width: 100%;
+    justify-content: center;
+  }
+}
