@@ -7,9 +7,17 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 @Repository
 public interface JockeyInvitationRepository extends JpaRepository<JockeyInvitation, Long> {
     List<JockeyInvitation> findByJockeyId(Long jockeyId);
     List<JockeyInvitation> findByOwnerId(Long ownerId);
     Optional<JockeyInvitation> findByHorseIdAndJockeyIdAndTournamentId(Long horseId, Long jockeyId, Long tournamentId);
+
+    @Modifying
+    @Query("DELETE FROM JockeyInvitation i WHERE i.tournament.id = :tournamentId")
+    void deleteByTournamentId(@Param("tournamentId") Long tournamentId);
 }

@@ -81,9 +81,7 @@ public class TournamentService {
                 .orElseThrow(() -> new RuntimeException("Error: Tournament not found!"));
 
         // Delete jockey invitations for this tournament
-        jockeyInvitationRepository.findAll().stream()
-                .filter(inv -> inv.getTournament() != null && id.equals(inv.getTournament().getId()))
-                .forEach(jockeyInvitationRepository::delete);
+        jockeyInvitationRepository.deleteByTournamentId(id);
 
         // Delete race-level children (results, reports, prizes) then races
         List<Race> races = raceRepository.findByTournamentId(id);
@@ -92,12 +90,16 @@ public class TournamentService {
             refereeReportRepository.findByRaceId(race.getId()).ifPresent(refereeReportRepository::delete);
             prizeRepository.findByRaceIdOrderByFinishRankAsc(race.getId()).forEach(prizeRepository::delete);
         }
+        raceResultRepository.flush();
+        refereeReportRepository.flush();
+        prizeRepository.flush();
 
-        // Detach and delete race entries
-        raceEntryRepository.findByTournamentId(id).forEach(raceEntryRepository::delete);
+        // Detach and delete race entries using bulk query
+        raceEntryRepository.deleteByTournamentId(id);
 
         // Delete races
         raceRepository.deleteAll(races);
+        raceRepository.flush();
 
         // Finally delete tournament
         tournamentRepository.delete(tournament);
