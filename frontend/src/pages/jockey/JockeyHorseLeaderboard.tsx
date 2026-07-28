@@ -37,7 +37,7 @@ export default function JockeyHorseLeaderboard({ data, loading = false }: Props)
       <section className="jockey-horse-board__content">
         {visible.length ? <div className="jockey-horse-board__table">
           <div className="jockey-horse-board__head"><span>Rank</span><span>Horse name</span><span>Breed/Origin</span><span>Win ratio (%)</span><span>Total starts</span><span>Last result</span><span>Action</span></div>
-          {visible.map((horse) => { const href = `/Jockey/Horse/${encodeURIComponent(horse.name || horse.id)}`; return <article className="jockey-horse-board__row" key={horse.id}>
+          {visible.map((horse) => { const href = `/HorseOwner/Horses/${encodeURIComponent(horse.name || horse.id)}`; return <article className="jockey-horse-board__row" key={horse.id}>
             <strong className={horse.rank === 1 ? 'is-first' : ''} data-label="Rank">{horse.rank ? String(horse.rank).padStart(2, '0') : '—'}{horse.rank === 1 ? '☆' : ''}</strong>
             <div className="jockey-horse-board__horse" data-label="Horse name">{horse.imageUrl ? <img src={horse.imageUrl} alt="" /> : <i />}<div><Link to={href}>{horse.name || 'Unnamed horse'}</Link><small>Owner: {horse.ownerName || '—'}</small></div></div>
             <div data-label="Breed/Origin"><span>{horse.breed || '—'}</span><small>{[horse.origin, horse.age !== undefined ? `Age: ${horse.age} yrs` : ''].filter(Boolean).join(' · ')}</small></div>

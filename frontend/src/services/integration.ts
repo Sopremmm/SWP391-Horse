@@ -88,6 +88,7 @@ export type RawJockeyInvitation = {
   horse: RawHorse;
   owner: RawUser;
   jockey: RawUser;
+  tournament?: RawTournament;
   race: RawRace;
   status?: string;
   message?: string;
@@ -346,6 +347,38 @@ export async function sendJockeyInvitation(params: {
 
 export async function fetchJockeyInvitations() {
   return api.get<RawJockeyInvitation[]>('/invitations/my');
+}
+
+export async function fetchOwnerSentInvitations() {
+  return api.get<RawJockeyInvitation[]>('/invitations/sent');
+}
+
+export async function getHorseOwnerSentInvitationsData() {
+  const invitations = await fetchOwnerSentInvitations();
+  const mapped = invitations.map((invitation) => ({
+    id: invitation.id,
+    jockey: invitation.jockey?.fullName || invitation.jockey?.email || 'Jockey',
+    tournament:
+      invitation.tournament?.name ||
+      invitation.race?.tournament?.name ||
+      'Tournament',
+    horse: invitation.horse?.name || 'Horse',
+    sentDate: formatDate(invitation.invitedAt),
+    status:
+      invitation.status === 'ACCEPTED'
+        ? 'Accepted'
+        : invitation.status === 'DECLINED'
+          ? 'Declined'
+          : 'Pending',
+    image: invitation.jockey?.avatarUrl,
+  }));
+
+  writeCachedOwnerInvitations(mapped);
+  return {
+    title: 'Jockey Recruitment Status',
+    subtitle: 'Track invitations sent from your stable to race-day jockeys.',
+    invitations: mapped,
+  };
 }
 
 export async function respondToInvitation(invitationId: number, status: 'ACCEPTED' | 'DECLINED') {
@@ -898,7 +931,14 @@ export async function getHorseOwnerHorseLeaderboardData() {
 
 export async function getHorseOwnerHorseDetailData(slug: string) {
   const user = getCurrentUser();
-  const horses = await fetchMyHorses().catch(() => []);
+  const [myHorses, registryHorses] = await Promise.all([
+    fetchMyHorses().catch(() => []),
+    fetchAdminHorses().catch(() => []),
+  ]);
+  const horses = [
+    ...myHorses,
+    ...registryHorses.filter((candidate) => !myHorses.some((ownedHorse) => ownedHorse.id === candidate.id)),
+  ];
   const horse = horses.find((item) => slugify(item.name) === slug || String(item.id) === slug);
   if (!horse) return null;
 

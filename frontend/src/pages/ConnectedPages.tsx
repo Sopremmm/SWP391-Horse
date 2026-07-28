@@ -649,11 +649,18 @@ export function ConnectedRefereeHome() {
             imageUrl: '',
           }
         : undefined,
-      notifications: notifications.slice(0, 4).map((item) => ({
-        id: item.id,
-        title: item.title,
-        message: item.message,
-      })),
+      notifications: notifications.slice(0, 4).map((item) => {
+        const assignedRace = assignedRaces.find(({ race }) => race.id === item.refId)?.race;
+        const isAssignment = item.type?.includes('ASSIGN');
+        return {
+          id: item.id,
+          title: item.title,
+          message:
+            isAssignment && assignedRace
+              ? `You have been assigned as referee for race "${assignedRace.name}".`
+              : item.message,
+        };
+      }),
       weatherWarning: undefined,
       schedule: sortedRaces.map(({ race, tournament }) => ({
         id: race.id,
@@ -680,22 +687,29 @@ export function ConnectedRefereeNotifications() {
   const { data, loading, error } = useAsyncData(async () => {
     const [notifications, allRaces] = await Promise.all([fetchNotifications(), fetchAssignedRefereeRaces()]);
 
-    return notifications.map((item) => ({
-      id: item.id,
-      title: item.title,
-      message: item.message,
-      createdAt: formatDateTime(item.createdAt),
-      raceName: allRaces.find((race) => race.id === item.refId)?.name,
-      read: item.isRead,
-      type:
-        item.type === 'SYSTEM'
-          ? 'alert'
-          : item.type?.includes('UPDATE')
-            ? 'update'
-            : item.type?.includes('ASSIGN')
-              ? 'assignment'
-              : 'update',
-    }));
+    return notifications.map((item) => {
+      const assignedRace = allRaces.find((race) => race.id === item.refId);
+      const isAssignment = item.type?.includes('ASSIGN');
+      return {
+        id: item.id,
+        title: item.title,
+        message:
+          isAssignment && assignedRace
+            ? `You have been assigned as referee for race "${assignedRace.name}".`
+            : item.message,
+        createdAt: formatDateTime(item.createdAt),
+        raceName: assignedRace?.name,
+        read: item.isRead,
+        type:
+          item.type === 'SYSTEM'
+            ? 'alert'
+            : item.type?.includes('UPDATE')
+              ? 'update'
+              : isAssignment
+                ? 'assignment'
+                : 'update',
+      };
+    });
   }, [refreshKey]);
 
   return (

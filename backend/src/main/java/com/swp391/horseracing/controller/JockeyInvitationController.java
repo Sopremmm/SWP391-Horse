@@ -39,4 +39,11 @@ public class JockeyInvitationController {
     public ResponseEntity<List<JockeyInvitation>> getMyInvitations(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(invitationService.getJockeyInvitations(userDetails.getId()));
     }
+
+    @GetMapping("/sent")
+    @PreAuthorize("hasRole('HORSE_OWNER')")
+    public ResponseEntity<List<JockeyInvitation>> getSentInvitations(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(invitationService.getOwnerSentInvitations(userDetails.getId()));
+    }
 }

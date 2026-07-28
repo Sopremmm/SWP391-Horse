@@ -1,7 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OwnerPortalHeader } from '../../components/horseOwner/OwnerPortalChrome.tsx';
-import { getCachedOwnerSentInvitationsData } from '../../services/integration.ts';
+import {
+  getCachedOwnerSentInvitationsData,
+  getHorseOwnerSentInvitationsData,
+} from '../../services/integration.ts';
 import './HorseOwnerMyJockeys.css';
 
 type InvitationStatus = 'Pending' | 'Accepted' | 'Declined';
@@ -93,7 +96,8 @@ export default function HorseOwnerMyJockeys() {
   React.useEffect(() => {
     let cancelled = false;
     const loadInvitations = async () => {
-      const data = getCachedOwnerSentInvitationsData() as MyJockeyInvitationsData;
+      const data = await getHorseOwnerSentInvitationsData()
+        .catch(() => getCachedOwnerSentInvitationsData()) as MyJockeyInvitationsData;
       if (!cancelled) {
         setPageData(data);
         setInvitations(normalizeInvitations(data?.invitations));

@@ -72,7 +72,7 @@ const resultTone = (position?: string) => {
   return 'neutral';
 };
 
-const horseHref = (horse: LeaderboardHorse) => `/HorseOwner/Horses/${encodeURIComponent(horse.id || horse.name)}`;
+const horseHref = (horse: LeaderboardHorse) => `/HorseOwner/Horses/${encodeURIComponent(horse.name)}`;
 
 export default function HorseOwnerHorses() {
   const [data, setData] = React.useState<HorsesLeaderboardData>(() => normalizeHorsesData(null));

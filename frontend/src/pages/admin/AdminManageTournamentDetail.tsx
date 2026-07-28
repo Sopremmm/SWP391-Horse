@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
 import HomeBanner from '../../assets/images/HomeBanner.png';
+import { normalizeDisplayText } from '../../utils/textEncoding.ts';
 import {
   assignRaceReferee,
   deleteTournament,
@@ -42,7 +43,8 @@ type Bracket = { qualifiers: Race[]; semifinals: Race[]; final: Race };
 type RefereeOption = { id: number; name: string };
 type GateOption = { key: string; horseId: number; horse: RawHorse; entry: RawRaceEntry | null };
 
-const tournamentName = (name?: string) => decodeURIComponent(name ?? 'Royal Ascot Autumn Derby');
+const tournamentName = (name?: string) =>
+  normalizeDisplayText(decodeURIComponent(name ?? 'Royal Ascot Autumn Derby'));
 
 //#region debug-point admin-configure-gates-missing-horses-A1
 function reportAdminGateDebug(payload: Record<string, unknown>) {
@@ -724,7 +726,7 @@ export default function AdminManageTournamentDetail() {
             <div className="amtDetailHeroContent">
               <div className="amtDetailHeroLeft">
                 <span className="amtRegistration">{tournament?.status ? String(tournament.status) : loading ? 'Loading...' : 'Draft'}</span>
-                <h1 className="amtDetailHeroTitle">{title}</h1>
+                <h1 className="amtDetailHeroTitle">{tournament?.name || title}</h1>
                 <p className="amtDetailHeroDesc">{tournament?.description || 'Tournament details are synced from the backend.'}</p>
                 {actionError ? <p className="amtDetailHeroDesc">{actionError}</p> : null}
                 {actionSuccess ? <p className="amtDetailHeroDesc">{actionSuccess}</p> : null}

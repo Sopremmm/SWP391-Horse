@@ -12,3 +12,12 @@
   opacity: .7;
   cursor: wait;
 }
+
+/* The original detail stylesheet used Georgia with !important, which beat the
+   application-wide Vietnamese font and split some composed glyphs visually. */
+.amtDetailPage .amtDetailHeroTitle {
+  font-family: var(--font-app) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em;
+  word-spacing: normal;
+}
