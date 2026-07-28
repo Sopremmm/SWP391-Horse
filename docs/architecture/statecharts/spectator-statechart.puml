@@ -1,0 +1,71 @@
+@startuml
+title SPECTATOR Role - StateChart
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam roundcorner 0
+top to bottom direction
+
+skinparam nodesep 100
+skinparam ranksep 120
+skinparam wrapWidth 200
+skinparam defaultTextAlignment center
+skinparam Padding 14
+skinparam ArrowFontSize 11
+
+skinparam state {
+  FontSize 13
+  FontStyle bold
+}
+
+state "Logged Out" as LoggedOut
+state "Browse Public Information" as PublicBrowsing
+state "Login Failed" as LoginFailed
+state "Spectator Dashboard" as Dashboard
+state "View Tournament List" as TournamentList
+state "View Tournament Details" as TournamentDetail
+state "View Race List" as RaceList
+state "View Race Details" as RaceDetail
+state "Wait for Published Results" as WaitingForResult
+state "View Race Results" as PublishedResult
+state "View Leaderboard" as Leaderboard
+state "View Notifications" as Notifications
+
+[*] -down-> LoggedOut
+
+LoggedOut -down-> PublicBrowsing : Browse tournaments and races
+PublicBrowsing -up-> LoggedOut : Return
+
+LoggedOut -down-> Dashboard : Sign in\n[valid credentials and ACTIVE account]
+LoggedOut -right-> LoginFailed : Invalid credentials or\naccount is not ACTIVE
+LoginFailed -left-> LoggedOut : Retry
+
+Dashboard -down-> TournamentList : Open tournaments
+TournamentList -down-> TournamentDetail : Select tournament
+TournamentDetail -down-> RaceList : View races
+RaceList -down-> RaceDetail : Select race
+
+RaceDetail -down-> WaitingForResult : Results are not published
+WaitingForResult -down-> PublishedResult : Race becomes COMPLETED
+RaceDetail -right-> PublishedResult : Results are published
+PublishedResult -down-> Leaderboard : Open leaderboard
+
+Leaderboard -up-> PublishedResult : Return
+PublishedResult -up-> RaceDetail : Return
+RaceDetail -up-> RaceList : Return
+RaceList -up-> TournamentDetail : Return
+TournamentDetail -up-> TournamentList : Return
+TournamentList -up-> Dashboard : Return to dashboard
+
+Dashboard -right-> Notifications : Open notifications
+Notifications -left-> Dashboard : Mark as read / return
+
+Dashboard -up-> LoggedOut : Sign out or token expires
+
+note right of PublishedResult
+  Spectators can view official results only
+  when the race status is COMPLETED.
+end note
+
+@enduml

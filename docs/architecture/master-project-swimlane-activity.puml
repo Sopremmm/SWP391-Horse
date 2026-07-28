@@ -1,0 +1,289 @@
+@startuml
+title Horse Racing Management System - Master Project Swimlane Activity Diagram
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam activity {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  ArrowColor #334155
+  DiamondBackgroundColor #FEF3C7
+  DiamondBorderColor #B45309
+  StartColor #16A34A
+  EndColor #DC2626
+  FontColor #0F172A
+}
+
+|Master Project|
+start
+:Start tournament operation cycle;
+:Define tournament plan;
+
+|ADMIN|
+:Sign in with ADMIN account;
+:Create tournament;
+
+|Backend|
+if (Start date is at least 7 days away?) then (Yes)
+  :Save tournament as DRAFT;
+else (No - TM-01)
+  :Return HTTP 400 with reason;
+  |Master Project|
+  :Revise tournament schedule;
+  stop
+endif
+
+|ADMIN|
+:Create at least two races;
+:Assign a REFEREE to each race;
+:Configure gates and participant limits;
+:Publish tournament;
+
+|Backend|
+if (At least two scheduled races exist?) then (Yes)
+  :Set tournament OPEN;
+else (No - TM-02)
+  :Keep tournament DRAFT;
+  |Master Project|
+  :Request additional race setup;
+  stop
+endif
+
+|Master Project|
+:Open registration phase;
+
+|HORSE_OWNER|
+:Sign in with HORSE_OWNER account;
+:Create or select owned horse;
+:Register horse for tournament;
+
+|Backend|
+if (Horse belongs to current owner?) then (Yes)
+  if (Before registration deadline?) then (Yes)
+    :Create RaceEntry PENDING;
+    :Notify ADMIN;
+  else (No - REG-01)
+    :Reject late registration;
+    stop
+  endif
+else (No)
+  :Reject unauthorized horse registration;
+  stop
+endif
+
+|ADMIN|
+:Review pending RaceEntry;
+if (Approve registration?) then (Yes)
+  |Backend|
+  if (Race has capacity?) then (Yes)
+    if (Owner race limit not exceeded?) then (Yes)
+      :Assign entry to race;
+      :Set RaceEntry APPROVED;
+      :Notify HORSE_OWNER;
+    else (No - REG-04)
+      :Reject approval;
+      stop
+    endif
+  else (No - REG-02)
+    :Reject approval because race is full;
+    stop
+  endif
+else (No)
+  |Backend|
+  :Set RaceEntry REJECTED;
+  :Notify HORSE_OWNER;
+  stop
+endif
+
+|HORSE_OWNER|
+:Select a jockey;
+:Send jockey invitation;
+
+|Backend|
+if (Horse, jockey and race exist?) then (Yes)
+  if (Current user owns horse?) then (Yes)
+    if (Jockey is not assigned in this race?) then (Yes)
+      :Create invitation PENDING;
+      :Set expiration to 24 hours;
+      :Notify JOCKEY;
+    else (No - JKY-01)
+      :Reject duplicate race assignment;
+      stop
+    endif
+  else (No)
+    :Reject invitation from non-owner;
+    stop
+  endif
+else (No)
+  :Return entity-not-found error;
+  stop
+endif
+
+|JOCKEY|
+:Sign in with JOCKEY account;
+:Review personal invitations;
+if (Invitation still valid?) then (Yes)
+  if (Accept invitation?) then (Yes)
+    |Backend|
+    :Set invitation ACCEPTED;
+    :Assign jockey to RaceEntry;
+    :Record response time;
+  else (Decline)
+    |Backend|
+    :Set invitation DECLINED;
+    :Record response time;
+    stop
+  endif
+else (No - JKY-02)
+  |Backend|
+  :Set invitation EXPIRED;
+  stop
+endif
+
+|SPECTATOR|
+:Sign in with SPECTATOR account;
+:Browse scheduled race and entries;
+if (Submit prediction?) then (Yes)
+  |Backend|
+  if (Race is SCHEDULED?) then (Yes)
+    if (No existing prediction for this race?) then (Yes)
+      if (Selected entry belongs to race?) then (Yes)
+        :Create Bet PENDING;
+      else (No - BET-03/BET-04)
+        :Reject selected entry;
+      endif
+    else (No - BET-02)
+      :Reject second prediction;
+    endif
+  else (No - BET-01)
+    :Reject prediction outside betting phase;
+  endif
+else (No)
+  :Continue as viewer;
+endif
+
+|Master Project|
+:Close preparation phase;
+:Request readiness review;
+
+|ADMIN|
+:Open race checklist;
+
+|Backend|
+if (Referee assigned?) then (Yes)
+  if (At least two entries approved?) then (Yes)
+    if (Every approved entry has jockey?) then (Yes)
+      :Set race ONGOING;
+    else (No)
+      :Reject start: missing jockey;
+      stop
+    endif
+  else (No)
+    :Reject start: insufficient entries;
+    stop
+  endif
+else (No)
+  :Reject start: missing referee;
+  stop
+endif
+
+|REFEREE|
+:Sign in with assigned REFEREE account;
+:Open race entries;
+
+repeat
+  :Inspect participant attendance;
+  if (Horse and jockey present?) then (Yes)
+    |Backend|
+    :Mark RaceEntry checked-in;
+  else (No-show)
+    |REFEREE|
+    :Enter no-show reason;
+    |Backend|
+    :Mark no-show and WITHDRAWN;
+    :Append violation to report;
+  endif
+  |REFEREE|
+repeat while (More entries?) is (Yes)
+
+|Backend|
+if (All eligible entries processed? - RD-03) then (Yes)
+else (No)
+  :Reject race processing;
+  stop
+endif
+
+|REFEREE|
+:Enter finish ranks and finish times;
+
+|Backend|
+if (Results valid and ranks unique?) then (Yes)
+  :Save RaceResult records;
+else (No)
+  :Reject invalid result data;
+  stop
+endif
+
+|REFEREE|
+:Save report notes and violations;
+:Submit referee report;
+
+|Backend|
+:Mark report submitted;
+:Set race FINISHED;
+
+|Master Project|
+:Request result verification;
+
+|REFEREE / ADMIN|
+:Review submitted report;
+:Confirm report;
+
+|Backend|
+if (Report submitted and deadline valid?) then (Yes)
+  :Mark report confirmed;
+else (No - RS-01)
+  :Reject confirmation;
+  stop
+endif
+
+|ADMIN|
+:Publish results;
+
+|Backend|
+if (Report confirmed?) then (Yes)
+  :Set race COMPLETED;
+  :Calculate top-three prizes;
+  :Update public results and leaderboard;
+  :Resolve PENDING bets as WIN or LOSE;
+  :Notify affected users;
+else (No)
+  :Reject publication;
+  stop
+endif
+
+|Master Project|
+:Review completed race and audit trail;
+if (More races in tournament?) then (Yes)
+  :Start next race operation cycle;
+else (No)
+  |ADMIN|
+  :Set tournament CLOSED;
+  |Master Project|
+  :Close tournament project cycle;
+endif
+
+stop
+
+legend right
+  |= Lane |= Responsibility |
+  | Master Project | System-wide orchestration and milestones |
+  | ADMIN | Tournament, race, entry and publication control |
+  | HORSE_OWNER | Horse registration and jockey invitation |
+  | JOCKEY | Invitation response and race assignment |
+  | SPECTATOR | Race prediction and public viewing |
+  | REFEREE | Attendance, results and report processing |
+  | Backend | Authorization, validation, persistence and notifications |
+endlegend
+
+@enduml

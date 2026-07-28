@@ -1,0 +1,240 @@
+@startuml
+title Horse Racing Management System - Master Project Activity Diagram
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam roundcorner 0
+skinparam nodesep 70
+skinparam ranksep 90
+skinparam wrapWidth 220
+skinparam defaultTextAlignment center
+
+|User|
+start
+:Sign up or sign in;
+
+|Backend|
+if (Credentials valid and account ACTIVE?) then (Yes)
+  :Issue JWT;
+else (No)
+  :Return authentication error;
+  stop
+endif
+
+|ADMIN|
+:Create tournament;
+
+|Backend|
+if (Start date is at least seven days away?) then (Yes)
+  :Save tournament as DRAFT;
+else (No - TM-01)
+  :Reject tournament creation;
+  stop
+endif
+
+|ADMIN|
+:Create at least two races;
+:Assign referee to each race;
+:Configure gates and capacity;
+:Publish tournament;
+
+|Backend|
+if (At least two scheduled races exist?) then (Yes)
+  :Set tournament OPEN;
+else (No - TM-02)
+  :Keep tournament DRAFT;
+  stop
+endif
+
+|HORSE_OWNER|
+:Create or select owned horse;
+:Register horse for tournament;
+
+|Backend|
+if (Owner and deadline valid?) then (Yes)
+  :Create RaceEntry PENDING;
+  :Notify ADMIN;
+else (No - REG-01)
+  :Reject registration;
+  stop
+endif
+
+|ADMIN|
+:Review pending RaceEntry;
+if (Approve entry?) then (Yes)
+  |Backend|
+  if (Capacity and owner limit valid?) then (Yes)
+    :Assign entry to race;
+    :Set RaceEntry APPROVED;
+    :Notify HORSE_OWNER;
+  else (No - REG-02 / REG-04)
+    :Reject approval;
+    stop
+  endif
+else (No)
+  |Backend|
+  :Set RaceEntry REJECTED;
+  :Notify HORSE_OWNER;
+  stop
+endif
+
+|HORSE_OWNER|
+:Select jockey;
+:Send invitation;
+
+|Backend|
+if (Horse, jockey and race exist?) then (Yes)
+  if (Current user owns horse?) then (Yes)
+    if (Jockey is free in this race?) then (Yes)
+      :Create invitation PENDING;
+      :Set expiration to 24 hours;
+      :Notify JOCKEY;
+    else (No - JKY-01)
+      :Reject invitation;
+      stop
+    endif
+  else (No)
+    :Reject non-owner request;
+    stop
+  endif
+else (No)
+  :Return entity-not-found error;
+  stop
+endif
+
+|JOCKEY|
+:Open personal invitations;
+if (Invitation still valid?) then (Yes)
+  if (Accept invitation?) then (Yes)
+    |Backend|
+    :Set invitation ACCEPTED;
+    :Assign jockey to RaceEntry;
+  else (No)
+    |Backend|
+    :Set invitation DECLINED;
+    stop
+  endif
+else (No - JKY-02)
+  |Backend|
+  :Set invitation EXPIRED;
+  stop
+endif
+
+|ADMIN|
+:Review race readiness checklist;
+
+|Backend|
+if (Referee assigned?) then (Yes)
+  if (At least two entries approved?) then (Yes)
+    if (Every approved entry has a jockey?) then (Yes)
+      :Set race ONGOING;
+    else (No)
+      :Keep race SCHEDULED;
+      :Return missing-jockey error;
+      stop
+    endif
+  else (No)
+    :Keep race SCHEDULED;
+    :Return insufficient-entry error;
+    stop
+  endif
+else (No)
+  :Keep race SCHEDULED;
+  :Return missing-referee error;
+  stop
+endif
+
+|REFEREE|
+:Open assigned race entries;
+
+repeat
+  :Check participant attendance;
+  if (Horse and jockey present?) then (Yes)
+    |Backend|
+    :Mark entry checked-in;
+  else (No)
+    |Backend|
+    :Mark no-show;
+    :Set entry WITHDRAWN;
+    :Append reason to report;
+  endif
+  |REFEREE|
+repeat while (More entries to process?) is (Yes)
+
+|Backend|
+if (All eligible entries processed?) then (Yes)
+  :Allow result processing;
+else (No - RD-03)
+  :Reject result processing;
+  stop
+endif
+
+|REFEREE|
+:Enter finish ranks and times;
+
+|Backend|
+if (Results valid and ranks unique?) then (Yes)
+  :Save RaceResult records;
+else (No)
+  :Reject invalid results;
+  stop
+endif
+
+|REFEREE|
+:Save notes and violations;
+:Submit referee report;
+
+|Backend|
+:Mark report submitted;
+:Set race FINISHED;
+
+|REFEREE or ADMIN|
+:Review submitted report;
+:Confirm report;
+
+|Backend|
+if (Report submitted and deadline valid?) then (Yes)
+  :Mark report confirmed;
+else (No - RS-01)
+  :Reject confirmation;
+  stop
+endif
+
+|ADMIN|
+:Publish race results;
+
+|Backend|
+if (Report confirmed?) then (Yes)
+  :Set race COMPLETED;
+  :Calculate top-three prizes;
+  :Resolve pending predictions;
+  :Publish results and leaderboard;
+  :Send notifications;
+else (No)
+  :Reject publication;
+  stop
+endif
+
+|SPECTATOR|
+:Browse completed race results;
+:View tournament leaderboard;
+
+|ADMIN|
+if (More races remain?) then (Yes)
+  :Prepare the next race;
+else (No)
+  :Set tournament CLOSED;
+endif
+
+|Master Project|
+:Review completion and audit records;
+:Close project cycle;
+
+note right
+  Business validation errors are currently mapped to HTTP 400.
+  Authentication and authorization failures use HTTP 401 or 403.
+end note
+
+stop
+@enduml
