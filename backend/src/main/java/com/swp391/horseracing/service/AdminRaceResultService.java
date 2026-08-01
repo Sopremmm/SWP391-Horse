@@ -53,6 +53,17 @@ public class AdminRaceResultService {
                 .orElseThrow(() -> new RuntimeException("Error: Referee report not found!"));
     }
 
+    public List<RaceResult> getRaceResults(Long raceId) {
+        if (!raceRepository.existsById(raceId)) {
+            throw new RuntimeException("Error: Race not found!");
+        }
+        RefereeReport report = refereeReportRepository.findByRaceId(raceId).orElse(null);
+        if (report == null || !Boolean.TRUE.equals(report.getSubmitted())) {
+            return List.of();
+        }
+        return raceResultRepository.findByRaceIdOrderByFinishRankAsc(raceId);
+    }
+
     public RefereeReport confirmRefereeReport(Long actorAdminId, Long raceId) {
         Race race = raceRepository.findById(raceId)
                 .orElseThrow(() -> new RuntimeException("Error: Race not found!"));

@@ -50,6 +50,10 @@ export default function AdminConfirmRegistration() {
   const [selected, setSelected] = React.useState<(Registration & { raceId?: number }) | null>(null);
   const [toast, setToast] = React.useState('');
   const [loading, setLoading] = React.useState(true);
+  const [rejectTarget, setRejectTarget] = React.useState<(Registration & { raceId?: number }) | null>(null);
+  const [rejectionReason, setRejectionReason] = React.useState('');
+  const [rejectionError, setRejectionError] = React.useState('');
+  const [rejecting, setRejecting] = React.useState(false);
 
   const visibleRegistrations = registrations.filter((item) => filter === 'All Entries' || item.status === filter);
   const pageCount = Math.max(1, Math.ceil(visibleRegistrations.length / PAGE_SIZE));
@@ -112,25 +116,63 @@ export default function AdminConfirmRegistration() {
     setPage(1);
   };
 
+  const openRejectModal = (registration: Registration & { raceId?: number }) => {
+    setRejectTarget(registration);
+    setRejectionReason('');
+    setRejectionError('');
+  };
+
+  const closeRejectModal = () => {
+    if (rejecting) return;
+    setRejectTarget(null);
+    setRejectionReason('');
+    setRejectionError('');
+  };
+
   const updateStatus = async (id: number, status: RegistrationStatus) => {
     const registration = registrations.find((item) => item.id === id);
-    try {
-      if (status === 'Approved') {
-        await approveTournamentEntry(id);
-      } else if (status === 'Declined') {
-        const reason = window.prompt('Enter the required rejection reason:')?.trim();
-        if (!reason) {
-          setToast('A rejection reason is required.');
-          return;
-        }
-        await rejectTournamentEntry(id, reason);
-      }
+    if (!registration) return;
 
+    if (status === 'Declined') {
+      openRejectModal(registration);
+      return;
+    }
+
+    try {
+      await approveTournamentEntry(id);
       setRegistrations((current) => current.map((item) => (item.id === id ? { ...item, status } : item)));
       setSelected((current) => (current?.id === id ? { ...current, status } : current));
-      setToast(`${registration?.horse ?? 'Registration'} has been ${status.toLowerCase()}.`);
+      setToast(`${registration.horse} has been approved.`);
     } catch (err) {
       setToast(err instanceof Error ? err.message : 'Failed to update registration.');
+    }
+  };
+
+  const submitRejection = async () => {
+    if (!rejectTarget) return;
+    const reason = rejectionReason.trim();
+    if (reason.length < 5) {
+      setRejectionError('Please provide a clear reason of at least 5 characters.');
+      return;
+    }
+
+    setRejecting(true);
+    setRejectionError('');
+    try {
+      await rejectTournamentEntry(rejectTarget.id, reason);
+      setRegistrations((current) => current.map((item) => (
+        item.id === rejectTarget.id ? { ...item, status: 'Declined' } : item
+      )));
+      setSelected((current) => (
+        current?.id === rejectTarget.id ? { ...current, status: 'Declined' } : current
+      ));
+      setToast(`${rejectTarget.horse} has been declined.`);
+      setRejectTarget(null);
+      setRejectionReason('');
+    } catch (err) {
+      setRejectionError(err instanceof Error ? err.message : 'Failed to decline registration.');
+    } finally {
+      setRejecting(false);
     }
   };
 
@@ -263,6 +305,69 @@ export default function AdminConfirmRegistration() {
           </div>
         ) : null}
 
+        {rejectTarget ? (
+          <div className="admin-confirm-registration__reject-backdrop" role="presentation" onMouseDown={closeRejectModal}>
+            <section
+              className="admin-confirm-registration__reject-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="reject-registration-title"
+              aria-describedby="reject-registration-description"
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <header>
+                <span className="admin-confirm-registration__reject-icon"><RegistrationIcon name="declined" /></span>
+                <div>
+                  <small>Registration decision</small>
+                  <h2 id="reject-registration-title">Decline this entry?</h2>
+                </div>
+                <button type="button" aria-label="Close rejection dialog" onClick={closeRejectModal} disabled={rejecting}>
+                  <RegistrationIcon name="close" />
+                </button>
+              </header>
+
+              <p id="reject-registration-description">
+                Explain why <strong>{rejectTarget.horse}</strong> cannot enter <strong>{rejectTarget.tournament}</strong>.
+                This reason will be shared with {rejectTarget.owner}.
+              </p>
+
+              <div className="admin-confirm-registration__reject-summary">
+                <div><span>Horse</span><strong>{rejectTarget.horse}</strong></div>
+                <div><span>Owner</span><strong>{rejectTarget.owner}</strong></div>
+              </div>
+
+              <label htmlFor="registration-rejection-reason">
+                Rejection reason <em>Required</em>
+              </label>
+              <textarea
+                id="registration-rejection-reason"
+                value={rejectionReason}
+                onChange={(event) => {
+                  setRejectionReason(event.target.value);
+                  if (rejectionError) setRejectionError('');
+                }}
+                maxLength={500}
+                rows={5}
+                autoFocus
+                placeholder="Example: The horse's eligibility documents are incomplete..."
+                aria-invalid={Boolean(rejectionError)}
+                aria-describedby={rejectionError ? 'rejection-reason-error' : undefined}
+                disabled={rejecting}
+              />
+              <div className="admin-confirm-registration__reject-help">
+                {rejectionError ? <span id="rejection-reason-error" role="alert">{rejectionError}</span> : <span>Be specific and professional.</span>}
+                <small>{rejectionReason.length}/500</small>
+              </div>
+
+              <footer>
+                <button type="button" onClick={closeRejectModal} disabled={rejecting}>Cancel</button>
+                <button type="button" onClick={() => void submitRejection()} disabled={rejecting || rejectionReason.trim().length < 5}>
+                  {rejecting ? 'Declining...' : 'Decline entry'}
+                </button>
+              </footer>
+            </section>
+          </div>
+        ) : null}
         {toast ? <div className="admin-confirm-registration__toast" role="status"><RegistrationIcon name="approved" />{toast}</div> : null}
       </div>
     </AdminLayout>

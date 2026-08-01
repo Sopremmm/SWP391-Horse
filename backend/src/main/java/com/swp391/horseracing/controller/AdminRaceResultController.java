@@ -1,6 +1,7 @@
 package com.swp391.horseracing.controller;
 
 import com.swp391.horseracing.entity.Race;
+import com.swp391.horseracing.entity.RaceResult;
 import com.swp391.horseracing.entity.RefereeReport;
 import com.swp391.horseracing.security.user.UserDetailsImpl;
 import com.swp391.horseracing.service.AdminRaceResultService;
@@ -9,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/races")
@@ -20,6 +23,12 @@ public class AdminRaceResultController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RefereeReport> getReport(@PathVariable Long raceId) {
         return ResponseEntity.ok(adminRaceResultService.getRefereeReport(raceId));
+    }
+
+    @GetMapping("/{raceId}/results")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<RaceResult>> getResults(@PathVariable Long raceId) {
+        return ResponseEntity.ok(adminRaceResultService.getRaceResults(raceId));
     }
 
     @PostMapping("/{raceId}/report/confirm")

@@ -34,7 +34,6 @@ const EMPTY_PROFILE: JockeyEditableProfile = { fullName: '', avatarUrl: '', gend
 
 export default function JockeyProfilePage({ profile, onSave }: Props) {
   const navigate = useNavigate();
-  const [saved, setSaved] = React.useState(false);
   const [form, setForm] = React.useState<JockeyEditableProfile>(() => ({ ...EMPTY_PROFILE, ...profile }));
   const [avatarFile, setAvatarFile] = React.useState<File>();
   const [avatarPreview, setAvatarPreview] = React.useState(profile?.avatarUrl || '');
@@ -49,8 +48,7 @@ export default function JockeyProfilePage({ profile, onSave }: Props) {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     await onSave?.(form, avatarFile);
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 2400);
+    navigate('/Jockey/Profile', { replace: true });
   };
 
   return (
@@ -180,10 +178,6 @@ export default function JockeyProfilePage({ profile, onSave }: Props) {
         </section>
       </main>
 
-      <div className={`jockey-profile-page__toast ${saved ? 'is-visible' : ''}`} role="status">
-        <i />
-        Profile saved successfully.
-      </div>
 
       <Footer />
     </div>

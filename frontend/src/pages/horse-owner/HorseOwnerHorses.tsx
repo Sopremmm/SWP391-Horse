@@ -72,7 +72,7 @@ const resultTone = (position?: string) => {
   return 'neutral';
 };
 
-const horseHref = (horse: LeaderboardHorse) => `/HorseOwner/Horses/${encodeURIComponent(horse.id || horse.name)}`;
+const horseHref = (horse: LeaderboardHorse) => `/HorseOwner/Horses/${encodeURIComponent(horse.name)}`;
 
 export default function HorseOwnerHorses() {
   const [data, setData] = React.useState<HorsesLeaderboardData>(() => normalizeHorsesData(null));
@@ -105,12 +105,14 @@ export default function HorseOwnerHorses() {
 
       <main className="horse-leaderboard__main">
         <section className="horse-leaderboard__hero">
-          <p>Registry <span /> Live Leaderboard</p>
-          <h1>Horse Registry &amp; Leaderboard</h1>
-          <strong>
-            Explore the elite thoroughbreds of the 2024 season. Track performance, win ratios,
-            and racing lineage with professional-grade analytics.
-          </strong>
+          <div className="horse-leaderboard__hero-inner">
+            <p>Registry <span /> Live Leaderboard</p>
+            <h1>Horse Registry &amp; Leaderboard</h1>
+            <strong>
+              Explore the elite thoroughbreds of the 2024 season. Track performance, win ratios,
+              and racing lineage with professional-grade analytics.
+            </strong>
+          </div>
         </section>
 
         <section className="horse-leaderboard__table-card" aria-label="Horse leaderboard">

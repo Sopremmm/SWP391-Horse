@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Header } from '../../components/common/Header.tsx';
 import { getPageData, MyHorse } from '../../data/pageData.ts';
-import { getHorseOwnerTournamentRegisterData, getHorseOwnerMyHorsesData, fetchTournamentBySlug, registerTournamentEntry } from '../../services/integration.ts';
+import { getHorseOwnerTournamentRegisterData, getHorseOwnerMyHorsesData, fetchTournamentBySlug, fetchEntriesByTournament, registerTournamentEntry } from '../../services/integration.ts';
 import './HorseOwnerTournamentEntryRegister.css';
 
 type RuleIcon = 'shield' | 'gavel' | 'trophy';
@@ -149,25 +149,33 @@ function ExternalIcon() {
 function HorseCard({
   horse,
   selected,
+  registered,
   onSelect,
 }: {
   horse: MyHorse;
   selected: boolean;
+  registered: boolean;
   onSelect: (horse: MyHorse) => void;
 }) {
   return (
-    <button className={`ho-register-horse-card ${selected ? 'is-selected' : ''}`} type="button" onClick={() => onSelect(horse)}>
+    <button
+      className={`ho-register-horse-card ${selected ? 'is-selected' : ''} ${registered ? 'is-registered' : ''}`}
+      type="button"
+      onClick={() => onSelect(horse)}
+      disabled={registered}
+      aria-label={registered ? `${horse.name} is already registered for this tournament` : undefined}
+    >
       <span className="ho-register-horse-card__image">
         {horse.imageSrc ? <img src={horse.imageSrc} alt={horse.name} /> : null}
       </span>
       <span className="ho-register-horse-card__body">
         <strong>{horse.name}</strong>
         <small>{horseAgeLabel(horse.meta)}</small>
+        {registered ? <em>Already registered</em> : null}
       </span>
     </button>
   );
 }
-
 export default function HorseOwnerTournamentEntryRegister() {
   const { name } = useParams<{ name?: string }>();
   const decodedName = decodeURIComponent(name ?? '');
@@ -205,17 +213,30 @@ export default function HorseOwnerTournamentEntryRegister() {
   const [submitted, setSubmitted] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState('');
+  const [registeredHorseIds, setRegisteredHorseIds] = React.useState<Set<number>>(() => new Set());
 
   React.useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
-      const apiData = await readRegisterFromApi(slug);
-      const apiHorses = await readHorsesFromApi();
+const [apiData, apiHorses, tournament] = await Promise.all([
+        readRegisterFromApi(slug),
+        readHorsesFromApi(),
+        fetchTournamentBySlug(slug).catch(() => null),
+      ]);
+      const entries = tournament ? await fetchEntriesByTournament(tournament.id).catch(() => []) : [];
+      const activeRegisteredIds = new Set(
+        entries
+          .filter((entry) => !['REJECTED', 'WITHDRAWN'].includes(String(entry.status || '').toUpperCase()))
+          .map((entry) => Number(entry.horse?.id))
+          .filter(Number.isFinite),
+      );
 
       if (!cancelled) {
         setData(normalizeRegisterData(apiData ?? fallbackData));
         setHorses(normalizeHorses(apiHorses?.horses ?? myHorses.horses));
+        setRegisteredHorseIds(activeRegisteredIds);
+        setSelectedHorse((current) => current?.id && activeRegisteredIds.has(Number(current.id)) ? null : current);
       }
     };
 
@@ -228,9 +249,11 @@ export default function HorseOwnerTournamentEntryRegister() {
 
   const previewHorses = horses.slice(0, 2);
   const hasHorses = horses.length > 0;
+  const isHorseRegistered = (horse?: { id?: number | string } | null) =>
+    Boolean(horse?.id && registeredHorseIds.has(Number(horse.id)));
 
   const handleRegister = () => {
-    if (!selectedHorse) return;
+    if (!selectedHorse || isHorseRegistered(selectedHorse)) return;
     setConfirmOpen(true);
   };
 
@@ -249,6 +272,7 @@ export default function HorseOwnerTournamentEntryRegister() {
         return;
       }
       await registerTournamentEntry(Number(selectedHorse.id), tournament.id);
+      setRegisteredHorseIds((current) => new Set(current).add(Number(selectedHorse.id)));
       setSubmitted(true);
       setConfirmOpen(false);
     } catch (err) {
@@ -276,12 +300,17 @@ export default function HorseOwnerTournamentEntryRegister() {
             {error ? <strong>{error}</strong> : null}
           </div>
           <dl className="ho-register-hero__stats">
-            {data.stats.map((stat) => (
-              <div key={stat.label}>
-                <dt>{stat.label}</dt>
-                <dd className={stat.tone === 'gold' ? 'is-gold' : undefined}>{stat.value}</dd>
-              </div>
-            ))}
+            {data.stats
+              .filter((stat) => stat.label.trim().toLowerCase() !== 'distance')
+              .map((stat) => (
+                <div
+                  className={`ho-register-hero__stat ho-register-hero__stat--${stat.label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                  key={stat.label}
+                >
+                  <dt>{stat.label}</dt>
+                  <dd className={stat.tone === 'gold' ? 'is-gold' : undefined}>{stat.value}</dd>
+                </div>
+              ))}
           </dl>
         </section>
 
@@ -333,6 +362,7 @@ export default function HorseOwnerTournamentEntryRegister() {
                         key={horse.name}
                         horse={horse}
                         selected={selectedHorse?.name === horse.name}
+                        registered={isHorseRegistered(horse)}
                         onSelect={setSelectedHorse}
                       />
                     ))}
@@ -353,7 +383,7 @@ export default function HorseOwnerTournamentEntryRegister() {
                   <strong>{selectedHorse?.name || 'None selected'}</strong>
                 </div>
                 <div className="ho-register-summary__action">
-                  <button type="button" onClick={handleRegister} disabled={!selectedHorse}>
+                  <button type="button" onClick={handleRegister} disabled={!selectedHorse || isHorseRegistered(selectedHorse)}>
                     Confirm Registration
                     <ArrowIcon />
                   </button>
@@ -407,6 +437,7 @@ export default function HorseOwnerTournamentEntryRegister() {
                     key={horse.name}
                     horse={horse}
                     selected={selectedHorse?.name === horse.name}
+                    registered={isHorseRegistered(horse)}
                     onSelect={handleSelectFromModal}
                   />
                 ))}

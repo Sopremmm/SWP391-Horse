@@ -2,10 +2,12 @@ import React from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.tsx';
 import HomeBanner from '../../assets/images/HomeBanner.png';
+import { normalizeDisplayText } from '../../utils/textEncoding.ts';
 import {
   assignRaceReferee,
   deleteTournament,
   fetchAdminHorses,
+  fetchAdminRaceResults,
   fetchAdminUsers,
   fetchEntriesByTournament,
   fetchRacesByTournament,
@@ -13,13 +15,16 @@ import {
   forceStartAdminRace,
   formatCurrency,
   formatDateRange,
+  publishAdminRace,
   saveAdminRaceGates,
   saveTournamentBracket,
   slugify,
+  updateAdminRaceStatus,
   updateTournamentStatus,
   type RawHorse,
   type RawRace,
   type RawRaceEntry,
+  type RawRaceResult,
   type RawTournament,
 } from '../../services/integration.ts';
 import './AdminManageTournamentDetail.css';
@@ -42,7 +47,8 @@ type Bracket = { qualifiers: Race[]; semifinals: Race[]; final: Race };
 type RefereeOption = { id: number; name: string };
 type GateOption = { key: string; horseId: number; horse: RawHorse; entry: RawRaceEntry | null };
 
-const tournamentName = (name?: string) => decodeURIComponent(name ?? 'Royal Ascot Autumn Derby');
+const tournamentName = (name?: string) =>
+  normalizeDisplayText(decodeURIComponent(name ?? 'Royal Ascot Autumn Derby'));
 
 //#region debug-point admin-configure-gates-missing-horses-A1
 function reportAdminGateDebug(payload: Record<string, unknown>) {
@@ -129,6 +135,7 @@ function RaceDetailView({ tournament, raceName }: { tournament: string; raceName
   const [tournamentData, setTournamentData] = React.useState<RawTournament | null>(null);
   const [race, setRace] = React.useState<RawRace | null>(null);
   const [entries, setEntries] = React.useState<RawRaceEntry[]>([]);
+  const [results, setResults] = React.useState<RawRaceResult[]>([]);
   const [horses, setHorses] = React.useState<RawHorse[]>([]);
   const [referees, setReferees] = React.useState<RefereeOption[]>([]);
   const [selectedRefereeId, setSelectedRefereeId] = React.useState('');
@@ -167,6 +174,7 @@ function RaceDetailView({ tournament, raceName }: { tournament: string; raceName
       null;
 
     setRace(selectedRace);
+    setResults(selectedRace ? await fetchAdminRaceResults(selectedRace.id).catch(() => []) : []);
     setEntries(entryItems);
     setHorses(horseItems);
     const nextReferees = refereeItems.map((item) => ({
@@ -274,6 +282,19 @@ function RaceDetailView({ tournament, raceName }: { tournament: string; raceName
       }),
     [gateAssignments, gateOptions],
   );
+
+  const resultsByEntryId = React.useMemo(
+    () => new Map(results.map((result) => [result.entryId ?? result.entry?.id, result])),
+    [results],
+  );
+
+  const formatFinishTime = (milliseconds?: number) => {
+    if (!milliseconds || milliseconds <= 0) return 'Pending';
+    const minutes = Math.floor(milliseconds / 60_000);
+    const seconds = Math.floor((milliseconds % 60_000) / 1_000);
+    const millis = milliseconds % 1_000;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(millis).padStart(3, '0')}`;
+  };
 
   const formatEntryOptionLabel = (option: GateOption) => {
     const horseName = option.horse?.name || (option.entry ? `Entry #${option.entry.id}` : `Horse #${option.horseId}`);
@@ -448,7 +469,7 @@ function RaceDetailView({ tournament, raceName }: { tournament: string; raceName
                 <span>Horse Name</span>
                 <span>Jockey</span>
                 <span>Finish Time</span>
-                <span>Status</span>
+                <span>Rank</span>
               </div>
               {assignedEntries.map((participant) => (
                 <div className="adminParticipantRow" key={participant.gateNumber}>
@@ -458,8 +479,19 @@ function RaceDetailView({ tournament, raceName }: { tournament: string; raceName
                     <small>{participant.option?.horse?.owner?.fullName || participant.option?.horse?.owner?.email || '—'}</small>
                   </div>
                   <span>{participant.option?.entry?.jockey?.fullName || 'Unassigned'}</span>
-                  <input aria-label={`Finish time gate ${participant.gateNumber}`} placeholder="Configured by referee" disabled />
-                  <span className="adminParticipantStatus">{participant.option?.entry?.status || (participant.option ? 'READY_TO_ADD' : 'Empty')}</span>
+                  <input
+                    aria-label={`Finish time gate ${participant.gateNumber}`}
+                    value={participant.option?.entry
+                      ? formatFinishTime(resultsByEntryId.get(participant.option.entry.id)?.finishTimeMs)
+                      : '—'}
+                    disabled
+                    readOnly
+                  />
+                  <span className="adminParticipantStatus">
+                    {participant.option?.entry
+                      ? resultsByEntryId.get(participant.option.entry.id)?.finishRank ?? 'Pending'
+                      : '—'}
+                  </span>
                 </div>
               ))}
             </>
@@ -724,7 +756,7 @@ export default function AdminManageTournamentDetail() {
             <div className="amtDetailHeroContent">
               <div className="amtDetailHeroLeft">
                 <span className="amtRegistration">{tournament?.status ? String(tournament.status) : loading ? 'Loading...' : 'Draft'}</span>
-                <h1 className="amtDetailHeroTitle">{title}</h1>
+                <h1 className="amtDetailHeroTitle">{tournament?.name || title}</h1>
                 <p className="amtDetailHeroDesc">{tournament?.description || 'Tournament details are synced from the backend.'}</p>
                 {actionError ? <p className="amtDetailHeroDesc">{actionError}</p> : null}
                 {actionSuccess ? <p className="amtDetailHeroDesc">{actionSuccess}</p> : null}

@@ -41,7 +41,7 @@ public class User {
     @Column(nullable = false, length = 10)
     private UserStatus status = UserStatus.ACTIVE;
 
-    @Column(name = "avatar_url")
+    @Column(name = "avatar_url", columnDefinition = "NVARCHAR(MAX)")
     private String avatarUrl;
 
     @CreationTimestamp

@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/common/Header.tsx';
 import { getHorseOwnerTournamentListData } from '../../services/integration.ts';
+import featuredTournamentOne from '../../assets/images/horseracing1.jpg';
+import featuredTournamentTwo from '../../assets/images/RunningHorse.jpg';
 import './Tournament.css';
 
 type TournamentStatus = 'live' | 'ongoing' | 'registration-open' | 'upcoming' | 'completed' | string;
@@ -47,6 +49,8 @@ const EMPTY_TOURNAMENT_PAGE_DATA: TournamentPageData = {
     { label: 'Tournament Name', value: 'title' },
   ],
 };
+
+const FEATURED_TOURNAMENT_IMAGES = [featuredTournamentOne, featuredTournamentTwo];
 
 function tournamentHref(value: string) {
   return `/HorseOwner/Tournaments/${encodeURIComponent(value)}`;
@@ -158,11 +162,14 @@ export default function Tournament() {
             <div className="owner-tournaments__featured-grid">
               {pageData.featuredTournaments.slice(0, 2).map((tournament, index) => (
                 <article className="owner-tournaments__featured-card" key={tournament.id || tournament.title}>
-                  {tournament.imageUrl ? (
-                    <img src={tournament.imageUrl} alt={tournament.title} />
-                  ) : (
-                    <div className="owner-tournaments__image-placeholder" aria-hidden="true" />
-                  )}
+                  <img
+                    src={tournament.imageUrl || FEATURED_TOURNAMENT_IMAGES[index % FEATURED_TOURNAMENT_IMAGES.length]}
+                    alt={tournament.title}
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = FEATURED_TOURNAMENT_IMAGES[index % FEATURED_TOURNAMENT_IMAGES.length];
+                    }}
+                  />
                   <div className="owner-tournaments__featured-gradient" />
                   <div className="owner-tournaments__featured-content">
                     <div className="owner-tournaments__featured-row">

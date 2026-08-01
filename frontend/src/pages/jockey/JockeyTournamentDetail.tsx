@@ -46,7 +46,7 @@ export default function JockeyTournamentDetail({ data, loading = false }: Props)
       <JockeyHeader />
       <main className="jockey-tournament-detail__main" aria-busy={loading}>
         <section className="jockey-tournament-detail__hero">
-          {data?.imageUrl ? <img src={data.imageUrl} alt="" /> : null}<div className="jockey-tournament-detail__hero-shade" />
+          {data?.imageUrl ? <img src={data.imageUrl} alt={`${data.name || 'Tournament'} banner`} onError={(event) => { event.currentTarget.style.display = 'none'; }} /> : null}<div className="jockey-tournament-detail__hero-shade" />
           <div><span>{data?.label || 'Heritage Racing presents'}</span><h1>{tournamentName}</h1><p>{data?.location || 'Location to be announced'} {data?.dateRange ? <>• {data.dateRange}</> : null}</p></div>
         </section>
 

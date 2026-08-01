@@ -110,7 +110,7 @@ type RefereeRaceDetailProps = {
   data?: RefereeRaceDetailData | null;
   loading?: boolean;
   error?: string;
-  onSubmit?: () => Promise<void>;
+  onSubmit?: (participants: Participant[]) => Promise<void>;
   onSaveParticipants?: (participants: Participant[]) => Promise<void>;
   onRecordIncident?: (entryId: number, message: string) => Promise<void>;
 };
@@ -200,7 +200,7 @@ export const RefereeRaceDetail: React.FC<RefereeRaceDetailProps> = ({
 
   const confirmSubmitToAdmin = async () => {
     try {
-      await onSubmit?.();
+      await onSubmit?.(participantRows);
       setIsSubmitConfirmOpen(false);
       showToast('Race report submitted to admin.');
     } catch (submitError) {
@@ -291,10 +291,16 @@ export const RefereeRaceDetail: React.FC<RefereeRaceDetailProps> = ({
         <section className="referee-participants-card">
           <header>
             <h2>Race Participant Verification &amp; Results</h2>
-            <button type="button" onClick={saveRaceTable}>
-              <SaveIcon />
-              Save Table
-            </button>
+            <div className="referee-participants-card__actions">
+              <button type="button" onClick={saveRaceTable}>
+                <SaveIcon />
+                Save Table
+              </button>
+              <button type="button" onClick={() => setIsSubmitConfirmOpen(true)}>
+                <GearIcon />
+                Submit to Admin
+              </button>
+            </div>
           </header>
 
           <div className="referee-participants-table" role="table" aria-label="Race participant verification and results">
@@ -397,13 +403,6 @@ export const RefereeRaceDetail: React.FC<RefereeRaceDetailProps> = ({
           <button type="button" className="referee-race-actions__secondary" onClick={saveDraft}>
             <SaveIcon />
             Save Draft
-          </button>
-          <button type="button" className="referee-race-actions__primary" onClick={() => setIsSubmitConfirmOpen(true)}>
-            <GearIcon />
-            <span>
-              Submit to Admin
-              <small>Final approval required</small>
-            </span>
           </button>
         </div>
       </section>

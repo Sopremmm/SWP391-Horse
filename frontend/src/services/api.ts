@@ -1,3 +1,5 @@
+import { normalizeApiText } from '../utils/textEncoding.ts';
+
 export const API_BASE_URL = (process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api').replace(/\/+$/, '');
 
 export class ApiError<T = unknown> extends Error {
@@ -61,10 +63,13 @@ async function parseResponseBody(response: Response) {
   const contentType = response.headers.get('content-type') || '';
 
   if (response.status === 204) return null;
-  if (contentType.includes('application/json')) return response.json();
+  if (contentType.includes('application/json')) {
+    const data = await response.json();
+    return normalizeApiText(data);
+  }
 
   const text = await response.text();
-  return text || null;
+  return text ? normalizeApiText(text) : null;
 }
 
 export async function apiRequest<T>(path: string, init: ApiRequestInit = {}): Promise<T> {

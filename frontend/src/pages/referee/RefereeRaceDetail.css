@@ -144,6 +144,16 @@
   color: #ffffff;
 }
 
+.referee-participants-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.referee-participants-card__actions button:last-child {
+  background: #126239;
+}
+
 .referee-incidents-card header button {
   border: 1px solid #f2b7b0;
   background: #fee2df;

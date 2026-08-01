@@ -29,6 +29,13 @@ public class RefereeService {
     @Autowired
     private RefereeReportRepository refereeReportRepository;
 
+    public List<Race> getAssignedRaces(Long refereeUserId) {
+        if (refereeUserId == null) {
+            throw new RuntimeException("Error: Authenticated referee is required!");
+        }
+        return raceRepository.findByRefereeId(refereeUserId);
+    }
+
     public List<RaceEntry> getRaceEntriesForReferee(Long raceId, Long refereeUserId) {
         Race race = getRaceAndAuthorizeReferee(raceId, refereeUserId);
         return raceEntryRepository.findByRaceId(race.getId());
@@ -57,9 +64,6 @@ public class RefereeService {
         if (checkedIn) {
             if (entry.getStatus() == null || !(entry.getStatus().equals("APPROVED") || entry.getStatus().equals("CONFIRMED"))) {
                 throw new RuntimeException("Error: Only approved entries can be checked-in!");
-            }
-            if (entry.getJockey() == null || entry.getJockey().getId() == null) {
-                throw new RuntimeException("Error: Jockey must be assigned before check-in!");
             }
         }
 
@@ -143,8 +147,6 @@ public class RefereeService {
                 throw new RuntimeException("Error: finishTimeMs must be positive!");
             }
         }
-
-        ensureAllCheckedInOrWithdrawn(entries);
 
         List<RaceResult> existing = raceResultRepository.findByRaceId(raceId);
         Map<Long, RaceResult> resultByEntryId = existing.stream()

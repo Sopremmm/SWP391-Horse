@@ -61,13 +61,8 @@ public class RaceEntryService {
         if (tournament.getMaxHorses() != null && registeredCount >= tournament.getMaxHorses()) {
             throw new RuntimeException("Error: Tournament has reached its horse limit!");
         }
-
-        LocalDateTime now = LocalDateTime.now();
-        if (tournament.getRegistrationStartDate() == null || tournament.getRegistrationEndDate() == null
-                || now.toLocalDate().isBefore(tournament.getRegistrationStartDate())
-                || now.toLocalDate().isAfter(tournament.getRegistrationEndDate())) {
-            throw new RuntimeException("Error: Registration is outside the configured registration window!");
-        }
+        // OPEN is the authoritative registration state controlled by tournament management.
+        // Date fields remain scheduling metadata and must not contradict an explicitly OPEN tournament.
 
         RaceEntry entry = RaceEntry.builder()
                 .horse(horse)

@@ -14,6 +14,7 @@ import JockeyProfileView from './jockey/JockeyProfileView.tsx';
 import JockeyRaceDetail from './jockey/JockeyRaceDetail.tsx';
 import JockeyTournamentDetail from './jockey/JockeyTournamentDetail.tsx';
 import JockeyTournaments from './jockey/JockeyTournaments.tsx';
+import HorseOwnerRaceDetail from './horse-owner/HorseOwnerRaceDetail.tsx';
 import RefereeHome from './referee/RefereeHome.tsx';
 import RefereeNotifications from './referee/RefereeNotifications.tsx';
 import RefereeRaceDetail from './referee/RefereeRaceDetail.tsx';
@@ -59,6 +60,40 @@ import {
   slugify,
 } from '../services/integration.ts';
 
+const MAX_JOCKEY_AVATAR_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_JOCKEY_AVATAR_DIMENSION = 800;
+
+async function jockeyAvatarToDataUrl(file: File): Promise<string> {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    throw new Error('Profile photo must be a PNG, JPEG, or WebP image.');
+  }
+  if (file.size > MAX_JOCKEY_AVATAR_FILE_SIZE) {
+    throw new Error('Profile photo must be 5 MB or smaller.');
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const nextImage = new Image();
+      nextImage.onload = () => resolve(nextImage);
+      nextImage.onerror = () => reject(new Error('The selected profile photo could not be read.'));
+      nextImage.src = objectUrl;
+    });
+
+    const scale = Math.min(1, MAX_JOCKEY_AVATAR_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('The profile photo could not be processed.');
+
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+    return canvas.toDataURL(outputType, 0.85);
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
 function mapInvitation(item: Awaited<ReturnType<typeof fetchJockeyInvitations>>[number]) {
   return {
     id: String(item.id),
@@ -291,12 +326,12 @@ export function ConnectedJockeyProfileView() {
     if (!profile && !user) return null;
 
     return {
-      name: user?.fullName || profile?.user?.fullName || 'Jockey',
+      name: profile?.user?.fullName || user?.fullName || 'Jockey',
       imageUrl: profile?.user?.avatarUrl,
-      active: true,
+      active: profile?.active !== false,
       license: profile?.licenseNumber,
-      age: undefined,
-      gender: undefined,
+      age: profile?.age,
+      gender: profile?.gender,
       experienceYears: profile?.experienceYears,
       biography: profile?.bio,
       winRate:
@@ -304,7 +339,7 @@ export function ConnectedJockeyProfileView() {
           ? Math.round(((profile.totalWins || 0) / profile.totalRaces) * 100)
           : 0,
       totalRaces: profile?.totalRaces,
-      hiringPrice: 'Managed by stable owners',
+      hiringPrice: profile?.invitationRate !== undefined ? formatCurrency(profile.invitationRate) : 'Managed by stable owners',
     };
   }, [user?.id]);
 
@@ -316,10 +351,14 @@ export function ConnectedJockeyProfilePage() {
   const { data, loading } = useAsyncData(async () => {
     const profile = await fetchJockeyProfile().catch(() => null);
     return {
-      fullName: user?.fullName || profile?.user?.fullName || '',
+      fullName: profile?.user?.fullName || user?.fullName || '',
       avatarUrl: profile?.user?.avatarUrl,
+      age: profile?.age,
+      gender: profile?.gender,
       professionalStatus: profile?.active ? 'Active' : 'Unavailable',
       bio: profile?.bio || '',
+      invitationRate: profile?.invitationRate !== undefined ? String(profile.invitationRate) : '',
+      internationalTravel: Boolean(profile?.internationalTravel),
       experienceYears: profile?.experienceYears,
       totalRaces: profile?.totalRaces,
       winRate:
@@ -335,8 +374,15 @@ export function ConnectedJockeyProfilePage() {
   return (
     <JockeyProfilePage
       profile={data}
-      onSave={async (profile) => {
+      onSave={async (profile, avatarFile) => {
+        const avatarUrl = avatarFile ? await jockeyAvatarToDataUrl(avatarFile) : profile.avatarUrl;
         await saveJockeyProfile({
+          avatarUrl,
+          fullName: profile.fullName,
+          age: profile.age,
+          gender: profile.gender,
+          invitationRate: profile.invitationRate ? Number(profile.invitationRate) : undefined,
+          internationalTravel: Boolean(profile.internationalTravel),
           licenseNumber:
             (data as typeof data & { licenseNumber?: string })?.licenseNumber ||
             `${(user?.fullName || user?.email || 'jockey').replace(/[^A-Z0-9]+/gi, '-').toUpperCase()}-LICENSE`,
@@ -1299,4 +1345,57 @@ export function ConnectedAdminRaceIncidentDetail() {
       }}
     />
   );
+}
+
+export function ConnectedHorseOwnerRaceDetail() {
+  const params = useParams();
+  const user = getCurrentUser();
+  const tournamentSlug = slugify(decodeURIComponent(params.name || ''));
+  const raceSlug = slugify(decodeURIComponent(params.racename || ''));
+
+  const { data, loading } = useAsyncData(async () => {
+    const tournament = (await fetchAllTournaments())
+      .find((item) => slugify(item.name) === tournamentSlug);
+    if (!tournament) return null;
+
+    const [races, entries] = await Promise.all([
+      fetchRacesByTournament(tournament.id),
+      fetchEntriesByTournament(tournament.id),
+    ]);
+    const race = races.find((item) => slugify(item.name) === raceSlug);
+    if (!race) return null;
+
+    const results = await fetchPublicRaceResults(race.id)
+      .then((response) => response.results || [])
+      .catch(() => []);
+    const raceEntries = entries.filter((entry) => entry.race?.id === race.id);
+
+    return {
+      tournamentName: tournament.name,
+      raceName: race.name,
+      statusLabel: race.status || 'Race details',
+      dateTime: formatDateTime(race.raceDate),
+      distance: race.distanceM ? `${race.distanceM}m` : undefined,
+      venue: tournament.location,
+      heroImageUrl: tournament.imageUrl,
+      lineup: raceEntries.map((entry, index) => {
+        const result = results.find((item) => item.entryId === entry.id);
+        return {
+          id: String(entry.id),
+          gate: entry.gateNumber ?? index + 1,
+          horseName: entry.horse?.name,
+          breed: entry.horse?.breed,
+          sex: entry.horse?.condition,
+          ownerName: entry.horse?.owner?.fullName,
+          jockeyName: entry.jockey?.fullName,
+          jockeyAvatarUrl: entry.jockey?.avatarUrl,
+          finishTime: result?.finishTimeMs ? `${result.finishTimeMs} ms` : undefined,
+          rankLabel: result?.finishRank ? String(result.finishRank) : undefined,
+          isCurrentOwner: entry.horse?.owner?.id === user?.id,
+        };
+      }),
+    };
+  }, [raceSlug, tournamentSlug, user?.id]);
+
+  return <HorseOwnerRaceDetail data={data} loading={loading} />;
 }

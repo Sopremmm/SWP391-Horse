@@ -31,6 +31,7 @@ type TournamentDetailData = {
   presenter: string;
   location: string;
   dateRange: string;
+  registrationOpen?: boolean;
   heroImage?: string;
   races: TournamentRace[];
   participants: TournamentParticipant[];
@@ -152,8 +153,8 @@ function displayDate(value: string) {
   return value.replace(' - ', ' • ');
 }
 
-function raceHref(race: TournamentRace) {
-  return `#${race.id}`;
+function raceHref(tournament: string, race: TournamentRace) {
+  return `/HorseOwner/Tournaments/${tournament}/${encodeURIComponent(race.name || race.id)}`;
 }
 
 function normalizeDetailData(raw?: RawTournamentDetailData | null): TournamentDetailData {
@@ -217,7 +218,7 @@ function RaceBadge({ race, index }: { race: TournamentRace; index: number }) {
   );
 }
 
-function RaceCard({ race, index }: { race: TournamentRace; index: number }) {
+function RaceCard({ race, index, tournament }: { race: TournamentRace; index: number; tournament: string }) {
   return (
     <article className={`ho-tourney-race-card ${race.status === 'live' ? 'is-live' : ''}`} id={race.id}>
       <div className="ho-tourney-race-card__meta">
@@ -226,7 +227,7 @@ function RaceCard({ race, index }: { race: TournamentRace; index: number }) {
       </div>
       <h3>{race.name}</h3>
       <RaceBadge race={race} index={index} />
-      <Link to={raceHref(race)}>
+      <Link to={raceHref(tournament, race)}>
         View Race
         <ArrowIcon />
       </Link>
@@ -283,7 +284,7 @@ export default function HorseOwnerTournamentDetail() {
 
       <main className="ho-tourney-detail__main">
         <section className="ho-tourney-hero" aria-label={detail.title}>
-          {detail.heroImage ? <img src={detail.heroImage} alt={detail.title} /> : <div className="ho-tourney-hero__placeholder" />}
+          {detail.heroImage ? <img src={detail.heroImage} alt={detail.title} onError={(event) => { event.currentTarget.style.display = 'none'; }} /> : <div className="ho-tourney-hero__placeholder" />}
           <div className="ho-tourney-hero__overlay">
             <p>{detail.presenter}</p>
             <h1>{detail.title}</h1>
@@ -301,7 +302,11 @@ export default function HorseOwnerTournamentDetail() {
               <button type="button" onClick={() => setParticipantsOpen(true)}>
                 View Participants
               </button>
-              <Link to={`/HorseOwner/Tournaments/${routeName}/Register`}>Register</Link>
+              {detail.registrationOpen ? (
+                <Link to={`/HorseOwner/Tournaments/${routeName}/Register`}>Register</Link>
+              ) : (
+                <button type="button" disabled>Registration Closed</button>
+              )}
             </div>
           </div>
         </section>
@@ -316,7 +321,7 @@ export default function HorseOwnerTournamentDetail() {
               <h3>Qualifying</h3>
               <div className="ho-tourney-bracket__stack">
                 {qualifying.map((race, index) => (
-                  <RaceCard key={race.id} race={race} index={index} />
+                  <RaceCard key={race.id} race={race} index={index} tournament={routeName} />
                 ))}
               </div>
             </div>
@@ -325,7 +330,7 @@ export default function HorseOwnerTournamentDetail() {
               <h3>Semi-Finals</h3>
               <div className="ho-tourney-bracket__stack">
                 {semiFinals.map((race, index) => (
-                  <RaceCard key={race.id} race={race} index={index} />
+                  <RaceCard key={race.id} race={race} index={index} tournament={routeName} />
                 ))}
               </div>
             </div>
@@ -347,7 +352,7 @@ export default function HorseOwnerTournamentDetail() {
                     <strong>{detail.final.distance}</strong>
                   </span>
                 </div>
-                <Link to="#grand-final">
+                <Link to={raceHref(routeName, detail.races.find((race) => race.round === 'final') || detail.races[detail.races.length - 1] || fallbackRaces[fallbackRaces.length - 1])}>
                   View Race
                   <ArrowIcon />
                 </Link>
@@ -378,7 +383,7 @@ export default function HorseOwnerTournamentDetail() {
                   <small className={`ho-tourney-status ho-tourney-status--${race.status}`}>{statusLabel(race.status)}</small>
                 </span>
                 <span role="cell">
-                  <Link to={raceHref(race)}>View Race</Link>
+                  <Link to={raceHref(routeName, race)}>View Race</Link>
                 </span>
               </div>
             ))}

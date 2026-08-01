@@ -16,6 +16,7 @@ import {
   ConnectedJockeyRaceDetail,
   ConnectedJockeyTournamentDetail,
   ConnectedJockeyTournaments,
+  ConnectedHorseOwnerRaceDetail,
   ConnectedRefereeHome,
   ConnectedRefereeNotifications,
   ConnectedRefereeRaceDetail,
@@ -76,6 +77,7 @@ export default function App() {
         <Route path="/HorseOwner/MyHorses/:name" element={<HorseOwnerHorseDetail />} />
         <Route path="/HorseOwner/Tournaments" element={<Tournament />} />
         <Route path="/HorseOwner/Tournaments/:name" element={<HorseOwnerTournamentDetail />} />
+        <Route path="/HorseOwner/Tournaments/:name/:racename" element={<ConnectedHorseOwnerRaceDetail />} />
         <Route path="/HorseOwner/Tournaments/:name/Register" element={<HorseOwnerTournamentEntryRegister />} />
         <Route path="/HorseOwner/Tournaments/:name/entry" element={<HorseOwnerTournamentDetail />} />
         <Route path="/HorseOwner/MyTournament" element={<HorseOwnerMyTournament />} />

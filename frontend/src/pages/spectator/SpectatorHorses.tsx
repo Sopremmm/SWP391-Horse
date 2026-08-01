@@ -160,7 +160,7 @@ const horses: HorseRow[] = [
 ];
 void horses;
 
-const horsePath = (horseName: string) => `/Spectator/Horses/${horseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`;
+const horsePath = (horseName: string) => `/HorseOwner/Horses/${encodeURIComponent(horseName)}`;
 
 const SearchIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">

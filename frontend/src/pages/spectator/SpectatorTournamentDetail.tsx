@@ -152,13 +152,13 @@ const RaceNode: React.FC<{ race: BracketRace; tournamentName: string; className?
   </article>
 );
 
-type SpectatorTournamentDetailData = { location?: string; dates?: string; heroUrl?: string };
+type SpectatorTournamentDetailData = { title?: string; location?: string; dates?: string; heroUrl?: string };
 type SpectatorFinalRace = { title: string; slug: string; dateStr: string; venue: string; distance: string };
 type SpectatorTournamentDetailProps = { data?: SpectatorTournamentDetailData | null; qualifyingRaces?: BracketRace[]; semiFinalRaces?: BracketRace[]; finalRace?: SpectatorFinalRace; schedule?: ScheduleRace[]; loading?: boolean; error?: string };
 
 export const SpectatorTournamentDetail: React.FC<SpectatorTournamentDetailProps> = ({ data, qualifyingRaces = [], semiFinalRaces = [], finalRace, schedule = [], loading = false, error }) => {
   const { name } = useParams();
-  const tournamentName = formatTournamentName(name);
+  const tournamentName = data?.title || formatTournamentName(name);
 
   if (!data) return <div className="spectator-detail-page"><SpectatorHeader /><main className="spectator-detail-api-empty">{loading ? 'Loading tournament data...' : error || 'No tournament data is available.'}</main><SpectatorFooter /></div>;
 
@@ -168,7 +168,7 @@ export const SpectatorTournamentDetail: React.FC<SpectatorTournamentDetailProps>
 
       <main className="spectator-detail-main">
         <section className="spectator-detail-hero">
-          {data.heroUrl ? <img src={data.heroUrl} alt={`${tournamentName} hero`} /> : null}
+          {data.heroUrl ? <img src={data.heroUrl} alt={`${tournamentName} hero`} onError={(event) => { event.currentTarget.style.display = 'none'; }} /> : null}
           <div className="spectator-detail-hero__overlay">
             <p>Heritage Racing Presents</p>
             <h1>{tournamentName}</h1>

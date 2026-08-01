@@ -141,4 +141,8 @@ public class JockeyInvitationService {
     public List<JockeyInvitation> getJockeyInvitations(Long jockeyId) {
         return invitationRepository.findByJockeyId(jockeyId);
     }
+
+    public List<JockeyInvitation> getOwnerSentInvitations(Long ownerId) {
+        return invitationRepository.findByOwnerId(ownerId);
+    }
 }

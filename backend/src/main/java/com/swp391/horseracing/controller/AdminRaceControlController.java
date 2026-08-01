@@ -46,6 +46,11 @@ public class AdminRaceControlController {
         return ResponseEntity.ok(adminRaceControlService.forceStartRace(admin.getId(), raceId));
     }
 
+    @PostMapping("/{raceId}/publish")
+    public ResponseEntity<Race> publish(@PathVariable Long raceId, @AuthenticationPrincipal UserDetailsImpl admin) {
+        return ResponseEntity.ok(adminRaceControlService.publishRace(admin.getId(), raceId));
+    }
+
     @PatchMapping("/{raceId}/status")
     public ResponseEntity<Race> updateStatus(
             @PathVariable Long raceId,
@@ -64,4 +69,3 @@ public class AdminRaceControlController {
         return ResponseEntity.ok(adminRaceControlService.configureRaceGates(admin.getId(), raceId, request));
     }
 }
-

@@ -21,6 +21,10 @@ export type RawHorse = {
   breed?: string;
   age?: number;
   weightKg?: number;
+  age?: number;
+  gender?: string;
+  invitationRate?: number | string;
+  internationalTravel?: boolean;
   color?: string;
   imageUrl?: string;
   condition?: string;
@@ -101,10 +105,16 @@ export type RawJockeyProfile = {
   user?: RawUser;
   licenseNumber?: string;
   weightKg?: number;
+  age?: number;
+  gender?: string;
+  invitationRate?: number | string;
+  internationalTravel?: boolean;
   experienceYears?: number;
   totalRaces?: number;
   totalWins?: number;
   bio?: string;
+  active?: boolean;
+  avatarUrl?: string;
 };
 
 export type RawRefereeReport = {
@@ -142,7 +152,7 @@ export function slugify(value: string) {
 
 export function formatCurrency(value?: number | string | null) {
   const numeric = Number(value ?? 0);
-  if (!Number.isFinite(numeric)) return '£0';
+  if (!Number.isFinite(numeric)) return 'Â£0';
   return new Intl.NumberFormat('en-GB', {
     style: 'currency',
     currency: 'GBP',
@@ -673,7 +683,7 @@ export async function getHorseOwnerProfileData() {
       { label: 'Total Wins', value: String(horses.reduce((sum, horse) => sum + (horse.totalWins || 0), 0)), icon: 'trophy' },
     ],
     readonlyStats: [
-      { label: 'Email', value: user?.email || '—' },
+      { label: 'Email', value: user?.email || 'â€”' },
       { label: 'Role', value: 'Horse Owner' },
       { label: 'Account Status', value: 'Active' },
     ],
@@ -757,6 +767,8 @@ export async function getHorseOwnerTournamentDetailData(slug: string) {
     presenter: 'Heritage Racing Presents',
     location: tournament.location || 'Location pending',
     dateRange: formatDateRange(tournament.startDate, tournament.endDate),
+    prizePool: tournament.prizePool,
+    registrationOpen: String(tournament.status || '').trim().toUpperCase() === 'OPEN',
     heroImage: '',
     races: races.map((race) => ({
       id: String(race.id),
@@ -777,7 +789,7 @@ export async function getHorseOwnerTournamentDetailData(slug: string) {
     participants: entries.map((entry) => ({
       id: entry.id,
       horse: entry.horse?.name || 'Horse',
-      breedAge: [entry.horse?.breed, entry.horse?.age ? `${entry.horse.age}yo` : ''].filter(Boolean).join(' · '),
+      breedAge: [entry.horse?.breed, entry.horse?.age ? `${entry.horse.age}yo` : ''].filter(Boolean).join(' Â· '),
       jockey: entry.jockey?.fullName || 'Unassigned',
       owner: entry.horse?.owner?.fullName || getCurrentUser()?.fullName || 'Owner',
     })),
@@ -801,7 +813,7 @@ export async function getHorseOwnerTournamentRegisterData(slug: string) {
     description: 'Select one of your registered horses to enter this tournament.',
     stats: [
       { label: 'Date', value: detail.dateRange },
-      { label: 'Purse', value: formatCurrency(detail.final.distance ? undefined : undefined), tone: 'gold' as const },
+      { label: 'Prize Pool', value: formatCurrency(detail.prizePool), tone: 'gold' as const },
       { label: 'Location', value: detail.location },
       { label: 'Distance', value: detail.final.distance },
       { label: 'Entries', value: `${detail.participants.length}/${detail.participants.length || 20} Horses`, tone: 'gold' as const },
@@ -1010,3 +1022,32 @@ export async function approveHorse(id: number) {
 export async function rejectHorse(id: number) {
   return api.patch<RawHorse>(`/admin/horses/${id}/status`, null, { query: { status: 'REJECTED' } });
 }
+
+export async function fetchAdminRaceResults(raceId: number) {
+  return api.get<RawRaceResult[]>(`/admin/races/${raceId}/results`);
+}
+
+export async function publishAdminRace(raceId: number) {
+  return api.post<RawRace>(`/admin/races/${raceId}/publish`);
+}
+
+export async function getHorseOwnerSentInvitationsData() {
+  const invitations = await api.get<RawJockeyInvitation[]>('/invitations/sent');
+  const rows = invitations.map((invitation) => ({
+    id: invitation.id,
+    jockey: invitation.jockey?.fullName || invitation.jockey?.email || 'Jockey',
+    tournament: invitation.race?.tournament?.name || 'Tournament',
+    horse: invitation.horse?.name || 'Horse',
+    sentDate: formatDate(invitation.invitedAt),
+    status:
+      invitation.status === 'ACCEPTED'
+        ? 'Accepted'
+        : invitation.status === 'DECLINED'
+          ? 'Declined'
+          : 'Pending',
+    image: invitation.jockey?.avatarUrl,
+  }));
+  writeCachedOwnerInvitations(rows);
+  return getCachedOwnerSentInvitationsData();
+}
+

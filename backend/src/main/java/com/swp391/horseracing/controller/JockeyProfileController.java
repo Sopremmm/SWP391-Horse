@@ -1,5 +1,6 @@
 package com.swp391.horseracing.controller;
 
+import com.swp391.horseracing.dto.request.UpdateJockeyProfileRequest;
 import com.swp391.horseracing.entity.JockeyProfile;
 import com.swp391.horseracing.security.user.UserDetailsImpl;
 import com.swp391.horseracing.service.JockeyProfileService;
@@ -17,7 +18,7 @@ public class JockeyProfileController {
 
     @PostMapping("/profile")
     @PreAuthorize("hasRole('JOCKEY')")
-    public ResponseEntity<JockeyProfile> setupProfile(@RequestBody JockeyProfile profile, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<JockeyProfile> setupProfile(@RequestBody UpdateJockeyProfileRequest profile, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(jockeyProfileService.setupProfile(profile, userDetails.getId()));
     }
 

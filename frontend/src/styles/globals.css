@@ -30,8 +30,8 @@
   --radius-xl: 1rem;
 
   /* Font Families */
-  --font-serif: 'Liberation Serif', serif;
-  --font-sans: 'Manrope', sans-serif;
+  --font-serif: var(--font-app);
+  --font-sans: var(--font-app);
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);

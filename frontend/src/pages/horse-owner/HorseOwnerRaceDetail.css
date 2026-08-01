@@ -1,0 +1,16 @@
+@import '../jockey/JockeyRaceDetail.css';
+
+.horse-owner-race-detail {
+  min-height: 100vh;
+  background: #f9faf6;
+  color: #3e4640;
+  font-family: Manrope, Inter, Arial, sans-serif;
+}
+
+.horse-owner-race-detail * {
+  box-sizing: border-box;
+}
+
+.horse-owner-race-detail .jockey-race-detail__main {
+  padding-top: 48px;
+}

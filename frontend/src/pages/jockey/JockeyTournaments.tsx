@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Footer } from '../../components/common/Footer.tsx';
 import JockeyHeader from '../../components/jockey/JockeyHeader.tsx';
+import tournamentFallbackOne from '../../assets/images/horseracing1.jpg';
+import tournamentFallbackTwo from '../../assets/images/RunningHorse.jpg';
 import './JockeyTournaments.css';
 
 export type JockeyTournament = {
@@ -24,9 +26,23 @@ export type JockeyTournamentsData = {
 
 type Props = { data?: JockeyTournamentsData | null; loading?: boolean };
 const PAGE_SIZE = 6;
+const TOURNAMENT_FALLBACKS = [tournamentFallbackOne, tournamentFallbackTwo];
 
 function Empty({ children }: React.PropsWithChildren) {
   return <div className="jockey-tournaments__empty">{children}</div>;
+}
+
+function TournamentImage({ tournament, index }: { tournament: JockeyTournament; index: number }) {
+  const fallback = TOURNAMENT_FALLBACKS[index % TOURNAMENT_FALLBACKS.length];
+  return (
+    <img
+      src={tournament.imageUrl || fallback}
+      alt={tournament.name || 'Tournament'}
+      onError={(event) => {
+        if (event.currentTarget.src !== fallback) event.currentTarget.src = fallback;
+      }}
+    />
+  );
 }
 
 function DetailsLink({ tournament, featured = false }: { tournament: JockeyTournament; featured?: boolean }) {
@@ -61,9 +77,9 @@ export default function JockeyTournaments({ data, loading = false }: Props) {
           <p className="jockey-tournaments__eyebrow">Elite Events</p>
           <h1>Featured Tournaments</h1>
           <div className="jockey-tournaments__featured">
-            {featured.length ? featured.map((item) => (
+            {featured.length ? featured.map((item, index) => (
               <article className="jockey-tournaments__hero-card" key={item.id}>
-                {item.imageUrl ? <img src={item.imageUrl} alt="" /> : null}<div className="jockey-tournaments__hero-shade" />
+                <TournamentImage tournament={item} index={index} /><div className="jockey-tournaments__hero-shade" />
                 <div className="jockey-tournaments__hero-content">
                   <div><span>{item.status || 'Featured'}</span><h2>{item.name || 'Untitled tournament'}</h2>{item.description ? <p>{item.description}</p> : null}</div>
                   {item.prizePool ? <aside><small>Prize pool</small><strong>{item.prizePool}</strong></aside> : null}
@@ -84,9 +100,9 @@ export default function JockeyTournaments({ data, loading = false }: Props) {
           <h2>Active &amp; Upcoming Schedule</h2>
           {filtered.length ? (
             <div className="jockey-tournaments__grid">
-              {filtered.slice(0, visibleCount).map((item) => (
+              {filtered.slice(0, visibleCount).map((item, index) => (
                 <article className="jockey-tournaments__card" key={item.id}>
-                  <div className="jockey-tournaments__card-image">{item.imageUrl ? <img src={item.imageUrl} alt="" /> : null}</div>
+                  <div className="jockey-tournaments__card-image"><TournamentImage tournament={item} index={index} /></div>
                   <div className="jockey-tournaments__card-body">
                     {item.status ? <span className="jockey-tournaments__status">{item.status}</span> : null}
                     <h3>{item.name || 'Untitled tournament'}</h3>

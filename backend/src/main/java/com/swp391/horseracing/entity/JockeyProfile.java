@@ -1,6 +1,7 @@
 package com.swp391.horseracing.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +23,18 @@ public class JockeyProfile {
 
     @Column(name = "weight_kg")
     private Double weightKg;
+
+    @Column(name = "age")
+    private Integer age;
+
+    @Column(name = "gender", length = 20)
+    private String gender;
+
+    @Column(name = "invitation_rate", precision = 15, scale = 2)
+    private BigDecimal invitationRate;
+
+    @Column(name = "international_travel", nullable = false)
+    private Boolean internationalTravel = false;
 
     @Column(name = "experience_years")
     private Integer experienceYears = 0;
@@ -49,6 +62,14 @@ public class JockeyProfile {
     public void setLicenseNumber(String licenseNumber) { this.licenseNumber = licenseNumber; }
     public Double getWeightKg() { return weightKg; }
     public void setWeightKg(Double weightKg) { this.weightKg = weightKg; }
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+    public BigDecimal getInvitationRate() { return invitationRate; }
+    public void setInvitationRate(BigDecimal invitationRate) { this.invitationRate = invitationRate; }
+    public Boolean getInternationalTravel() { return internationalTravel; }
+    public void setInternationalTravel(Boolean internationalTravel) { this.internationalTravel = internationalTravel; }
     public Integer getExperienceYears() { return experienceYears; }
     public void setExperienceYears(Integer experienceYears) { this.experienceYears = experienceYears; }
     public Integer getTotalRaces() { return totalRaces; }

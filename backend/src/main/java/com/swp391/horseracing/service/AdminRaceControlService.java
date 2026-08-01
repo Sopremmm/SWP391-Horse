@@ -177,6 +177,22 @@ public class AdminRaceControlService {
     }
 
     @Transactional
+    public Race publishRace(Long actorAdminId, Long raceId) {
+        Race race = raceRepository.findById(raceId)
+                .orElseThrow(() -> new RuntimeException("Error: Race not found!"));
+        if (!Boolean.TRUE.equals(race.getGatesConfigured())) {
+            throw new RuntimeException("Error: Configure race gates before publishing!");
+        }
+        if (race.getReferee() == null || race.getReferee().getId() == null) {
+            throw new RuntimeException("Error: Assign a referee before publishing!");
+        }
+        race.setPublished(true);
+        Race saved = raceRepository.save(race);
+        auditLogService.log(actorAdminId, "ADMIN_PUBLISH_RACE", "RACE", raceId, "published=true");
+        return saved;
+    }
+
+    @Transactional
     public Race updateRaceStatus(Long actorAdminId, Long raceId, String status) {
         Race race = raceRepository.findById(raceId)
                 .orElseThrow(() -> new RuntimeException("Error: Race not found!"));
@@ -361,4 +377,3 @@ public class AdminRaceControlService {
         return saved;
     }
 }
-
